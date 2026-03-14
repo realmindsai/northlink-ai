@@ -1,0 +1,795 @@
+<!-- ABOUTME: Variation Claim Builder mockup for NorthLink AI. -->
+<!-- ABOUTME: AI assembles scattered evidence into a chronological variation claim with cost build-up. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Variation Claim Builder — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Three-panel layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px);
+    }
+
+    .panel-left {
+      flex: 0 0 35%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fafafa;
+    }
+
+    .panel-centre {
+      flex: 0 0 40%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+    }
+
+    .panel-right {
+      flex: 0 0 25%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-heading .heading-icon {
+      font-size: 20px;
+    }
+
+    /* Evidence pile - scattered document cards */
+    .evidence-pile {
+      position: relative;
+      min-height: 480px;
+      margin-top: 8px;
+    }
+
+    .evidence-card {
+      position: absolute;
+      width: 260px;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: default;
+      transition: box-shadow 0.4s ease, border-color 0.4s ease;
+      z-index: 1;
+    }
+
+    .evidence-card .doc-type {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-slate-gray);
+      margin-bottom: 6px;
+    }
+
+    .evidence-card .doc-type .doc-icon {
+      font-size: 16px;
+    }
+
+    .evidence-card .doc-content {
+      font-size: 13px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+      margin-bottom: 6px;
+      font-style: italic;
+    }
+
+    .evidence-card .doc-date {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-purple);
+    }
+
+    /* Golden glow when processing */
+    .evidence-card.glow {
+      border-color: var(--color-yellow);
+      box-shadow: 0 0 16px rgba(255, 218, 71, 0.5), 0 0 32px rgba(255, 218, 71, 0.25);
+      z-index: 10;
+    }
+
+    /* Hover-linked highlight */
+    .evidence-card.linked-highlight {
+      border-color: var(--color-purple);
+      box-shadow: 0 0 12px rgba(167, 122, 205, 0.4), 0 0 24px rgba(167, 122, 205, 0.2);
+      z-index: 10;
+    }
+
+    /* Positioned and rotated cards */
+    .evidence-card[data-idx="0"] { top: 10px;  left: 10px;  transform: rotate(-3deg); }
+    .evidence-card[data-idx="1"] { top: 80px;  left: 30px;  transform: rotate(2deg); }
+    .evidence-card[data-idx="2"] { top: 150px; left: 5px;   transform: rotate(-1deg); }
+    .evidence-card[data-idx="3"] { top: 230px; left: 25px;  transform: rotate(4deg); }
+    .evidence-card[data-idx="4"] { top: 310px; left: 15px;  transform: rotate(0deg); }
+    .evidence-card[data-idx="5"] { top: 395px; left: 20px;  transform: rotate(-2deg); }
+
+    /* Timeline in centre panel */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      margin-top: 8px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--color-light-gray);
+    }
+
+    .timeline-entry {
+      position: relative;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      opacity: 0;
+      transform: translateX(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .timeline-entry.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .timeline-entry::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 18px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--color-purple);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px var(--color-purple);
+    }
+
+    .timeline-entry .entry-date {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-purple);
+      margin-bottom: 4px;
+    }
+
+    .timeline-entry .entry-date .entry-icon {
+      font-size: 14px;
+    }
+
+    .timeline-entry .entry-text {
+      font-size: 13px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .timeline-entry .entry-source {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--color-off-white);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .timeline-entry .entry-source:hover {
+      background: var(--color-purple);
+      color: #fff;
+    }
+
+    /* Hover-highlight on timeline entry */
+    .timeline-entry.hover-active {
+      border-color: var(--color-purple);
+      box-shadow: 0 2px 12px rgba(167, 122, 205, 0.2);
+    }
+
+    /* Right panel - claim card */
+    .claim-card {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .claim-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .claim-card .claim-ref {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--color-purple);
+      margin-bottom: 4px;
+    }
+
+    .claim-card .claim-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 10px;
+    }
+
+    .claim-card .claim-desc {
+      font-size: 13px;
+      color: var(--color-slate-black);
+      line-height: 1.6;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .claim-card .claim-docs {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      margin-bottom: 16px;
+    }
+
+    .claim-card .claim-docs strong {
+      color: var(--color-black);
+    }
+
+    /* Cost build-up */
+    .cost-section {
+      margin-bottom: 16px;
+    }
+
+    .cost-section h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin: 0 0 8px;
+    }
+
+    .cost-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 13px;
+      border-bottom: 1px solid #f0f0f0;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .cost-line.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .cost-line .cost-label {
+      color: var(--color-slate-black);
+    }
+
+    .cost-line .cost-value {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .cost-line.total-line {
+      border-top: 2px solid var(--color-purple);
+      border-bottom: none;
+      margin-top: 4px;
+      padding-top: 8px;
+    }
+
+    .cost-line.total-line .cost-label {
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .cost-line.total-line .cost-value {
+      font-weight: 700;
+      color: var(--color-purple);
+      font-size: 16px;
+    }
+
+    /* Confidence badge area */
+    .confidence-area {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-light-gray);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .confidence-area.visible {
+      opacity: 1;
+    }
+
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: var(--radius-pill);
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .confidence-reason {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* PDF + action buttons */
+    .claim-actions {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .claim-actions.visible {
+      opacity: 1;
+    }
+
+    .claim-actions .action-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* AI shimmer overlay for evidence pile */
+    .pile-shimmer {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(167, 122, 205, 0.12) 30%,
+        rgba(167, 122, 205, 0.2) 50%,
+        rgba(167, 122, 205, 0.12) 70%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      animation: pile-scan 1s ease-in-out;
+      border-radius: var(--radius-sm);
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    @keyframes pile-scan {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Bottom actions bar */
+    .bottom-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--color-black);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .bottom-actions .action-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-centre, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-centre {
+        border-top: 1px solid var(--color-light-gray);
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+      .evidence-pile {
+        min-height: 520px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/construction.html">Construction &amp; Trades</a> &rarr; Variation Claim Builder
+      </div>
+      <div class="demo-title">Variation Claim Builder</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Build Claim</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main three-panel layout -->
+  <div class="demo-main">
+
+    <!-- Left panel: Evidence Pile -->
+    <div class="panel-left">
+      <div class="panel-heading"><span class="heading-icon">📂</span> Evidence Pile</div>
+      <div class="evidence-pile" id="evidencePile">
+
+        <div class="evidence-card" data-idx="0" id="evidence-0">
+          <div class="doc-type"><span class="doc-icon">📧</span> Email</div>
+          <div class="doc-content">"Hi team, can we get power run to the shed? Josh"</div>
+          <div class="doc-date">22 Feb 2026</div>
+        </div>
+
+        <div class="evidence-card" data-idx="1" id="evidence-1">
+          <div class="doc-type"><span class="doc-icon">📓</span> Site Diary</div>
+          <div class="doc-content">"Client verbal instruction re: shed electrical. Josh confirmed on site to proceed."</div>
+          <div class="doc-date">23 Feb 2026</div>
+        </div>
+
+        <div class="evidence-card" data-idx="2" id="evidence-2">
+          <div class="doc-type"><span class="doc-icon">📸</span> Site Photo</div>
+          <div class="doc-content">"Electrical trench excavated from switchboard to shed — 12m run"</div>
+          <div class="doc-date">25 Feb 2026</div>
+        </div>
+
+        <div class="evidence-card" data-idx="3" id="evidence-3">
+          <div class="doc-type"><span class="doc-icon">💬</span> Text Message</div>
+          <div class="doc-content">"Josh: yeah go ahead with the power to the shed 👍"</div>
+          <div class="doc-date">27 Feb 2026</div>
+        </div>
+
+        <div class="evidence-card" data-idx="4" id="evidence-4">
+          <div class="doc-type"><span class="doc-icon">📋</span> Contract Scope</div>
+          <div class="doc-content">"Electrical: supply and install to main dwelling only. Outbuildings excluded."</div>
+          <div class="doc-date">Contract — 15 Jan 2026</div>
+        </div>
+
+        <div class="evidence-card" data-idx="5" id="evidence-5">
+          <div class="doc-type"><span class="doc-icon">🧾</span> Subcontractor Invoice</div>
+          <div class="doc-content">"Sparks Electrical Pty Ltd — Power to shed, labour and materials — $1,840"</div>
+          <div class="doc-date">5 Mar 2026</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Centre panel: Claim Chronology -->
+    <div class="panel-centre">
+      <div class="panel-heading"><span class="heading-icon">📋</span> Claim Chronology</div>
+      <div class="timeline" id="timeline">
+
+        <div class="timeline-entry" id="timeline-0" data-source="0">
+          <div class="entry-date"><span class="entry-icon">📧</span> 22 Feb 2026</div>
+          <div class="entry-text">Client instruction received via email: "Can we get power run to the shed?"</div>
+          <div class="entry-source" onmouseenter="highlightSource(0)" onmouseleave="unhighlightSource(0)">Source: Email</div>
+        </div>
+
+        <div class="timeline-entry" id="timeline-1" data-source="1">
+          <div class="entry-date"><span class="entry-icon">📓</span> 23 Feb 2026</div>
+          <div class="entry-text">Site diary: Noted verbal confirmation from Josh to proceed with shed electrical.</div>
+          <div class="entry-source" onmouseenter="highlightSource(1)" onmouseleave="unhighlightSource(1)">Source: Diary</div>
+        </div>
+
+        <div class="timeline-entry" id="timeline-2" data-source="2">
+          <div class="entry-date"><span class="entry-icon">📸</span> 25 Feb 2026</div>
+          <div class="entry-text">Works commenced: Electrical trench excavated from switchboard to shed.</div>
+          <div class="entry-source" onmouseenter="highlightSource(2)" onmouseleave="unhighlightSource(2)">Source: Photo</div>
+        </div>
+
+        <div class="timeline-entry" id="timeline-3" data-source="3">
+          <div class="entry-date"><span class="entry-icon">💬</span> 27 Feb 2026</div>
+          <div class="entry-text">Written confirmation: Client text "yeah go ahead with the power".</div>
+          <div class="entry-source" onmouseenter="highlightSource(3)" onmouseleave="unhighlightSource(3)">Source: SMS</div>
+        </div>
+
+        <div class="timeline-entry" id="timeline-4" data-source="4">
+          <div class="entry-date"><span class="entry-icon">📋</span> Contract</div>
+          <div class="entry-text">Original scope reference: Electrical works limited to main dwelling only.</div>
+          <div class="entry-source" onmouseenter="highlightSource(4)" onmouseleave="unhighlightSource(4)">Source: Contract</div>
+        </div>
+
+        <div class="timeline-entry" id="timeline-5" data-source="5">
+          <div class="entry-date"><span class="entry-icon">🧾</span> 5 Mar 2026</div>
+          <div class="entry-text">Subcontractor invoice received: Sparks Electrical $1,840 for shed power installation.</div>
+          <div class="entry-source" onmouseenter="highlightSource(5)" onmouseleave="unhighlightSource(5)">Source: Invoice</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right panel: Variation Claim -->
+    <div class="panel-right">
+      <div class="panel-heading"><span class="heading-icon">📄</span> Variation Claim</div>
+
+      <div class="claim-card" id="claimCard">
+        <div class="claim-ref">VAR-007</div>
+        <div class="claim-title">Additional Electrical — Power to Shed</div>
+        <div class="claim-desc">Supply and installation of electrical power to detached shed, not included in original scope.</div>
+        <div class="claim-docs">Supporting documents: <strong>4</strong> (email, diary, photo, SMS)</div>
+
+        <div class="cost-section">
+          <h4>Cost Build-up</h4>
+          <div class="cost-line" id="cost-labour">
+            <span class="cost-label">Labour</span>
+            <span class="cost-value" id="costLabourVal">$0</span>
+          </div>
+          <div class="cost-line" id="cost-materials">
+            <span class="cost-label">Materials</span>
+            <span class="cost-value" id="costMaterialsVal">$0</span>
+          </div>
+          <div class="cost-line" id="cost-subcontractor">
+            <span class="cost-label">Subcontractor</span>
+            <span class="cost-value" id="costSubVal">$0</span>
+          </div>
+          <div class="cost-line" id="cost-margin">
+            <span class="cost-label">Margin 15%</span>
+            <span class="cost-value" id="costMarginVal">$0</span>
+          </div>
+          <div class="cost-line total-line" id="cost-total">
+            <span class="cost-label">Total</span>
+            <span class="cost-value" id="costTotalVal">$0</span>
+          </div>
+        </div>
+
+        <div class="confidence-area" id="confidenceArea">
+          <div class="confidence-badge">Strong</div>
+          <div class="confidence-reason">Clear instruction chain with written confirmation</div>
+        </div>
+
+        <div class="claim-actions" id="claimActions">
+          <button class="btn btn-primary btn-sm" onclick="toast('Variation claim VAR-007 exported as PDF', 'success')">Generate Claim PDF</button>
+          <div class="action-row">
+            <button class="btn btn-approve btn-sm" onclick="toast('Claim VAR-007 approved', 'success')">Approve</button>
+            <button class="btn btn-edit btn-sm" onclick="toast('Opening claim editor...', 'info')">Edit</button>
+            <button class="btn btn-reject btn-sm" onclick="toast('Claim VAR-007 rejected', 'danger')">Reject</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── State ── */
+    let demoRunning = false;
+    let animationTimeouts = [];
+
+    /* Evidence documents are processed in this chronological order */
+    const EVIDENCE_ORDER = [0, 1, 2, 3, 4, 5];
+
+    /* Cost values for count-up animations */
+    const COSTS = {
+      labour: 960,
+      materials: 480,
+      subcontractor: 1840,
+      margin: 492,
+      total: 3772
+    };
+
+    /* ── Schedule a timeout and track it for cleanup ── */
+    function schedule(fn, delay) {
+      const tid = setTimeout(fn, delay);
+      animationTimeouts.push(tid);
+      return tid;
+    }
+
+    /* ── Highlight source document when hovering timeline ── */
+    function highlightSource(idx) {
+      const card = document.getElementById('evidence-' + idx);
+      const entry = document.getElementById('timeline-' + idx);
+      if (card) card.classList.add('linked-highlight');
+      if (entry) entry.classList.add('hover-active');
+    }
+
+    function unhighlightSource(idx) {
+      const card = document.getElementById('evidence-' + idx);
+      const entry = document.getElementById('timeline-' + idx);
+      if (card) card.classList.remove('linked-highlight');
+      if (entry) entry.classList.remove('hover-active');
+    }
+
+    /* ── Main animation sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      /* Wait a brief moment for reset to settle */
+      await wait(200);
+
+      /* Step 1: AI shimmer across evidence pile (1s) */
+      const pile = document.getElementById('evidencePile');
+      const shimmerEl = document.createElement('div');
+      shimmerEl.className = 'pile-shimmer';
+      pile.appendChild(shimmerEl);
+      await wait(1000);
+      shimmerEl.remove();
+
+      /* Step 2: Highlight documents one at a time, building timeline */
+      for (let i = 0; i < EVIDENCE_ORDER.length; i++) {
+        const idx = EVIDENCE_ORDER[i];
+
+        /* Golden glow on evidence card */
+        const card = document.getElementById('evidence-' + idx);
+        card.classList.add('glow');
+
+        /* Wait a beat then reveal timeline entry */
+        await wait(400);
+        const entry = document.getElementById('timeline-' + idx);
+        entry.classList.add('visible');
+
+        /* Hold glow for the rest of the interval */
+        await wait(400);
+        card.classList.remove('glow');
+      }
+
+      /* Step 3: Show the claim card on the right */
+      await wait(300);
+      const claimCard = document.getElementById('claimCard');
+      claimCard.classList.add('visible');
+
+      /* Step 4: Cost build-up with count-up animations */
+      await wait(400);
+
+      /* Show cost lines one at a time with count-up */
+      const costLabour = document.getElementById('cost-labour');
+      costLabour.classList.add('visible');
+      await countUp(document.getElementById('costLabourVal'), 0, COSTS.labour, 600, '$', '', 0);
+      await wait(150);
+
+      const costMaterials = document.getElementById('cost-materials');
+      costMaterials.classList.add('visible');
+      await countUp(document.getElementById('costMaterialsVal'), 0, COSTS.materials, 600, '$', '', 0);
+      await wait(150);
+
+      const costSub = document.getElementById('cost-subcontractor');
+      costSub.classList.add('visible');
+      await countUp(document.getElementById('costSubVal'), 0, COSTS.subcontractor, 600, '$', '', 0);
+      await wait(150);
+
+      const costMargin = document.getElementById('cost-margin');
+      costMargin.classList.add('visible');
+      await countUp(document.getElementById('costMarginVal'), 0, COSTS.margin, 600, '$', '', 0);
+      await wait(200);
+
+      const costTotal = document.getElementById('cost-total');
+      costTotal.classList.add('visible');
+      await countUp(document.getElementById('costTotalVal'), 0, COSTS.total, 800, '$', '', 0);
+
+      /* Step 5: Confidence badge appears */
+      await wait(400);
+      document.getElementById('confidenceArea').classList.add('visible');
+
+      /* Step 6: Action buttons appear */
+      await wait(300);
+      document.getElementById('claimActions').classList.add('visible');
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      /* Clear pending timeouts */
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+
+      /* Remove any shimmer overlay */
+      document.querySelectorAll('.pile-shimmer').forEach(el => el.remove());
+
+      /* Remove glow from all evidence cards */
+      document.querySelectorAll('.evidence-card').forEach(card => {
+        card.classList.remove('glow', 'linked-highlight');
+      });
+
+      /* Hide all timeline entries */
+      document.querySelectorAll('.timeline-entry').forEach(entry => {
+        entry.classList.remove('visible', 'hover-active');
+      });
+
+      /* Hide claim card */
+      document.getElementById('claimCard').classList.remove('visible');
+
+      /* Reset cost lines */
+      document.querySelectorAll('.cost-line').forEach(line => {
+        line.classList.remove('visible');
+      });
+      document.getElementById('costLabourVal').textContent = '$0';
+      document.getElementById('costMaterialsVal').textContent = '$0';
+      document.getElementById('costSubVal').textContent = '$0';
+      document.getElementById('costMarginVal').textContent = '$0';
+      document.getElementById('costTotalVal').textContent = '$0';
+
+      /* Hide confidence and actions */
+      document.getElementById('confidenceArea').classList.remove('visible');
+      document.getElementById('claimActions').classList.remove('visible');
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
