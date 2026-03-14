@@ -1,0 +1,176 @@
+<!-- ABOUTME: Food & Beverage industry story page for NorthLink AI. -->
+<!-- ABOUTME: Pain points, expandable deep-dives, and 3 interactive demo links. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food &amp; Beverage — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-bar">
+    <a href="../index.html">Home</a> &rarr; Food &amp; Beverage
+  </div>
+
+  <!-- Industry Header -->
+  <div class="industry-header">
+    <div class="icon-title">
+      <span class="industry-icon">&#127860;</span>
+      <h1>Food &amp; Beverage</h1>
+    </div>
+    <div class="stat-line">400+ food &amp; beverage producers in Melbourne's north</div>
+    <p class="intro">You label by hand, trace by spreadsheet, and pray you never need to do a recall at 2am. Here's what changes when AI reads your labels, tracks your batches, and maps your supply chain.</p>
+  </div>
+
+  <!-- Pain Points -->
+  <div class="section">
+    <div class="pain-cards">
+
+      <div class="pain-card border-orange">
+        <span class="pain-icon">&#128203;</span>
+        <div>
+          <h3>"Label compliance is a minefield"</h3>
+          <p>FSANZ Standard 1.2.1 has 47 mandatory elements. Your label designer checks them by eye. Your compliance manager double-checks. Mistakes still get through.</p>
+        </div>
+      </div>
+
+      <div class="pain-card border-blue">
+        <span class="pain-icon">&#128269;</span>
+        <div>
+          <h3>"Tracing a batch takes days, not seconds"</h3>
+          <p>When a customer asks where batch B-2026-0341 ended up, someone opens three spreadsheets and starts cross-referencing. If it's a recall, multiply that by every affected batch.</p>
+        </div>
+      </div>
+
+      <div class="pain-card border-green">
+        <span class="pain-icon">&#128680;</span>
+        <div>
+          <h3>"A recall notice means all-hands chaos"</h3>
+          <p>A supplier notification lands at 2am. Which products are affected? Which customers received them? Your team scrambles through paper records and shared drives.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Accordion Deep-Dives -->
+  <div class="section">
+    <div class="accordion-group">
+
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        The numbers behind food &amp; beverage in Melbourne's north
+      </div>
+      <div class="accordion-content">
+        <p>Melbourne's north is a major food and beverage production hub, with over 400 producers ranging from artisan bakeries to large-scale dairy and meat processors. The region's proximity to freight corridors and cold-chain infrastructure makes it a natural home for food manufacturing. Compliance, traceability, and recall readiness remain the biggest operational burdens for businesses of all sizes.</p>
+      </div>
+
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        Where AI fits in a typical food &amp; beverage workflow
+      </div>
+      <div class="accordion-content">
+        <p>AI integrates into food and beverage operations at three critical points: label compliance checking (scanning labels against FSANZ standards before print), batch traceability (linking raw materials to finished products across the supply chain), and recall management (instantly mapping affected products, batches, and customers when a contamination alert is triggered).</p>
+      </div>
+
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        What other food &amp; beverage businesses are doing with AI right now
+      </div>
+      <div class="accordion-content">
+        <p>Leading food producers are using AI to automate label compliance reviews that previously took hours, build real-time batch traceability systems that replace spreadsheet lookups, and create recall response playbooks that execute in seconds instead of days. These tools work with the data businesses already capture — they just make it instantly accessible.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Demo Cards -->
+  <div class="section">
+    <h2 class="section-heading">See it in action</h2>
+    <div class="demo-cards">
+
+      <a href="../demos/food_label-compliance.html" class="demo-card">
+        <div class="demo-card-header gradient-purple-orange">
+          <div class="demo-icon">&#128203;</div>
+          <div class="demo-badge">INTERACTIVE DEMO</div>
+        </div>
+        <div class="demo-card-body">
+          <h3>Label Compliance Checker</h3>
+          <p>AI scans food labels against FSANZ standards and flags violations instantly.</p>
+          <div class="time-savings">2 hours &rarr; 30 seconds</div>
+          <span class="launch-link">Launch demo &rarr;</span>
+        </div>
+      </a>
+
+      <a href="../demos/food_batch-traceability.html" class="demo-card">
+        <div class="demo-card-header gradient-blue-green">
+          <div class="demo-icon">&#128269;</div>
+          <div class="demo-badge">INTERACTIVE DEMO</div>
+        </div>
+        <div class="demo-card-body">
+          <h3>Batch Traceability</h3>
+          <p>Type a batch number and watch the supply chain light up from supplier to customer.</p>
+          <div class="time-savings">3 days &rarr; 3 seconds</div>
+          <span class="launch-link">Launch demo &rarr;</span>
+        </div>
+      </a>
+
+      <a href="../demos/food_recall-war-room.html" class="demo-card">
+        <div class="demo-card-header gradient-green-yellow">
+          <div class="demo-icon">&#128680;</div>
+          <div class="demo-badge">INTERACTIVE DEMO</div>
+        </div>
+        <div class="demo-card-body">
+          <h3>Recall War Room</h3>
+          <p>AI traces contaminated ingredients through your entire production chain in seconds.</p>
+          <div class="time-savings">3-5 days &rarr; 2.8 seconds</div>
+          <span class="launch-link">Launch demo &rarr;</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Industry CTA -->
+  <div class="section">
+    <div class="industry-cta">
+      <h2>Want to see what AI looks like in your production line?</h2>
+      <p>Book a Walkthrough and we'll map AI opportunities specific to your food &amp; beverage business &mdash; $4,500 + GST.</p>
+      <div class="cta-actions">
+        <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+        <a href="../index.html" class="btn btn-outline" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);">All Industries</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+</body>
+</html>
