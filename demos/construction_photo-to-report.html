@@ -1,0 +1,847 @@
+<!-- ABOUTME: Site Photo to Progress Report Generator mockup for NorthLink AI. -->
+<!-- ABOUTME: AI analyses construction site photos and generates weekly progress reports. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo to Progress Report — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 52px);
+    }
+
+    .panel-left {
+      flex: 0 0 40%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      position: relative;
+    }
+
+    .panel-right {
+      flex: 0 0 60%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+    }
+
+    /* Photo grid */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .photo-card {
+      position: relative;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--color-light-gray);
+      aspect-ratio: 4 / 3;
+      display: flex;
+      flex-direction: column;
+      cursor: default;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .photo-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .photo-bg {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Trade-specific illustration patterns */
+    .photo-bg svg {
+      width: 60%;
+      height: 60%;
+      opacity: 0.5;
+    }
+
+    .photo-label {
+      padding: 6px 8px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* AI tag overlay */
+    .ai-tag {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 5;
+      white-space: nowrap;
+    }
+
+    .ai-tag.visible {
+      opacity: 1;
+      transform: scale(1);
+      animation: tag-bounce 0.4s ease;
+    }
+
+    @keyframes tag-bounce {
+      0% { transform: scale(0.3); }
+      50% { transform: scale(1.15); }
+      70% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+
+    /* Trade colours for photo backgrounds */
+    .trade-framing { background: linear-gradient(135deg, #8B6914, #C4A44A); }
+    .trade-electrical { background: linear-gradient(135deg, #D4A017, #FFD54F); }
+    .trade-roof { background: linear-gradient(135deg, #7D6B5D, #A0887A); }
+    .trade-plumbing { background: linear-gradient(135deg, #2E6B8A, #5DADE2); }
+    .trade-plaster { background: linear-gradient(135deg, #E8E0D4, #F5F0EA); }
+
+    /* AI tag trade colours */
+    .tag-framing { background: #8B6914; }
+    .tag-electrical { background: #D4A017; }
+    .tag-roof { background: #7D6B5D; }
+    .tag-plumbing { background: #2E6B8A; }
+    .tag-plaster { background: #9E9E9E; }
+
+    /* Report content */
+    .report-section {
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .report-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .report-header {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .report-header h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 4px;
+    }
+
+    .report-header .report-subtitle {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+    }
+
+    .executive-summary {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .executive-summary h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--color-black);
+    }
+
+    .executive-summary .summary-text {
+      font-size: 14px;
+      color: var(--color-slate-black);
+      line-height: 1.6;
+      min-height: 44px;
+    }
+
+    /* Progress table */
+    .progress-section {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .progress-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--color-black);
+    }
+
+    .progress-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .progress-table th {
+      text-align: left;
+      padding: 8px 10px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      border-bottom: 2px solid var(--color-light-gray);
+      background: var(--color-off-white);
+      font-size: 12px;
+    }
+
+    .progress-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .progress-table tr {
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .progress-table thead tr {
+      opacity: 1;
+      transform: none;
+    }
+
+    .progress-table tr.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .progress-table tr.stalled td {
+      background: #fff5f5;
+    }
+
+    /* Status pills */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+
+    .status-on-track { background: #dcfce7; color: #166534; }
+    .status-commenced { background: #dcfce7; color: #166534; }
+    .status-complete { background: #dcfce7; color: #166534; }
+    .status-stalled { background: #fee2e2; color: #991b1b; }
+    .status-not-started { background: #fef3c7; color: #92400e; }
+
+    /* Pulse animation for stalled items */
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15); }
+    }
+
+    .pulse-red {
+      animation: pulse-red 2s ease-in-out infinite;
+    }
+
+    /* Change column colours */
+    .change-positive { color: #166534; font-weight: 600; }
+    .change-zero { color: #991b1b; font-weight: 600; }
+
+    /* Risk flags */
+    .risk-section {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .risk-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--color-black);
+    }
+
+    .risk-flag {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #fff5f5;
+      border-left: 3px solid var(--color-danger);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateX(-15px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .risk-flag.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Weather note */
+    .weather-note {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--color-slate-black);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .weather-note .weather-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Export button */
+    .export-section {
+      margin-top: 8px;
+    }
+
+    /* Bottom actions */
+    .bottom-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--color-black);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .bottom-actions .action-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .photo-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/construction-trades.html">Construction &amp; Trades</a> &rarr; Photo to Progress Report
+      </div>
+      <div class="demo-title">Site Photo to Progress Report</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Generate Report</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Site Photos -->
+    <div class="panel-left">
+      <div class="panel-heading">Site Photos</div>
+
+      <div class="photo-grid">
+
+        <!-- 1. Framing - Front elevation -->
+        <div class="photo-card">
+          <div class="photo-bg trade-framing">
+            <span class="ai-tag tag-framing" data-tag-index="0">Framing 85%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="20" width="60" height="35" stroke="#fff" stroke-width="2" fill="none"/>
+              <line x1="10" y1="20" x2="40" y2="5" stroke="#fff" stroke-width="2"/>
+              <line x1="70" y1="20" x2="40" y2="5" stroke="#fff" stroke-width="2"/>
+              <line x1="25" y1="20" x2="25" y2="55" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+              <line x1="40" y1="20" x2="40" y2="55" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+              <line x1="55" y1="20" x2="55" y2="55" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+              <line x1="10" y1="37" x2="70" y2="37" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+            </svg>
+          </div>
+          <div class="photo-label">Framing — Front elevation</div>
+        </div>
+
+        <!-- 2. Framing - Rear wall -->
+        <div class="photo-card">
+          <div class="photo-bg trade-framing">
+            <span class="ai-tag tag-framing" data-tag-index="1">Framing 85%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="5" y="10" width="70" height="45" stroke="#fff" stroke-width="2" fill="none"/>
+              <line x1="20" y1="10" x2="20" y2="55" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+              <line x1="40" y1="10" x2="40" y2="55" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+              <line x1="60" y1="10" x2="60" y2="55" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+              <line x1="5" y1="25" x2="75" y2="25" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+              <line x1="5" y1="40" x2="75" y2="40" stroke="#fff" stroke-width="1.5" opacity="0.6"/>
+              <rect x="28" y="30" width="24" height="25" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.4"/>
+            </svg>
+          </div>
+          <div class="photo-label">Framing — Rear wall</div>
+        </div>
+
+        <!-- 3. Electrical - Rough-in bedroom 1 -->
+        <div class="photo-card">
+          <div class="photo-bg trade-electrical">
+            <span class="ai-tag tag-electrical" data-tag-index="2">Electrical 15%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="40" cy="15" r="8" stroke="#fff" stroke-width="2" fill="none"/>
+              <line x1="40" y1="23" x2="40" y2="35" stroke="#fff" stroke-width="2"/>
+              <path d="M 25 35 L 40 35 L 55 35" stroke="#fff" stroke-width="2"/>
+              <line x1="25" y1="35" x2="25" y2="50" stroke="#fff" stroke-width="2"/>
+              <line x1="55" y1="35" x2="55" y2="50" stroke="#fff" stroke-width="2"/>
+              <rect x="20" y="48" width="10" height="8" stroke="#fff" stroke-width="1.5" fill="none"/>
+              <rect x="50" y="48" width="10" height="8" stroke="#fff" stroke-width="1.5" fill="none"/>
+            </svg>
+          </div>
+          <div class="photo-label">Electrical — Rough-in bedroom 1</div>
+        </div>
+
+        <!-- 4. Electrical - Switchboard -->
+        <div class="photo-card">
+          <div class="photo-bg trade-electrical">
+            <span class="ai-tag tag-electrical" data-tag-index="3">Electrical 15%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="20" y="5" width="40" height="50" rx="3" stroke="#fff" stroke-width="2" fill="none"/>
+              <line x1="25" y1="15" x2="55" y2="15" stroke="#fff" stroke-width="1" opacity="0.5"/>
+              <line x1="25" y1="25" x2="55" y2="25" stroke="#fff" stroke-width="1" opacity="0.5"/>
+              <line x1="25" y1="35" x2="55" y2="35" stroke="#fff" stroke-width="1" opacity="0.5"/>
+              <line x1="25" y1="45" x2="55" y2="45" stroke="#fff" stroke-width="1" opacity="0.5"/>
+              <rect x="30" y="10" width="8" height="4" rx="1" fill="#fff" opacity="0.7"/>
+              <rect x="30" y="20" width="8" height="4" rx="1" fill="#fff" opacity="0.7"/>
+              <rect x="30" y="30" width="8" height="4" rx="1" fill="#fff" opacity="0.7"/>
+              <rect x="30" y="40" width="8" height="4" rx="1" fill="#fff" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="photo-label">Electrical — Switchboard</div>
+        </div>
+
+        <!-- 5. Roof - Tiles laid -->
+        <div class="photo-card">
+          <div class="photo-bg trade-roof">
+            <span class="ai-tag tag-roof" data-tag-index="4">Roof 100%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="5" y1="30" x2="40" y2="8" stroke="#fff" stroke-width="2"/>
+              <line x1="75" y1="30" x2="40" y2="8" stroke="#fff" stroke-width="2"/>
+              <line x1="5" y1="30" x2="75" y2="30" stroke="#fff" stroke-width="2"/>
+              <line x1="15" y1="26" x2="65" y2="26" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <line x1="10" y1="28" x2="70" y2="28" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <line x1="22" y1="22" x2="58" y2="22" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <line x1="28" y1="18" x2="52" y2="18" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <line x1="33" y1="14" x2="47" y2="14" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <rect x="10" y="30" width="60" height="25" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="photo-label">Roof — Tiles laid</div>
+        </div>
+
+        <!-- 6. Roof - Completed -->
+        <div class="photo-card">
+          <div class="photo-bg trade-roof" style="background: linear-gradient(135deg, #5A5A5A, #8A8A8A);">
+            <span class="ai-tag tag-roof" data-tag-index="5">Roof 100%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="5" y1="30" x2="40" y2="8" stroke="#fff" stroke-width="2"/>
+              <line x1="75" y1="30" x2="40" y2="8" stroke="#fff" stroke-width="2"/>
+              <line x1="5" y1="30" x2="75" y2="30" stroke="#fff" stroke-width="2"/>
+              <line x1="15" y1="26" x2="65" y2="26" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <line x1="10" y1="28" x2="70" y2="28" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <line x1="22" y1="22" x2="58" y2="22" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <line x1="28" y1="18" x2="52" y2="18" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <line x1="33" y1="14" x2="47" y2="14" stroke="#fff" stroke-width="1" opacity="0.4"/>
+              <rect x="35" y="25" width="10" height="5" fill="#fff" opacity="0.3"/>
+              <circle cx="40" cy="8" r="2" fill="#fff" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="photo-label">Roof — Completed</div>
+        </div>
+
+        <!-- 7. Plumbing - Bathroom stack -->
+        <div class="photo-card">
+          <div class="photo-bg trade-plumbing">
+            <span class="ai-tag tag-plumbing" data-tag-index="6">Plumbing 40%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="25" y1="5" x2="25" y2="55" stroke="#fff" stroke-width="3"/>
+              <line x1="25" y1="20" x2="55" y2="20" stroke="#fff" stroke-width="2"/>
+              <line x1="55" y1="20" x2="55" y2="35" stroke="#fff" stroke-width="2"/>
+              <line x1="25" y1="40" x2="45" y2="40" stroke="#fff" stroke-width="2"/>
+              <circle cx="25" cy="15" r="4" stroke="#fff" stroke-width="1.5" fill="none"/>
+              <circle cx="55" cy="35" r="3" stroke="#fff" stroke-width="1.5" fill="none"/>
+            </svg>
+          </div>
+          <div class="photo-label">Plumbing — Bathroom stack</div>
+        </div>
+
+        <!-- 8. Plaster - Living room -->
+        <div class="photo-card">
+          <div class="photo-bg trade-plaster">
+            <span class="ai-tag tag-plaster" data-tag-index="7">Plaster 60%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="8" width="60" height="44" stroke="#999" stroke-width="2" fill="none"/>
+              <line x1="10" y1="8" x2="70" y2="8" stroke="#999" stroke-width="2"/>
+              <line x1="10" y1="52" x2="70" y2="52" stroke="#999" stroke-width="2"/>
+              <rect x="15" y="15" width="25" height="18" stroke="#bbb" stroke-width="1" fill="none" opacity="0.6"/>
+              <line x1="15" y1="40" x2="50" y2="40" stroke="#bbb" stroke-width="1" opacity="0.4"/>
+              <line x1="15" y1="45" x2="45" y2="45" stroke="#bbb" stroke-width="1" opacity="0.4"/>
+            </svg>
+          </div>
+          <div class="photo-label">Plaster — Living room</div>
+        </div>
+
+        <!-- 9. Plaster - Kitchen -->
+        <div class="photo-card">
+          <div class="photo-bg trade-plaster">
+            <span class="ai-tag tag-plaster" data-tag-index="8">Plaster 60%</span>
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="8" width="60" height="44" stroke="#999" stroke-width="2" fill="none"/>
+              <rect x="10" y="35" width="60" height="17" stroke="#999" stroke-width="1.5" fill="none" opacity="0.5"/>
+              <rect x="15" y="38" width="12" height="12" stroke="#bbb" stroke-width="1" fill="none" opacity="0.4"/>
+              <rect x="30" y="38" width="12" height="12" stroke="#bbb" stroke-width="1" fill="none" opacity="0.4"/>
+              <rect x="45" y="38" width="12" height="12" stroke="#bbb" stroke-width="1" fill="none" opacity="0.4"/>
+              <line x1="15" y1="20" x2="55" y2="20" stroke="#bbb" stroke-width="1" opacity="0.4"/>
+            </svg>
+          </div>
+          <div class="photo-label">Plaster — Kitchen</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right panel: Generated Progress Report -->
+    <div class="panel-right">
+      <div class="panel-heading">Generated Progress Report</div>
+
+      <!-- Report header -->
+      <div class="report-section" id="reportHeader">
+        <div class="report-header">
+          <h2>Weekly Progress Report</h2>
+          <div class="report-subtitle">47 Smith St, Craigieburn — Week ending 14 March 2026</div>
+        </div>
+      </div>
+
+      <!-- Executive summary -->
+      <div class="report-section" id="summarySection">
+        <div class="executive-summary">
+          <h3>Executive Summary</h3>
+          <p class="summary-text" id="summaryText"></p>
+        </div>
+      </div>
+
+      <!-- Progress table -->
+      <div class="report-section" id="progressSection">
+        <div class="progress-section">
+          <h3>Trade Progress</h3>
+          <table class="progress-table">
+            <thead>
+              <tr>
+                <th>Trade</th>
+                <th>Last Week</th>
+                <th>This Week</th>
+                <th>Change</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="progressBody">
+              <tr data-row="0">
+                <td>Framing</td>
+                <td>70%</td>
+                <td>85%</td>
+                <td class="change-positive">+15%</td>
+                <td><span class="status-pill status-on-track">On track</span></td>
+              </tr>
+              <tr data-row="1">
+                <td>Electrical</td>
+                <td>0%</td>
+                <td>15%</td>
+                <td class="change-positive">+15%</td>
+                <td><span class="status-pill status-commenced">Commenced</span></td>
+              </tr>
+              <tr data-row="2" class="stalled">
+                <td>Plumbing</td>
+                <td>40%</td>
+                <td>40%</td>
+                <td class="change-zero">0%</td>
+                <td><span class="status-pill status-stalled">Stalled</span></td>
+              </tr>
+              <tr data-row="3">
+                <td>Roof</td>
+                <td>90%</td>
+                <td>100%</td>
+                <td class="change-positive">+10%</td>
+                <td><span class="status-pill status-complete">Complete</span></td>
+              </tr>
+              <tr data-row="4">
+                <td>Plaster</td>
+                <td>30%</td>
+                <td>60%</td>
+                <td class="change-positive">+30%</td>
+                <td><span class="status-pill status-on-track">On track</span></td>
+              </tr>
+              <tr data-row="5">
+                <td>Tiling</td>
+                <td>0%</td>
+                <td>0%</td>
+                <td class="change-zero">0%</td>
+                <td><span class="status-pill status-not-started">Not started</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Risk flags -->
+      <div class="report-section" id="riskSection">
+        <div class="risk-section">
+          <h3>Risk Flags</h3>
+          <div class="risk-flag" id="risk1">
+            <span>&#9888;&#65039;</span>
+            <span>Plumbing stalled — no progress since last week. Recommend follow-up with plumber.</span>
+          </div>
+          <div class="risk-flag" id="risk2">
+            <span>&#9888;&#65039;</span>
+            <span>Tiling not commenced — was scheduled to start this week. Delay may impact handover.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weather note -->
+      <div class="report-section" id="weatherSection">
+        <div class="weather-note">
+          <span class="weather-icon">&#127783;&#65039;</span>
+          <span>2 rain days this week (Tue, Thu) — affected external works</span>
+        </div>
+      </div>
+
+      <!-- Export button -->
+      <div class="report-section" id="exportSection">
+        <div class="export-section">
+          <button class="btn btn-primary btn-sm" onclick="toast('Progress report exported as PDF', 'success')">Export as PDF</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── State ── */
+    let demoRunning = false;
+    let animationTimeouts = [];
+
+    /* ── Schedule a timeout and track it for cleanup ── */
+    function schedule(fn, delay) {
+      const tid = setTimeout(fn, delay);
+      animationTimeouts.push(tid);
+      return tid;
+    }
+
+    /* ── Animation sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      /* Step 1: Photo grid loads with plain images (already present) */
+      await wait(400);
+
+      /* Step 2: AI tag overlays appear on photos one by one (0.3s apart) */
+      const tags = document.querySelectorAll('.ai-tag');
+      for (let i = 0; i < tags.length; i++) {
+        await wait(300);
+        tags[i].classList.add('visible');
+      }
+
+      await wait(500);
+
+      /* Step 3: Report header appears */
+      document.getElementById('reportHeader').classList.add('visible');
+      await wait(400);
+
+      /* Step 4: Executive summary types out */
+      document.getElementById('summarySection').classList.add('visible');
+      await wait(200);
+
+      const summaryEl = document.getElementById('summaryText');
+      await typeWriter(
+        summaryEl,
+        'Framing is nearing completion at 85%. Electrical rough-in has commenced. Roof tiling is complete. Plumbing has stalled with no progress this week. Plasterboard is progressing well at 60%.',
+        20
+      );
+
+      await wait(400);
+
+      /* Step 5: Progress table rows slide in with status pills */
+      document.getElementById('progressSection').classList.add('visible');
+      await wait(200);
+
+      const rows = document.querySelectorAll('#progressBody tr');
+      for (let i = 0; i < rows.length; i++) {
+        await wait(250);
+        rows[i].classList.add('visible');
+      }
+
+      /* Step 6: Stalled/late items pulse red */
+      await wait(300);
+      const stalledRows = document.querySelectorAll('.stalled');
+      stalledRows.forEach(r => r.classList.add('pulse-red'));
+
+      const stalledPills = document.querySelectorAll('.status-stalled');
+      stalledPills.forEach(p => p.classList.add('pulse-red'));
+
+      const notStartedPills = document.querySelectorAll('.status-not-started');
+      notStartedPills.forEach(p => p.classList.add('pulse-red'));
+
+      await wait(400);
+
+      /* Step 7: Risk flags slide in */
+      document.getElementById('riskSection').classList.add('visible');
+      await wait(300);
+      document.getElementById('risk1').classList.add('visible');
+      document.getElementById('risk1').classList.add('pulse-red');
+      await wait(400);
+      document.getElementById('risk2').classList.add('visible');
+      document.getElementById('risk2').classList.add('pulse-red');
+
+      await wait(400);
+
+      /* Step 8: Weather note appears */
+      document.getElementById('weatherSection').classList.add('visible');
+      await wait(300);
+
+      /* Step 9: Export button appears */
+      document.getElementById('exportSection').classList.add('visible');
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      /* Clear pending timeouts */
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+
+      /* Reset AI tags */
+      document.querySelectorAll('.ai-tag').forEach(tag => {
+        tag.classList.remove('visible');
+      });
+
+      /* Reset report sections */
+      document.querySelectorAll('.report-section').forEach(s => {
+        s.classList.remove('visible');
+      });
+
+      /* Reset summary text */
+      document.getElementById('summaryText').textContent = '';
+
+      /* Reset table rows */
+      document.querySelectorAll('#progressBody tr').forEach(r => {
+        r.classList.remove('visible');
+        r.classList.remove('pulse-red');
+      });
+
+      /* Reset stalled pulse */
+      document.querySelectorAll('.pulse-red').forEach(el => {
+        el.classList.remove('pulse-red');
+      });
+
+      /* Reset risk flags */
+      document.getElementById('risk1').classList.remove('visible');
+      document.getElementById('risk1').classList.remove('pulse-red');
+      document.getElementById('risk2').classList.remove('visible');
+      document.getElementById('risk2').classList.remove('pulse-red');
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
