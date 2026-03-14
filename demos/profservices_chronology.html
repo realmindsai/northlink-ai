@@ -1,0 +1,926 @@
+<!-- ABOUTME: Evidence Chronology Builder mockup for NorthLink AI. -->
+<!-- ABOUTME: AI builds a dated chronology from 50+ documents linking events to source evidence. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evidence Chronology Builder — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Three-panel demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px);
+    }
+
+    .panel-left {
+      flex: 0 0 30%;
+      padding: 16px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fafafa;
+    }
+
+    .panel-centre {
+      flex: 0 0 50%;
+      padding: 24px 32px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      position: relative;
+    }
+
+    .panel-right {
+      flex: 0 0 20%;
+      padding: 20px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-heading .count-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--color-light-gray);
+      color: var(--color-slate-black);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* ── Left panel: Document Pile ── */
+    .pile-stats {
+      font-size: 12px;
+      color: var(--color-slate-black);
+      margin-bottom: 8px;
+    }
+
+    .pile-stats strong {
+      color: var(--color-black);
+    }
+
+    .party-legend {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .party-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .party-dot.dot-buildcorp { background: var(--color-blue); }
+    .party-dot.dot-subtech { background: var(--color-orange); }
+    .party-dot.dot-third { background: var(--color-slate-gray); }
+
+    .document-pile {
+      position: relative;
+      min-height: 420px;
+      padding: 8px;
+    }
+
+    .doc-card {
+      position: absolute;
+      width: 130px;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 10px 10px 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      cursor: default;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.3s, z-index 0s;
+      z-index: 1;
+      user-select: none;
+    }
+
+    .doc-card .doc-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .doc-card .doc-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--color-black);
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .doc-card .doc-meta {
+      font-size: 9px;
+      color: var(--color-slate-gray);
+      line-height: 1.3;
+    }
+
+    .doc-card .doc-party-bar {
+      height: 3px;
+      border-radius: 2px;
+      margin-top: 5px;
+    }
+
+    .doc-party-bar.bar-buildcorp { background: var(--color-blue); }
+    .doc-party-bar.bar-subtech { background: var(--color-orange); }
+    .doc-party-bar.bar-both { background: linear-gradient(90deg, var(--color-blue), var(--color-orange)); }
+    .doc-party-bar.bar-third { background: var(--color-slate-gray); }
+
+    /* Highlight states for doc cards */
+    .doc-card.scanning {
+      border-color: var(--color-purple);
+      box-shadow: 0 0 12px rgba(167,122,205,0.45);
+      z-index: 10;
+    }
+
+    .doc-card.source-glow {
+      border-color: var(--color-purple);
+      box-shadow: 0 0 16px rgba(167,122,205,0.5);
+      z-index: 10;
+    }
+
+    .doc-card.hover-glow {
+      border-color: var(--color-purple);
+      box-shadow: 0 0 14px rgba(167,122,205,0.45);
+      z-index: 10;
+    }
+
+    /* AI shimmer overlay on document pile */
+    .pile-shimmer-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(167,122,205,0.12), transparent);
+      background-size: 200% 100%;
+      border-radius: var(--radius-sm);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 20;
+    }
+
+    .pile-shimmer-overlay.active {
+      opacity: 1;
+      animation: shimmer 1s ease-in-out;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* ── Centre panel: Generated Chronology ── */
+    .chronology-placeholder {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--color-slate-gray);
+      font-size: 14px;
+    }
+
+    .chronology-placeholder .placeholder-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--color-light-gray);
+    }
+
+    .timeline-entry {
+      position: relative;
+      margin-bottom: 18px;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .timeline-entry.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .timeline-entry .timeline-dot {
+      position: absolute;
+      left: -26px;
+      top: 14px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--color-light-gray);
+      background: #fff;
+      z-index: 2;
+    }
+
+    .timeline-dot.dot-buildcorp { border-color: var(--color-blue); background: var(--color-blue); }
+    .timeline-dot.dot-subtech { border-color: var(--color-orange); background: var(--color-orange); }
+    .timeline-dot.dot-both { border-color: var(--color-purple); background: var(--color-purple); }
+
+    .timeline-card {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: default;
+    }
+
+    .timeline-card:hover {
+      border-color: var(--color-purple);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    .timeline-card .entry-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .timeline-card .entry-date {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-slate-black);
+      white-space: nowrap;
+    }
+
+    .timeline-card .entry-type-icon {
+      font-size: 14px;
+    }
+
+    .timeline-card .entry-parties {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .entry-party-pill {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+
+    .entry-party-pill.pill-buildcorp {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .entry-party-pill.pill-subtech {
+      background: #fed7aa;
+      color: #9a3412;
+    }
+
+    .timeline-card .entry-desc {
+      font-size: 12px;
+      color: var(--color-black);
+      line-height: 1.5;
+    }
+
+    .timeline-card .entry-source {
+      font-size: 11px;
+      color: var(--color-purple);
+      font-weight: 600;
+      margin-top: 6px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .timeline-card .entry-source:hover {
+      text-decoration: underline;
+    }
+
+    /* Flash animation for timeline entry when source is linked */
+    @keyframes flash-entry {
+      0%, 100% { box-shadow: none; }
+      25%, 75% { box-shadow: 0 0 0 3px var(--color-purple); }
+    }
+
+    .timeline-card.flash {
+      animation: flash-entry 0.8s ease;
+    }
+
+    /* ── Right panel: Analysis ── */
+    .analysis-section {
+      margin-bottom: 18px;
+    }
+
+    .analysis-section h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-slate-black);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .finding-item {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--color-black);
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .finding-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .finding-item.finding-red {
+      border-left: 3px solid var(--color-danger);
+    }
+
+    .finding-item.finding-green {
+      border-left: 3px solid var(--color-success);
+    }
+
+    .finding-item.finding-amber {
+      border-left: 3px solid var(--color-warning);
+    }
+
+    .finding-item.finding-neutral {
+      border-left: 3px solid var(--color-slate-gray);
+    }
+
+    .finding-item .finding-label {
+      font-weight: 600;
+      color: var(--color-slate-black);
+    }
+
+    .finding-item .finding-value {
+      font-weight: 700;
+    }
+
+    .finding-value.value-red { color: var(--color-danger); }
+    .finding-value.value-green { color: #166534; }
+    .finding-value.value-amber { color: #92400e; }
+    .finding-value.value-neutral { color: var(--color-slate-black); }
+
+    .finding-item .finding-big {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--color-danger);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Critical gap box */
+    .critical-gap {
+      background: #fef2f2;
+      border: 2px solid var(--color-danger);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #991b1b;
+      line-height: 1.6;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    .critical-gap.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    @keyframes pulse-critical {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      50% { box-shadow: 0 0 16px 4px rgba(239, 68, 68, 0.3); }
+    }
+
+    .critical-gap.pulse {
+      animation: pulse-critical 1s ease 3;
+    }
+
+    .critical-gap .gap-heading {
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Analysis action buttons */
+    .analysis-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .analysis-actions .btn {
+      font-size: 12px;
+      padding: 8px 12px;
+      width: 100%;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-centre, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-centre, .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+      .document-pile {
+        min-height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/professional-services.html">Professional Services</a> &rarr; Evidence Chronology
+      </div>
+      <div class="demo-title">Evidence Chronology Builder</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Build Chronology</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Document Pile -->
+    <div class="panel-left">
+      <div class="panel-heading">Document Pile <span class="count-badge">53 documents uploaded</span></div>
+
+      <div class="party-legend">
+        <span><span class="party-dot dot-buildcorp"></span>BuildCorp</span>
+        <span><span class="party-dot dot-subtech"></span>SubTech</span>
+        <span><span class="party-dot dot-third"></span>Third Party</span>
+      </div>
+
+      <div class="document-pile" id="documentPile">
+        <div class="pile-shimmer-overlay" id="pileShimmer"></div>
+        <!-- 15 document cards positioned by JS -->
+      </div>
+    </div>
+
+    <!-- Centre panel: Generated Chronology -->
+    <div class="panel-centre" id="chronologyPanel">
+      <div class="panel-heading">Generated Chronology</div>
+      <div class="chronology-placeholder" id="chronologyPlaceholder">
+        <div class="placeholder-icon">&#128203;</div>
+        <div>Click <strong>Build Chronology</strong> to process 53 documents<br>and generate a dated timeline with source linking.</div>
+      </div>
+      <div class="timeline" id="timeline" style="display:none;"></div>
+    </div>
+
+    <!-- Right panel: Analysis -->
+    <div class="panel-right">
+      <div class="panel-heading">Analysis</div>
+
+      <div class="analysis-section">
+        <h3>Key Findings</h3>
+        <div id="findingsContainer"></div>
+      </div>
+
+      <div id="criticalGapContainer"></div>
+
+      <div class="analysis-actions" id="analysisActions">
+        <button class="btn btn-primary" onclick="toast('Chronology exported as PDF \u2014 12 events, 53 source documents', 'success')">Export Chronology</button>
+        <button class="btn btn-approve" onclick="toast('Analysis report exported as PDF', 'success')">Export Analysis</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── State ── */
+    let demoRunning = false;
+
+    /* ── Document data ── */
+    const DOCUMENTS = [
+      { id: 'doc-email-1',   icon: '\uD83D\uDCE7', type: 'Email',         label: 'SubTech price increase request',     date: '22 Feb 2025', party: 'subtech' },
+      { id: 'doc-email-2',   icon: '\uD83D\uDCE7', type: 'Email',         label: 'SubTech proceeding under protest',   date: '15 Mar 2025', party: 'subtech' },
+      { id: 'doc-email-3',   icon: '\uD83D\uDCE7', type: 'Email',         label: 'SubTech formal dispute notice',      date: '20 Jun 2025', party: 'subtech' },
+      { id: 'doc-email-4',   icon: '\uD83D\uDCE7', type: 'Email',         label: 'BuildCorp payment query',            date: '25 Jun 2025', party: 'buildcorp' },
+      { id: 'doc-contract-1',icon: '\uD83D\uDCDC', type: 'Contract',      label: 'Original construction contract',     date: '15 Jan 2025', party: 'both' },
+      { id: 'doc-contract-2',icon: '\uD83D\uDCDC', type: 'Contract',      label: 'Proposed variation (unsigned)',       date: '5 Mar 2025',  party: 'both' },
+      { id: 'doc-invoice-1', icon: '\uD83E\uDDFE', type: 'Invoice',       label: 'Progress claim #1 \u2014 $45,000',   date: '2 Apr 2025',  party: 'subtech' },
+      { id: 'doc-invoice-2', icon: '\uD83E\uDDFE', type: 'Invoice',       label: 'Progress claim #2 \u2014 $38,000',   date: '1 Jun 2025',  party: 'subtech' },
+      { id: 'doc-invoice-3', icon: '\uD83E\uDDFE', type: 'Invoice',       label: 'Progress claim #3 \u2014 $42,000',   date: '1 Jul 2025',  party: 'subtech' },
+      { id: 'doc-letter-1',  icon: '\u2709\uFE0F', type: 'Letter',        label: 'BuildCorp: variation rejected',      date: '8 Mar 2025',  party: 'buildcorp' },
+      { id: 'doc-letter-2',  icon: '\u2709\uFE0F', type: 'Letter',        label: 'BuildCorp: variation claim rejected',date: '10 Jun 2025', party: 'buildcorp' },
+      { id: 'doc-meeting-1', icon: '\uD83D\uDCD3', type: 'Meeting Notes', label: 'Site meeting \u2014 price discussion',date: '1 Mar 2025',  party: 'both' },
+      { id: 'doc-meeting-2', icon: '\uD83D\uDCD3', type: 'Meeting Notes', label: 'Site meeting \u2014 delay discussion',date: '15 May 2025', party: 'both' },
+      { id: 'doc-text-1',    icon: '\uD83D\uDCAC', type: 'Text Message',  label: 'SubTech: steel arriving Thursday',   date: '20 Mar 2025', party: 'subtech' },
+      { id: 'doc-text-2',    icon: '\uD83D\uDCAC', type: 'Text Message',  label: 'BuildCorp: confirm delivery time',   date: '21 Mar 2025', party: 'buildcorp' },
+    ];
+
+    /* Scattered positions and rotations for the messy pile */
+    const PILE_POSITIONS = [
+      { top: 8,   left: 5,   rotate: -6 },
+      { top: 20,  left: 52,  rotate: 4 },
+      { top: 55,  left: 10,  rotate: -3 },
+      { top: 80,  left: 48,  rotate: 7 },
+      { top: 130, left: 25,  rotate: -8 },
+      { top: 155, left: 60,  rotate: 2 },
+      { top: 40,  left: 35,  rotate: 5 },
+      { top: 100, left: 5,   rotate: -4 },
+      { top: 110, left: 55,  rotate: 6 },
+      { top: 185, left: 15,  rotate: -2 },
+      { top: 210, left: 50,  rotate: -5 },
+      { top: 240, left: 8,   rotate: 3 },
+      { top: 260, left: 45,  rotate: -7 },
+      { top: 290, left: 20,  rotate: 4 },
+      { top: 310, left: 55,  rotate: -3 },
+    ];
+
+    /* ── Timeline events ── */
+    const TIMELINE_EVENTS = [
+      { icon: '\uD83D\uDCDC', date: '15 Jan 2025', desc: 'Contract signed: BuildCorp engages SubTech for structural steel', parties: ['buildcorp','subtech'], dotClass: 'dot-both',      sourceDoc: 'doc-contract-1' },
+      { icon: '\uD83D\uDCE7', date: '22 Feb 2025', desc: 'SubTech emails: "Steel price increase, requesting variation"',     parties: ['subtech'],            dotClass: 'dot-subtech',    sourceDoc: 'doc-email-1' },
+      { icon: '\uD83D\uDCD3', date: '1 Mar 2025',  desc: 'Site meeting: Price increase discussed, no resolution',            parties: ['buildcorp','subtech'], dotClass: 'dot-both',      sourceDoc: 'doc-meeting-1' },
+      { icon: '\u2709\uFE0F', date: '8 Mar 2025',  desc: 'BuildCorp formal letter: "Variation rejected, proceed at contracted price"', parties: ['buildcorp'], dotClass: 'dot-buildcorp', sourceDoc: 'doc-letter-1' },
+      { icon: '\uD83D\uDCE7', date: '15 Mar 2025', desc: 'SubTech email: "Proceeding under protest"',                        parties: ['subtech'],            dotClass: 'dot-subtech',    sourceDoc: 'doc-email-2' },
+      { icon: '\uD83D\uDCAC', date: '20 Mar 2025', desc: 'Text: SubTech to BuildCorp "Steel arriving Thursday"',             parties: ['subtech'],            dotClass: 'dot-subtech',    sourceDoc: 'doc-text-1' },
+      { icon: '\uD83E\uDDFE', date: '2 Apr 2025',  desc: 'Progress claim #1: $45,000 \u2014 Paid on time',                   parties: ['subtech'],            dotClass: 'dot-subtech',    sourceDoc: 'doc-invoice-1' },
+      { icon: '\uD83D\uDCD3', date: '15 May 2025', desc: 'Site meeting: Delays discussed, SubTech blames steel supply',      parties: ['buildcorp','subtech'], dotClass: 'dot-both',      sourceDoc: 'doc-meeting-2' },
+      { icon: '\uD83E\uDDFE', date: '1 Jun 2025',  desc: 'Progress claim #2: $38,000 \u2014 Includes variation $12,000',     parties: ['subtech'],            dotClass: 'dot-subtech',    sourceDoc: 'doc-invoice-2' },
+      { icon: '\u2709\uFE0F', date: '10 Jun 2025', desc: 'BuildCorp letter: "Variation claim rejected \u2014 no prior written approval"', parties: ['buildcorp'], dotClass: 'dot-buildcorp', sourceDoc: 'doc-letter-2' },
+      { icon: '\uD83D\uDCE7', date: '20 Jun 2025', desc: 'SubTech email: "Formal notice of dispute"',                        parties: ['subtech'],            dotClass: 'dot-subtech',    sourceDoc: 'doc-email-3' },
+      { icon: '\uD83E\uDDFE', date: '1 Jul 2025',  desc: 'Progress claim #3: $42,000 \u2014 Withheld pending dispute',       parties: ['subtech'],            dotClass: 'dot-subtech',    sourceDoc: 'doc-invoice-3' },
+    ];
+
+    /* ── Analysis findings ── */
+    const FINDINGS = [
+      { label: 'Written confirmation of variation:',  value: 'NOT FOUND',        valueClass: 'value-red',     findingClass: 'finding-red' },
+      { label: 'Verbal instruction in meeting notes:', value: 'YES (1 Mar)',      valueClass: 'value-green',   findingClass: 'finding-green' },
+      { label: 'Proceeding under protest:',            value: 'YES (15 Mar)',     valueClass: 'value-amber',   findingClass: 'finding-amber' },
+      { label: 'Payment terms:',                       value: '30 days',          valueClass: 'value-neutral', findingClass: 'finding-neutral' },
+      { label: 'Days overdue:',                        value: '342',              valueClass: 'value-red',     findingClass: 'finding-red', big: true },
+    ];
+
+    /* ── Build document pile ── */
+    function buildDocumentPile() {
+      const pile = document.getElementById('documentPile');
+      /* Keep the shimmer overlay */
+      const shimmerEl = document.getElementById('pileShimmer');
+
+      /* Remove old doc cards */
+      pile.querySelectorAll('.doc-card').forEach(c => c.remove());
+
+      DOCUMENTS.forEach((doc, i) => {
+        const pos = PILE_POSITIONS[i];
+        const card = document.createElement('div');
+        card.className = 'doc-card';
+        card.id = doc.id;
+        card.style.top = pos.top + 'px';
+        card.style.left = pos.left + '%';
+        card.style.transform = 'rotate(' + pos.rotate + 'deg)';
+
+        const barClass = doc.party === 'both' ? 'bar-both' :
+                         doc.party === 'buildcorp' ? 'bar-buildcorp' :
+                         doc.party === 'subtech' ? 'bar-subtech' : 'bar-third';
+
+        card.innerHTML =
+          '<div class="doc-icon">' + doc.icon + '</div>' +
+          '<div class="doc-label">' + doc.label + '</div>' +
+          '<div class="doc-meta">' + doc.type + ' \u2022 ' + doc.date + '</div>' +
+          '<div class="doc-party-bar ' + barClass + '"></div>';
+
+        pile.appendChild(card);
+      });
+    }
+
+    /* ── Build timeline HTML ── */
+    function buildTimeline() {
+      const timeline = document.getElementById('timeline');
+      timeline.innerHTML = '';
+
+      TIMELINE_EVENTS.forEach((evt, i) => {
+        const entry = document.createElement('div');
+        entry.className = 'timeline-entry';
+        entry.id = 'entry-' + i;
+        entry.dataset.sourceDoc = evt.sourceDoc;
+
+        let partiesHTML = '';
+        evt.parties.forEach(p => {
+          if (p === 'buildcorp') partiesHTML += '<span class="entry-party-pill pill-buildcorp">BuildCorp</span>';
+          if (p === 'subtech') partiesHTML += '<span class="entry-party-pill pill-subtech">SubTech</span>';
+        });
+
+        entry.innerHTML =
+          '<div class="timeline-dot ' + evt.dotClass + '"></div>' +
+          '<div class="timeline-card" id="card-' + i + '">' +
+            '<div class="entry-header">' +
+              '<span class="entry-type-icon">' + evt.icon + '</span>' +
+              '<span class="entry-date">' + evt.date + '</span>' +
+              '<div class="entry-parties">' + partiesHTML + '</div>' +
+            '</div>' +
+            '<div class="entry-desc">' + evt.desc + '</div>' +
+            '<div class="entry-source" data-doc="' + evt.sourceDoc + '" onclick="highlightSourceDoc(\'' + evt.sourceDoc + '\')">\uD83D\uDCCE Source</div>' +
+          '</div>';
+
+        timeline.appendChild(entry);
+      });
+    }
+
+    /* ── Build findings HTML ── */
+    function buildFindings() {
+      const container = document.getElementById('findingsContainer');
+      container.innerHTML = '';
+
+      FINDINGS.forEach((f, i) => {
+        const item = document.createElement('div');
+        item.className = 'finding-item ' + f.findingClass;
+        item.id = 'finding-' + i;
+
+        if (f.big) {
+          item.innerHTML =
+            '<span class="finding-label">' + f.label + '</span>' +
+            '<span class="finding-big">' + f.value + '</span>';
+        } else {
+          item.innerHTML =
+            '<span class="finding-label">' + f.label + '</span> ' +
+            '<span class="finding-value ' + f.valueClass + '">' + f.value + '</span>';
+        }
+
+        container.appendChild(item);
+      });
+    }
+
+    /* ── Build critical gap ── */
+    function buildCriticalGap() {
+      const container = document.getElementById('criticalGapContainer');
+      container.innerHTML =
+        '<div class="critical-gap" id="criticalGap">' +
+          '<div class="gap-heading">\u26A0\uFE0F CRITICAL GAP IDENTIFIED</div>' +
+          'No written approval for variation prior to works commencing. SubTech proceeded "under protest" but without formal variation approval. This is the central weakness in SubTech\'s claim for the $12,000 variation.' +
+        '</div>';
+    }
+
+    /* ── Hover interaction: timeline entry ↔ source document ── */
+    function setupHoverInteractions() {
+      document.querySelectorAll('.timeline-entry').forEach(entry => {
+        const docId = entry.dataset.sourceDoc;
+        const card = entry.querySelector('.timeline-card');
+
+        entry.addEventListener('mouseenter', () => {
+          const docEl = document.getElementById(docId);
+          if (docEl) docEl.classList.add('hover-glow');
+        });
+
+        entry.addEventListener('mouseleave', () => {
+          const docEl = document.getElementById(docId);
+          if (docEl) docEl.classList.remove('hover-glow');
+        });
+      });
+
+      /* Reverse: hovering a doc card highlights the timeline entry */
+      document.querySelectorAll('.doc-card').forEach(docCard => {
+        docCard.addEventListener('mouseenter', () => {
+          document.querySelectorAll('.timeline-entry').forEach(entry => {
+            if (entry.dataset.sourceDoc === docCard.id) {
+              entry.querySelector('.timeline-card').style.borderColor = 'var(--color-purple)';
+              entry.querySelector('.timeline-card').style.boxShadow = '0 0 10px rgba(167,122,205,0.3)';
+            }
+          });
+        });
+
+        docCard.addEventListener('mouseleave', () => {
+          document.querySelectorAll('.timeline-entry').forEach(entry => {
+            if (entry.dataset.sourceDoc === docCard.id) {
+              entry.querySelector('.timeline-card').style.borderColor = '';
+              entry.querySelector('.timeline-card').style.boxShadow = '';
+            }
+          });
+        });
+      });
+    }
+
+    /* ── Highlight source document (clicking Source link) ── */
+    function highlightSourceDoc(docId) {
+      const docEl = document.getElementById(docId);
+      if (!docEl) return;
+      docEl.classList.add('source-glow');
+      docEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => docEl.classList.remove('source-glow'), 1500);
+    }
+
+    /* ── Animation sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      await wait(500);
+
+      /* Phase 1: AI shimmer across document pile (1s) */
+      const shimmerEl = document.getElementById('pileShimmer');
+      shimmerEl.classList.add('active');
+      await wait(1000);
+      shimmerEl.classList.remove('active');
+
+      /* Phase 2: Documents highlight one at a time (rapid scanning, 0.15s each) */
+      for (let i = 0; i < DOCUMENTS.length; i++) {
+        if (!demoRunning) return;
+        const docEl = document.getElementById(DOCUMENTS[i].id);
+        if (docEl) {
+          docEl.classList.add('scanning');
+          await wait(150);
+          docEl.classList.remove('scanning');
+        }
+      }
+
+      await wait(300);
+
+      /* Phase 3: Show timeline, hide placeholder */
+      document.getElementById('chronologyPlaceholder').style.display = 'none';
+      const timeline = document.getElementById('timeline');
+      timeline.style.display = 'block';
+
+      /* Phase 4: Timeline entries appear top-down (0.4s each) with source doc flash */
+      const entries = document.querySelectorAll('.timeline-entry');
+      for (let i = 0; i < entries.length; i++) {
+        if (!demoRunning) return;
+        const entry = entries[i];
+        entry.classList.add('visible');
+
+        /* Flash the source document briefly */
+        const sourceDocId = entry.dataset.sourceDoc;
+        const docEl = document.getElementById(sourceDocId);
+        if (docEl) {
+          docEl.classList.add('source-glow');
+          setTimeout(() => docEl.classList.remove('source-glow'), 350);
+        }
+
+        await wait(400);
+      }
+
+      await wait(300);
+
+      /* Phase 5: Right panel findings appear one by one */
+      for (let i = 0; i < FINDINGS.length; i++) {
+        if (!demoRunning) return;
+        const findingEl = document.getElementById('finding-' + i);
+        if (findingEl) findingEl.classList.add('visible');
+        await wait(350);
+      }
+
+      await wait(400);
+
+      /* Phase 6: Critical gap appears with dramatic animation */
+      const criticalGap = document.getElementById('criticalGap');
+      if (criticalGap) {
+        criticalGap.classList.add('visible');
+        await wait(200);
+        criticalGap.classList.add('pulse');
+      }
+
+      await wait(400);
+
+      /* Show export buttons */
+      document.getElementById('analysisActions').style.opacity = '1';
+
+      /* Setup hover interactions */
+      setupHoverInteractions();
+
+      toast('Chronology built \u2014 12 key events extracted from 53 documents', 'info', 4000);
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      demoRunning = false;
+
+      /* Reset shimmer */
+      const shimmerEl = document.getElementById('pileShimmer');
+      shimmerEl.classList.remove('active');
+
+      /* Reset document card highlights */
+      document.querySelectorAll('.doc-card').forEach(el => {
+        el.classList.remove('scanning', 'source-glow', 'hover-glow');
+      });
+
+      /* Show placeholder, hide timeline */
+      document.getElementById('chronologyPlaceholder').style.display = '';
+      const timeline = document.getElementById('timeline');
+      timeline.style.display = 'none';
+
+      /* Reset timeline entries */
+      document.querySelectorAll('.timeline-entry').forEach(el => {
+        el.classList.remove('visible');
+      });
+
+      /* Reset timeline cards */
+      document.querySelectorAll('.timeline-card').forEach(el => {
+        el.classList.remove('flash');
+        el.style.borderColor = '';
+        el.style.boxShadow = '';
+      });
+
+      /* Reset findings */
+      document.querySelectorAll('.finding-item').forEach(el => {
+        el.classList.remove('visible');
+      });
+
+      /* Reset critical gap */
+      const criticalGap = document.getElementById('criticalGap');
+      if (criticalGap) {
+        criticalGap.classList.remove('visible', 'pulse');
+      }
+
+      /* Reset analysis actions */
+      document.getElementById('analysisActions').style.opacity = '0';
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+
+      /* Scroll panels back to top */
+      document.getElementById('chronologyPanel').scrollTop = 0;
+    }
+
+    /* ── Init ── */
+    buildDocumentPile();
+    buildTimeline();
+    buildFindings();
+    buildCriticalGap();
+
+    /* Auto-start after 2 seconds */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
