@@ -1,0 +1,1052 @@
+<!-- ABOUTME: Quote Generator from Architectural Plans mockup for NorthLink AI. -->
+<!-- ABOUTME: AI analyses floor plans, annotates building elements, and generates material takeoffs. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quote from Architectural Plans — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 52px);
+    }
+
+    .panel-left {
+      flex: 0 0 50%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      position: relative;
+    }
+
+    .panel-right {
+      flex: 0 0 50%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+    }
+
+    /* SVG floor plan styling */
+    .plan-container {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .plan-container svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .title-block {
+      padding: 12px 16px;
+      border-top: 2px solid var(--color-black);
+      background: #fafafa;
+      font-size: 12px;
+      color: var(--color-slate-black);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title-block strong {
+      font-size: 13px;
+      color: var(--color-black);
+    }
+
+    /* AI processing overlay */
+    .processing-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(167, 122, 205, 0.08);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      border-radius: var(--radius);
+    }
+
+    .processing-overlay.active {
+      display: flex;
+    }
+
+    .processing-label {
+      background: var(--color-purple);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: var(--radius-pill);
+      font-size: 14px;
+      font-weight: 600;
+      animation: processing-pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes processing-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* SVG annotation styles */
+    .wall-trace {
+      stroke: var(--color-blue);
+      stroke-width: 3;
+      fill: none;
+      opacity: 0;
+    }
+
+    .wall-trace.animate {
+      opacity: 1;
+      stroke-dasharray: var(--path-length);
+      stroke-dashoffset: var(--path-length);
+      animation: draw-wall 2s ease forwards;
+    }
+
+    @keyframes draw-wall {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .window-annotation {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .window-annotation.visible {
+      opacity: 1;
+    }
+
+    .door-annotation {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .door-annotation.visible {
+      opacity: 1;
+    }
+
+    .wet-area-fill {
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .wet-area-fill.visible {
+      opacity: 0.25;
+    }
+
+    /* Annotation labels in SVG */
+    .annotation-label {
+      font-family: var(--font-stack);
+      font-size: 9px;
+      font-weight: 700;
+      fill: #fff;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    /* Right panel - takeoff table */
+    .takeoff-section {
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .takeoff-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .takeoff-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .takeoff-section h3 .section-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .takeoff-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .takeoff-table th {
+      text-align: left;
+      padding: 6px 8px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      border-bottom: 2px solid var(--color-light-gray);
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .takeoff-table td {
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .takeoff-table tr:nth-child(even) td {
+      background: #f5f5f5;
+    }
+
+    .takeoff-table .subtotal-row td {
+      font-weight: 700;
+      border-top: 2px solid var(--color-light-gray);
+      background: #fff;
+    }
+
+    /* Quote summary */
+    .quote-summary {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .quote-summary.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .quote-summary h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--color-black);
+    }
+
+    .quote-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .quote-line:last-child {
+      border-bottom: none;
+    }
+
+    .quote-line .line-label {
+      color: var(--color-slate-black);
+    }
+
+    .quote-line .line-value {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .quote-line.subtotal {
+      border-top: 2px solid var(--color-light-gray);
+      margin-top: 4px;
+      padding-top: 10px;
+      font-weight: 600;
+    }
+
+    .quote-line.grand-total {
+      border-top: 2px solid var(--color-purple);
+      margin-top: 8px;
+      padding-top: 12px;
+      font-size: 18px;
+    }
+
+    .quote-line.grand-total .line-value {
+      color: var(--color-purple);
+      font-weight: 700;
+    }
+
+    /* Margin slider */
+    .margin-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .margin-control label {
+      font-size: 14px;
+      color: var(--color-slate-black);
+      white-space: nowrap;
+    }
+
+    .margin-control input[type="range"] {
+      flex: 1;
+      accent-color: var(--color-purple);
+      cursor: pointer;
+    }
+
+    .margin-control .margin-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-purple);
+      min-width: 40px;
+      text-align: right;
+    }
+
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* Exclusions */
+    .exclusions {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      font-style: italic;
+      padding: 8px 0;
+      line-height: 1.6;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .exclusions.visible {
+      opacity: 1;
+    }
+
+    /* RFI section */
+    .rfi-section {
+      margin-top: 16px;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .rfi-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .rfi-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 10px;
+    }
+
+    .rfi-item {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #fff8f0;
+      border-left: 3px solid var(--color-orange);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+      min-height: 40px;
+    }
+
+    .rfi-item .rfi-num {
+      font-weight: 700;
+      color: var(--color-orange);
+      flex-shrink: 0;
+    }
+
+    /* Bottom actions */
+    .bottom-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--color-black);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .bottom-actions .action-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/construction-trades.html">Construction &amp; Trades</a> &rarr; Quote from Plans
+      </div>
+      <div class="demo-title">Quote from Architectural Plans</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Analyse Plans</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Plan Viewer -->
+    <div class="panel-left">
+      <div class="panel-heading">Plan Viewer</div>
+
+      <div class="plan-container" id="planContainer">
+        <!-- AI Processing overlay -->
+        <div class="processing-overlay" id="processingOverlay">
+          <div class="processing-label">AI Processing Floor Plan...</div>
+        </div>
+
+        <!-- Inline SVG Floor Plan -->
+        <svg id="floorPlan" viewBox="0 0 720 520" xmlns="http://www.w3.org/2000/svg" style="background: #fff;">
+          <defs>
+            <style>
+              .wall { stroke: #1A1B25; stroke-width: 4; fill: none; stroke-linecap: square; }
+              .wall-thin { stroke: #1A1B25; stroke-width: 2; fill: none; stroke-linecap: square; }
+              .room-label { font-family: 'Epilogue', sans-serif; font-size: 13px; font-weight: 600; fill: #373841; text-anchor: middle; }
+              .dim-label { font-family: 'Epilogue', sans-serif; font-size: 10px; font-weight: 400; fill: #8D8D92; text-anchor: middle; }
+              .window-mark { stroke: #1A1B25; stroke-width: 1.5; fill: none; }
+              .door-arc { stroke: #1A1B25; stroke-width: 1.5; fill: none; stroke-dasharray: 3,2; }
+            </style>
+          </defs>
+
+          <!-- Overall outline -->
+          <rect x="40" y="30" width="640" height="460" class="wall" />
+
+          <!-- Horizontal divider - top rooms from bottom rooms -->
+          <line x1="40" y1="260" x2="680" y2="260" class="wall" />
+
+          <!-- Vertical dividers - top section (3 bedrooms + bathroom) -->
+          <!-- Bedroom 1 (Master) - top left -->
+          <line x1="240" y1="30" x2="240" y2="260" class="wall-thin" />
+          <!-- Bedroom 2 boundary -->
+          <line x1="420" y1="30" x2="420" y2="260" class="wall-thin" />
+          <!-- Bathroom between Bed 2 and Bed 3 -->
+          <line x1="520" y1="30" x2="520" y2="180" class="wall-thin" />
+          <line x1="420" y1="180" x2="520" y2="180" class="wall-thin" />
+          <!-- Hall area top -->
+          <line x1="240" y1="180" x2="420" y2="180" class="wall-thin" />
+
+          <!-- Bottom section dividers -->
+          <!-- Kitchen right side -->
+          <line x1="440" y1="260" x2="440" y2="490" class="wall-thin" />
+          <!-- Laundry -->
+          <line x1="580" y1="260" x2="580" y2="400" class="wall-thin" />
+          <line x1="580" y1="400" x2="680" y2="400" class="wall-thin" />
+          <!-- Entry/Hall bottom section -->
+          <line x1="240" y1="260" x2="240" y2="400" class="wall-thin" />
+          <line x1="240" y1="400" x2="440" y2="400" class="wall-thin" />
+
+          <!-- Windows - thin parallel lines on walls -->
+          <!-- W1: Bedroom 1 top wall -->
+          <line x1="90" y1="28" x2="170" y2="28" class="window-mark" />
+          <line x1="90" y1="32" x2="170" y2="32" class="window-mark" />
+          <!-- W2: Bedroom 1 left wall -->
+          <line x1="38" y1="100" x2="38" y2="190" class="window-mark" />
+          <line x1="42" y1="100" x2="42" y2="190" class="window-mark" />
+          <!-- W3: Bedroom 2 top wall -->
+          <line x1="290" y1="28" x2="380" y2="28" class="window-mark" />
+          <line x1="290" y1="32" x2="380" y2="32" class="window-mark" />
+          <!-- W4: Bedroom 3 top wall -->
+          <line x1="560" y1="28" x2="650" y2="28" class="window-mark" />
+          <line x1="560" y1="32" x2="650" y2="32" class="window-mark" />
+          <!-- W5: Bedroom 3 right wall -->
+          <line x1="678" y1="80" x2="678" y2="160" class="window-mark" />
+          <line x1="682" y1="80" x2="682" y2="160" class="window-mark" />
+          <!-- W6: Bathroom top wall (small, obscure) -->
+          <line x1="445" y1="28" x2="495" y2="28" class="window-mark" />
+          <line x1="445" y1="32" x2="495" y2="32" class="window-mark" />
+          <!-- W7: Living room left wall -->
+          <line x1="38" y1="320" x2="38" y2="430" class="window-mark" />
+          <line x1="42" y1="320" x2="42" y2="430" class="window-mark" />
+          <!-- W8: Kitchen right wall -->
+          <line x1="678" y1="290" x2="678" y2="370" class="window-mark" />
+          <line x1="682" y1="290" x2="682" y2="370" class="window-mark" />
+
+          <!-- Doors - quarter circle arcs -->
+          <!-- D1: Entry door (bottom wall) -->
+          <line x1="310" y1="488" x2="370" y2="488" stroke="#1A1B25" stroke-width="3" />
+          <path d="M 310 490 A 60 60 0 0 1 370 490" class="door-arc" />
+          <!-- D2: Bedroom 1 door -->
+          <path d="M 240 220 A 30 30 0 0 0 240 250" class="door-arc" />
+          <!-- D3: Bedroom 2 door -->
+          <path d="M 290 260 A 30 30 0 0 1 260 260" class="door-arc" />
+          <!-- D4: Bedroom 3 door -->
+          <path d="M 420 220 A 30 30 0 0 1 420 250" class="door-arc" />
+          <!-- D5: Bathroom door -->
+          <path d="M 420 140 A 30 30 0 0 1 420 170" class="door-arc" />
+          <!-- D6: Kitchen door -->
+          <path d="M 440 320 A 30 30 0 0 1 440 350" class="door-arc" />
+          <!-- D7: Laundry door -->
+          <path d="M 580 340 A 30 30 0 0 0 580 370" class="door-arc" />
+          <!-- SD1: Living sliding door (bottom wall) -->
+          <line x1="100" y1="488" x2="200" y2="488" stroke="#1A1B25" stroke-width="2" />
+          <line x1="100" y1="492" x2="200" y2="492" stroke="#1A1B25" stroke-width="2" />
+          <!-- SD2: Bedroom 1 to ensuite sliding -->
+          <!-- Not shown structurally but counted -->
+
+          <!-- Room labels -->
+          <text x="140" y="130" class="room-label">Bedroom 1</text>
+          <text x="140" y="148" class="dim-label">(Master)</text>
+          <text x="140" y="166" class="dim-label">4.8 x 4.2m</text>
+
+          <text x="330" y="100" class="room-label">Bedroom 2</text>
+          <text x="330" y="118" class="dim-label">3.6 x 3.2m</text>
+
+          <text x="600" y="100" class="room-label">Bedroom 3</text>
+          <text x="600" y="118" class="dim-label">3.2 x 4.2m</text>
+
+          <text x="470" y="100" class="room-label">Bathroom</text>
+          <text x="470" y="118" class="dim-label">2.0 x 2.8m</text>
+
+          <text x="330" y="225" class="room-label">Entry / Hall</text>
+          <text x="330" y="243" class="dim-label">3.6 x 1.6m</text>
+
+          <text x="140" y="380" class="room-label">Living / Dining</text>
+          <text x="140" y="398" class="dim-label">5.4 x 4.2m</text>
+
+          <text x="550" y="340" class="room-label">Kitchen</text>
+          <text x="550" y="358" class="dim-label">4.8 x 4.2m</text>
+
+          <text x="630" y="440" class="room-label">Laundry</text>
+          <text x="630" y="458" class="dim-label">2.0 x 1.8m</text>
+
+          <text x="340" y="440" class="room-label">Hall</text>
+          <text x="340" y="458" class="dim-label">4.0 x 1.8m</text>
+
+          <!-- ====== AI ANNOTATION OVERLAYS ====== -->
+
+          <!-- Wall traces (blue) -->
+          <g id="wallTraces">
+            <!-- External walls -->
+            <rect x="38" y="28" width="644" height="464" class="wall-trace" id="extWalls" style="--path-length: 2216;" />
+            <!-- Internal horizontal -->
+            <line x1="40" y1="260" x2="680" y2="260" class="wall-trace" id="intWall1" style="--path-length: 640;" />
+            <line x1="240" y1="180" x2="520" y2="180" class="wall-trace" id="intWall2" style="--path-length: 280;" />
+            <line x1="580" y1="400" x2="680" y2="400" class="wall-trace" id="intWall3" style="--path-length: 100;" />
+            <line x1="240" y1="400" x2="440" y2="400" class="wall-trace" id="intWall4" style="--path-length: 200;" />
+            <!-- Internal vertical -->
+            <line x1="240" y1="30" x2="240" y2="400" class="wall-trace" id="intWall5" style="--path-length: 370;" />
+            <line x1="420" y1="30" x2="420" y2="260" class="wall-trace" id="intWall6" style="--path-length: 230;" />
+            <line x1="520" y1="30" x2="520" y2="180" class="wall-trace" id="intWall7" style="--path-length: 150;" />
+            <line x1="440" y1="260" x2="440" y2="490" class="wall-trace" id="intWall8" style="--path-length: 230;" />
+            <line x1="580" y1="260" x2="580" y2="400" class="wall-trace" id="intWall9" style="--path-length: 140;" />
+          </g>
+
+          <!-- Window annotations (green) -->
+          <g id="windowAnnotations">
+            <g class="window-annotation" data-win="1">
+              <rect x="85" y="20" width="90" height="18" rx="3" fill="none" stroke="var(--color-green)" stroke-width="2" />
+              <rect x="108" y="22" width="22" height="14" rx="2" fill="var(--color-green)" />
+              <text x="119" y="30" class="annotation-label" style="font-size:8px;">W1</text>
+            </g>
+            <g class="window-annotation" data-win="2">
+              <rect x="28" y="95" width="18" height="100" rx="3" fill="none" stroke="var(--color-green)" stroke-width="2" />
+              <rect x="30" y="130" width="14" height="22" rx="2" fill="var(--color-green)" />
+              <text x="37" y="142" class="annotation-label" style="font-size:8px;">W2</text>
+            </g>
+            <g class="window-annotation" data-win="3">
+              <rect x="285" y="20" width="100" height="18" rx="3" fill="none" stroke="var(--color-green)" stroke-width="2" />
+              <rect x="313" y="22" width="22" height="14" rx="2" fill="var(--color-green)" />
+              <text x="324" y="30" class="annotation-label" style="font-size:8px;">W3</text>
+            </g>
+            <g class="window-annotation" data-win="4">
+              <rect x="555" y="20" width="100" height="18" rx="3" fill="none" stroke="var(--color-green)" stroke-width="2" />
+              <rect x="583" y="22" width="22" height="14" rx="2" fill="var(--color-green)" />
+              <text x="594" y="30" class="annotation-label" style="font-size:8px;">W4</text>
+            </g>
+            <g class="window-annotation" data-win="5">
+              <rect x="674" y="75" width="18" height="90" rx="3" fill="none" stroke="var(--color-green)" stroke-width="2" />
+              <rect x="676" y="108" width="14" height="22" rx="2" fill="var(--color-green)" />
+              <text x="683" y="120" class="annotation-label" style="font-size:8px;">W5</text>
+            </g>
+            <g class="window-annotation" data-win="6">
+              <rect x="440" y="20" width="60" height="18" rx="3" fill="none" stroke="var(--color-green)" stroke-width="2" />
+              <rect x="453" y="22" width="22" height="14" rx="2" fill="var(--color-green)" />
+              <text x="464" y="30" class="annotation-label" style="font-size:8px;">W6</text>
+            </g>
+            <g class="window-annotation" data-win="7">
+              <rect x="28" y="315" width="18" height="120" rx="3" fill="none" stroke="var(--color-green)" stroke-width="2" />
+              <rect x="30" y="362" width="14" height="22" rx="2" fill="var(--color-green)" />
+              <text x="37" y="374" class="annotation-label" style="font-size:8px;">W7</text>
+            </g>
+            <g class="window-annotation" data-win="8">
+              <rect x="674" y="285" width="18" height="90" rx="3" fill="none" stroke="var(--color-green)" stroke-width="2" />
+              <rect x="676" y="318" width="14" height="22" rx="2" fill="var(--color-green)" />
+              <text x="683" y="330" class="annotation-label" style="font-size:8px;">W8</text>
+            </g>
+          </g>
+
+          <!-- Door annotations (orange) -->
+          <g id="doorAnnotations">
+            <g class="door-annotation" data-door="1">
+              <rect x="305" y="478" width="70" height="18" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="323" y="480" width="22" height="14" rx="2" fill="var(--color-orange)" />
+              <text x="334" y="488" class="annotation-label" style="font-size:8px;">D1</text>
+            </g>
+            <g class="door-annotation" data-door="2">
+              <rect x="230" y="215" width="18" height="40" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="232" y="225" width="14" height="18" rx="2" fill="var(--color-orange)" />
+              <text x="239" y="235" class="annotation-label" style="font-size:7px;">D2</text>
+            </g>
+            <g class="door-annotation" data-door="3">
+              <rect x="255" y="250" width="40" height="18" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="263" y="252" width="18" height="14" rx="2" fill="var(--color-orange)" />
+              <text x="272" y="260" class="annotation-label" style="font-size:7px;">D3</text>
+            </g>
+            <g class="door-annotation" data-door="4">
+              <rect x="410" y="215" width="18" height="40" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="412" y="225" width="14" height="18" rx="2" fill="var(--color-orange)" />
+              <text x="419" y="235" class="annotation-label" style="font-size:7px;">D4</text>
+            </g>
+            <g class="door-annotation" data-door="5">
+              <rect x="410" y="135" width="18" height="40" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="412" y="145" width="14" height="18" rx="2" fill="var(--color-orange)" />
+              <text x="419" y="155" class="annotation-label" style="font-size:7px;">D5</text>
+            </g>
+            <g class="door-annotation" data-door="6">
+              <rect x="430" y="315" width="18" height="40" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="432" y="325" width="14" height="18" rx="2" fill="var(--color-orange)" />
+              <text x="439" y="335" class="annotation-label" style="font-size:7px;">D6</text>
+            </g>
+            <g class="door-annotation" data-door="7">
+              <rect x="570" y="335" width="18" height="40" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="572" y="345" width="14" height="18" rx="2" fill="var(--color-orange)" />
+              <text x="579" y="355" class="annotation-label" style="font-size:7px;">D7</text>
+            </g>
+            <g class="door-annotation" data-door="sd1">
+              <rect x="95" y="478" width="110" height="18" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="128" y="480" width="30" height="14" rx="2" fill="var(--color-orange)" />
+              <text x="143" y="488" class="annotation-label" style="font-size:7px;">SD1</text>
+            </g>
+            <g class="door-annotation" data-door="sd2">
+              <rect x="155" y="250" width="50" height="18" rx="3" fill="none" stroke="var(--color-orange)" stroke-width="2" />
+              <rect x="163" y="252" width="30" height="14" rx="2" fill="var(--color-orange)" />
+              <text x="178" y="260" class="annotation-label" style="font-size:7px;">SD2</text>
+            </g>
+          </g>
+
+          <!-- Wet area fills (purple) -->
+          <g id="wetAreaFills">
+            <rect x="421" y="31" width="98" height="148" rx="0" fill="var(--color-purple)" class="wet-area-fill" data-area="bathroom" />
+            <rect x="581" y="261" width="98" height="138" rx="0" fill="var(--color-purple)" class="wet-area-fill" data-area="laundry" />
+            <rect x="441" y="261" width="138" height="138" rx="0" fill="var(--color-purple)" class="wet-area-fill" data-area="kitchen" />
+          </g>
+
+        </svg>
+
+        <div class="title-block">
+          <strong>3 BEDROOM RESIDENCE</strong>
+          <span>47 Smith St, Craigieburn &mdash; DWG-2026-0112</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: Material Takeoff & Quote -->
+    <div class="panel-right">
+      <div class="panel-heading">Material Takeoff &amp; Quote</div>
+
+      <!-- Walls section -->
+      <div class="takeoff-section" id="sectionWalls">
+        <h3><span class="section-dot" style="background: var(--color-blue);"></span> Walls Detected</h3>
+        <table class="takeoff-table">
+          <thead>
+            <tr><th>Element</th><th>Measurement</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>External walls</td><td>48.6 lm</td></tr>
+            <tr><td>Internal walls</td><td>32.4 lm</td></tr>
+            <tr class="subtotal-row"><td>Total wall area</td><td>243 m&sup2;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Windows section -->
+      <div class="takeoff-section" id="sectionWindows">
+        <h3><span class="section-dot" style="background: var(--color-green);"></span> Windows Detected (8)</h3>
+        <table class="takeoff-table">
+          <thead>
+            <tr><th>Ref</th><th>Location</th><th>Size / Type</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>W1</td><td>Bedroom 1 (N)</td><td>1200 x 1000 Sliding</td></tr>
+            <tr><td>W2</td><td>Bedroom 1 (W)</td><td>1500 x 1200 Awning</td></tr>
+            <tr><td>W3</td><td>Bedroom 2 (N)</td><td>1400 x 1000 Sliding</td></tr>
+            <tr><td>W4</td><td>Bedroom 3 (N)</td><td>1400 x 1000 Sliding</td></tr>
+            <tr><td>W5</td><td>Bedroom 3 (E)</td><td>1200 x 1000 Awning</td></tr>
+            <tr><td>W6</td><td>Bathroom (N)</td><td>800 x 600 Obscure</td></tr>
+            <tr><td>W7</td><td>Living (W)</td><td>1800 x 1500 Fixed</td></tr>
+            <tr><td>W8</td><td>Kitchen (E)</td><td>1200 x 1000 Awning</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Doors section -->
+      <div class="takeoff-section" id="sectionDoors">
+        <h3><span class="section-dot" style="background: var(--color-orange);"></span> Doors Detected (9)</h3>
+        <table class="takeoff-table">
+          <thead>
+            <tr><th>Type</th><th>Qty</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Entry door</td><td>1</td><td>D1: 920mm solid core</td></tr>
+            <tr><td>Internal hinged</td><td>6</td><td>D2-D7: 820mm hollow core</td></tr>
+            <tr><td>Sliding doors</td><td>2</td><td>SD1: 2.4m 3-panel, SD2: 1.2m cavity</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Wet Areas section -->
+      <div class="takeoff-section" id="sectionWetAreas">
+        <h3><span class="section-dot" style="background: var(--color-purple);"></span> Wet Areas</h3>
+        <table class="takeoff-table">
+          <thead>
+            <tr><th>Area</th><th>Size</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Bathroom</td><td>6.2 m&sup2;</td></tr>
+            <tr><td>Laundry</td><td>4.8 m&sup2;</td></tr>
+            <tr><td>Kitchen splashback</td><td>3.6 lm</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Quote summary -->
+      <div class="quote-summary" id="quoteSummary">
+        <h3>Quote Summary</h3>
+        <div class="quote-line">
+          <span class="line-label">Framing</span>
+          <span class="line-value">$18,400</span>
+        </div>
+        <div class="quote-line">
+          <span class="line-label">Windows &amp; Glazing</span>
+          <span class="line-value">$12,800</span>
+        </div>
+        <div class="quote-line">
+          <span class="line-label">Doors &amp; Hardware</span>
+          <span class="line-value">$4,600</span>
+        </div>
+        <div class="quote-line">
+          <span class="line-label">Wet Area Waterproofing</span>
+          <span class="line-value">$3,200</span>
+        </div>
+        <div class="quote-line">
+          <span class="line-label">Plasterboard &amp; Finishing</span>
+          <span class="line-value">$8,900</span>
+        </div>
+        <div class="quote-line subtotal">
+          <span class="line-label">Subtotal</span>
+          <span class="line-value" id="subtotalValue">$47,900</span>
+        </div>
+
+        <div class="margin-control">
+          <label>Margin</label>
+          <input type="range" id="marginSlider" min="10" max="50" value="30" oninput="updateMargin()">
+          <span class="margin-value" id="marginDisplay">30%</span>
+        </div>
+
+        <div class="quote-line grand-total">
+          <span class="line-label">Grand Total</span>
+          <span class="line-value" id="grandTotalValue">$62,270</span>
+        </div>
+
+        <div class="confidence-badge" id="confidenceBadge">87% Confidence</div>
+      </div>
+
+      <!-- Exclusions -->
+      <div class="exclusions" id="exclusions">
+        <strong>Excludes:</strong> site works, slab, roof structure, electrical, plumbing rough-in, painting
+      </div>
+
+      <!-- RFIs -->
+      <div class="rfi-section" id="rfiSection">
+        <h3>Requests for Information (RFIs)</h3>
+        <div class="rfi-item">
+          <span class="rfi-num">1.</span>
+          <span id="rfi1"></span>
+        </div>
+        <div class="rfi-item">
+          <span class="rfi-num">2.</span>
+          <span id="rfi2"></span>
+        </div>
+        <div class="rfi-item">
+          <span class="rfi-num">3.</span>
+          <span id="rfi3"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom actions -->
+  <div class="bottom-actions">
+    <div class="action-group">
+      <button class="btn btn-approve btn-sm" onclick="toast('Quote approved and saved', 'success')">Approve</button>
+      <button class="btn btn-edit btn-sm" onclick="toast('Opening quote editor...', 'info')">Edit</button>
+      <button class="btn btn-reject btn-sm" onclick="toast('Quote rejected', 'danger')">Reject</button>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="toast('Quote PDF generated and emailed to client', 'success')">Send to Customer</button>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── State ── */
+    const SUBTOTAL = 47900;
+    let demoRunning = false;
+    let animationTimeouts = [];
+
+    /* ── Margin slider ── */
+    function updateMargin() {
+      const slider = document.getElementById('marginSlider');
+      const pct = parseInt(slider.value);
+      document.getElementById('marginDisplay').textContent = pct + '%';
+      const total = Math.round(SUBTOTAL * (1 + pct / 100));
+      document.getElementById('grandTotalValue').textContent = '$' + total.toLocaleString();
+    }
+
+    /* ── Schedule a timeout and track it for cleanup ── */
+    function schedule(fn, delay) {
+      const tid = setTimeout(fn, delay);
+      animationTimeouts.push(tid);
+      return tid;
+    }
+
+    /* ── Animation sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      // Step 1: Show processing overlay (1.5s)
+      const overlay = document.getElementById('processingOverlay');
+      overlay.classList.add('active');
+      await wait(1500);
+      overlay.classList.remove('active');
+
+      // Step 2: Animate wall traces (blue lines draw themselves)
+      const wallTraces = document.querySelectorAll('.wall-trace');
+      wallTraces.forEach(trace => {
+        // Calculate actual path length for lines
+        if (trace.tagName === 'rect') {
+          const w = parseFloat(trace.getAttribute('width'));
+          const h = parseFloat(trace.getAttribute('height'));
+          const len = 2 * (w + h);
+          trace.style.setProperty('--path-length', len);
+          trace.setAttribute('stroke-dasharray', len);
+          trace.setAttribute('stroke-dashoffset', len);
+        } else if (trace.tagName === 'line') {
+          const x1 = parseFloat(trace.getAttribute('x1'));
+          const y1 = parseFloat(trace.getAttribute('y1'));
+          const x2 = parseFloat(trace.getAttribute('x2'));
+          const y2 = parseFloat(trace.getAttribute('y2'));
+          const len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+          trace.style.setProperty('--path-length', len);
+          trace.setAttribute('stroke-dasharray', len);
+          trace.setAttribute('stroke-dashoffset', len);
+        }
+        trace.classList.add('animate');
+      });
+
+      // Show walls takeoff on right panel
+      await wait(500);
+      document.getElementById('sectionWalls').classList.add('visible');
+
+      // Wait for wall animation to mostly complete
+      await wait(1800);
+
+      // Step 3: Window annotations pop in (green) with stagger
+      const windows = document.querySelectorAll('.window-annotation');
+      for (let i = 0; i < windows.length; i++) {
+        schedule(() => windows[i].classList.add('visible'), i * 300);
+      }
+      await wait(300);
+      document.getElementById('sectionWindows').classList.add('visible');
+      await wait(windows.length * 300);
+
+      // Step 4: Door annotations pop in (orange) with stagger
+      const doors = document.querySelectorAll('.door-annotation');
+      for (let i = 0; i < doors.length; i++) {
+        schedule(() => doors[i].classList.add('visible'), i * 300);
+      }
+      await wait(300);
+      document.getElementById('sectionDoors').classList.add('visible');
+      await wait(doors.length * 300);
+
+      // Step 5: Wet area fills fade in (purple)
+      const wetAreas = document.querySelectorAll('.wet-area-fill');
+      wetAreas.forEach(area => area.classList.add('visible'));
+      await wait(300);
+      document.getElementById('sectionWetAreas').classList.add('visible');
+      await wait(600);
+
+      // Step 6: Quote summary appears with count-up animation
+      const summary = document.getElementById('quoteSummary');
+      summary.classList.add('visible');
+      await wait(200);
+
+      // Count up the grand total
+      const grandTotalEl = document.getElementById('grandTotalValue');
+      grandTotalEl.textContent = '$0';
+      await countUp(grandTotalEl, 0, 62270, 1200, '$', '', 0);
+
+      // Show exclusions
+      document.getElementById('exclusions').classList.add('visible');
+
+      // Step 7: RFI section appears and types out
+      await wait(400);
+      const rfiSection = document.getElementById('rfiSection');
+      rfiSection.classList.add('visible');
+      await wait(200);
+
+      await typeWriter(
+        document.getElementById('rfi1'),
+        'Window W6 (bathroom): obscure glass or clear? Assumed obscure.',
+        20
+      );
+      await wait(200);
+      await typeWriter(
+        document.getElementById('rfi2'),
+        'Sliding door SD1 (living): 2-panel or 3-panel? Assumed 3-panel 2.4m.',
+        20
+      );
+      await wait(200);
+      await typeWriter(
+        document.getElementById('rfi3'),
+        'Kitchen splashback: tile or glass? Quoted as tile at $85/m\u00B2.',
+        20
+      );
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      // Clear pending timeouts
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+
+      // Hide processing overlay
+      document.getElementById('processingOverlay').classList.remove('active');
+
+      // Reset wall traces
+      document.querySelectorAll('.wall-trace').forEach(trace => {
+        trace.classList.remove('animate');
+        trace.style.opacity = '0';
+        trace.removeAttribute('stroke-dasharray');
+        trace.removeAttribute('stroke-dashoffset');
+      });
+
+      // Reset window annotations
+      document.querySelectorAll('.window-annotation').forEach(w => w.classList.remove('visible'));
+
+      // Reset door annotations
+      document.querySelectorAll('.door-annotation').forEach(d => d.classList.remove('visible'));
+
+      // Reset wet area fills
+      document.querySelectorAll('.wet-area-fill').forEach(a => a.classList.remove('visible'));
+
+      // Reset takeoff sections
+      document.querySelectorAll('.takeoff-section').forEach(s => s.classList.remove('visible'));
+
+      // Reset quote summary
+      document.getElementById('quoteSummary').classList.remove('visible');
+      document.getElementById('grandTotalValue').textContent = '$62,270';
+
+      // Reset margin slider
+      document.getElementById('marginSlider').value = 30;
+      document.getElementById('marginDisplay').textContent = '30%';
+
+      // Reset exclusions
+      document.getElementById('exclusions').classList.remove('visible');
+
+      // Reset RFIs
+      document.getElementById('rfiSection').classList.remove('visible');
+      document.getElementById('rfi1').textContent = '';
+      document.getElementById('rfi2').textContent = '';
+      document.getElementById('rfi3').textContent = '';
+
+      // Remove toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
