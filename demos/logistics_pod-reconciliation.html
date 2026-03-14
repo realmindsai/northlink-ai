@@ -784,33 +784,35 @@
     function getExtractionBoxes(pod) {
       const isDiscrepancy = pod.status === 'discrepancy';
 
-      /* POD 3 is rotated 90deg — boxes must match the rotated text positions */
+      /* POD 3 is rotated 90deg CW around (200,200) in a 400x300 viewBox.
+         Original (x,y) maps to (400-y, x). Text runs vertically downward.
+         All fields end up on the right side of the viewer. */
       if (pod.id === 3) {
         return [
           {
             cls: 'box-consignment',
             label: 'Consignment #',
-            top: '5%', left: '62%', width: '12%', height: '24%'
+            top: '2%', left: '83%', width: '7%', height: '40%'
           },
           {
             cls: 'box-date',
             label: 'Date',
-            top: '5%', left: '50%', width: '11%', height: '24%'
+            top: '2%', left: '77%', width: '5%', height: '35%'
           },
           {
             cls: 'box-receiver',
             label: 'Receiver',
-            top: '5%', left: '34%', width: '15%', height: '24%'
+            top: '2%', left: '70%', width: '6%', height: '45%'
           },
           {
             cls: isDiscrepancy ? 'box-quantity' : 'box-quantity-ok',
             label: isDiscrepancy ? 'Quantity (DISCREPANCY)' : 'Quantity',
-            top: '5%', left: '20%', width: '13%', height: '24%'
+            top: '2%', left: '64%', width: '5%', height: '30%'
           },
           {
             cls: 'box-signature',
             label: 'Signature',
-            top: '30%', left: '5%', width: '14%', height: '40%'
+            top: '2%', left: '52%', width: '11%', height: '50%'
           }
         ];
       }
