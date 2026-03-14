@@ -1,0 +1,1018 @@
+<!-- ABOUTME: Recall Traceability War Room mockup for NorthLink AI. -->
+<!-- ABOUTME: Reverse-trace from contaminated ingredient through production to affected customers. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recall War Room — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Three-panel layout */
+    .war-room-layout {
+      display: flex;
+      height: calc(100vh - 64px - 49px);
+      overflow: hidden;
+    }
+
+    .panel {
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .panel-left {
+      flex: 0 0 30%;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fff;
+    }
+
+    .panel-centre {
+      flex: 0 0 45%;
+      border-right: 1px solid var(--color-light-gray);
+      background: var(--color-off-white);
+      position: relative;
+    }
+
+    .panel-right {
+      flex: 0 0 25%;
+      background: #fff;
+    }
+
+    /* Panel headings */
+    .panel-heading {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--color-slate-gray);
+      margin-bottom: 20px;
+    }
+
+    /* Alert banner */
+    .alert-banner {
+      background: var(--color-danger);
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      animation: pulse-alert 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-alert {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 16px 4px rgba(239, 68, 68, 0.3); }
+    }
+
+    /* Form fields */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-stack);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-black);
+      background: var(--color-off-white);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--color-purple);
+    }
+
+    /* Trace Impact button */
+    .btn-trace {
+      display: block;
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--color-danger);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-stack);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 24px;
+    }
+
+    .btn-trace:hover { background: #d63939; }
+    .btn-trace:active { transform: scale(0.97); }
+
+    /* Genealogy map container */
+    .genealogy-map {
+      position: relative;
+      min-height: 100%;
+      padding: 20px;
+    }
+
+    .genealogy-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .genealogy-svg line {
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    /* Tree level containers */
+    .tree-level {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 10;
+      flex-wrap: wrap;
+    }
+
+    .tree-level-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-slate-gray);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    /* Tree nodes */
+    .tree-node {
+      background: #fff;
+      border: 2px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.4s, background 0.4s, box-shadow 0.4s;
+      min-width: 120px;
+      max-width: 160px;
+    }
+
+    .tree-node.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .tree-node .node-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .tree-node .node-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-black);
+      line-height: 1.3;
+    }
+
+    .tree-node .node-subtitle {
+      font-size: 11px;
+      color: var(--color-slate-gray);
+      line-height: 1.3;
+      margin-top: 2px;
+    }
+
+    /* Node states */
+    .tree-node.node-red {
+      border-color: var(--color-danger);
+      background: #fef2f2;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+    }
+
+    .tree-node.node-red.pulse {
+      animation: pulse-red 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 0 28px rgba(239, 68, 68, 0.6); }
+    }
+
+    .tree-node.node-orange {
+      border-color: var(--color-warning);
+      background: #fffbeb;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+    }
+
+    .tree-node.node-yellow {
+      border-color: var(--color-yellow);
+      background: #fefce8;
+      box-shadow: 0 0 10px rgba(255, 218, 71, 0.2);
+    }
+
+    .tree-node.node-grey {
+      border-color: var(--color-light-gray);
+      background: #f9fafb;
+      opacity: 0.6;
+    }
+
+    /* Ripple overlay animation */
+    @keyframes ripple-spread {
+      0% { transform: scale(0); opacity: 0.6; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+
+    .ripple-ring {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 3px solid var(--color-danger);
+      pointer-events: none;
+      z-index: 4;
+      animation: ripple-spread 2s ease-out forwards;
+    }
+
+    /* Impact summary */
+    .impact-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .impact-stat:last-of-type {
+      border-bottom: none;
+    }
+
+    .impact-stat .stat-label {
+      font-size: 14px;
+      color: var(--color-slate-black);
+    }
+
+    .impact-stat .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-danger);
+    }
+
+    /* Timer comparison */
+    .timer-box {
+      margin-top: 20px;
+      padding: 16px;
+      background: #f0fdf4;
+      border-radius: var(--radius-sm);
+      border: 1px solid #bbf7d0;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    .timer-box.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .timer-box .timer-ai {
+      font-size: 20px;
+      font-weight: 700;
+      color: #166534;
+    }
+
+    .timer-box .timer-manual {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* Communication tabs */
+    .comm-section {
+      margin-top: 24px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    .comm-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .comm-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--color-light-gray);
+      margin-bottom: 16px;
+    }
+
+    .comm-tab {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .comm-tab:hover {
+      color: var(--color-black);
+    }
+
+    .comm-tab.active {
+      color: var(--color-purple);
+      border-bottom-color: var(--color-purple);
+    }
+
+    .comm-content {
+      display: none;
+      font-size: 13px;
+      color: var(--color-slate-black);
+      line-height: 1.6;
+      background: var(--color-off-white);
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .comm-content.active {
+      display: block;
+    }
+
+    .comm-content p {
+      margin: 0 0 8px;
+    }
+
+    /* Export button */
+    .btn-export {
+      display: block;
+      width: 100%;
+      padding: 12px 20px;
+      background: var(--color-purple);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-stack);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 16px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s, transform 0.4s, background 0.2s;
+    }
+
+    .btn-export.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .btn-export:hover { background: #9568b8; }
+    .btn-export:active { transform: scale(0.97); }
+
+    /* Empty state for genealogy */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--color-slate-gray);
+      text-align: center;
+      gap: 12px;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+
+    .empty-state .empty-text {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    /* Impact stats hidden initially */
+    .impact-stats-area {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    .impact-stats-area.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .war-room-layout {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-centre, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--color-light-gray);
+      }
+      .panel-centre {
+        min-height: 500px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/food-bev.html">Food &amp; Beverage</a> &rarr; Recall War Room
+      </div>
+      <div class="demo-title">Recall Traceability War Room</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-reject btn-sm" onclick="runTrace()">Trace Impact</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetWarRoom()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Three-panel layout -->
+  <div class="war-room-layout">
+
+    <!-- Left panel: Incident Input -->
+    <div class="panel panel-left" id="panelLeft">
+      <div class="panel-heading">Incident Input</div>
+
+      <div class="alert-banner" id="alertBanner">
+        &#9888;&#65039; SUPPLIER NOTIFICATION &mdash; Possible Listeria contamination
+      </div>
+
+      <div class="form-group">
+        <label for="fieldSupplier">Supplier</label>
+        <input type="text" id="fieldSupplier" value="Murray Valley Farms" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="fieldIngredient">Ingredient</label>
+        <input type="text" id="fieldIngredient" value="Organic Oats" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="fieldLot">Lot Number</label>
+        <input type="text" id="fieldLot" value="MV-2847" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="fieldDate">Notification Date</label>
+        <input type="text" id="fieldDate" value="10 Feb 2026" readonly>
+      </div>
+
+      <button class="btn-trace" id="btnTrace" onclick="runTrace()">
+        &#9888; Trace Impact
+      </button>
+    </div>
+
+    <!-- Centre panel: Lot Genealogy Map -->
+    <div class="panel panel-centre" id="panelCentre">
+      <div class="panel-heading">Lot Genealogy Map</div>
+
+      <!-- Empty state (shown before trace) -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">&#128269;</div>
+        <div class="empty-text">Click "Trace Impact" to begin reverse-trace<br>from contaminated ingredient</div>
+      </div>
+
+      <!-- Genealogy tree (hidden until trace runs) -->
+      <div class="genealogy-map" id="genealogyMap" style="display: none;">
+        <svg class="genealogy-svg" id="genealogySvg"></svg>
+
+        <!-- Level 1: Contaminated Source -->
+        <div class="tree-level-label">Contaminated Source</div>
+        <div class="tree-level" id="level1">
+          <div class="tree-node" id="node-root" data-level="1">
+            <div class="node-icon">&#9888;&#65039;</div>
+            <div class="node-title">MV-2847</div>
+            <div class="node-subtitle">Organic Oats<br>Murray Valley Farms</div>
+          </div>
+        </div>
+
+        <!-- Level 2: Production Batches -->
+        <div class="tree-level-label">Production Batches</div>
+        <div class="tree-level" id="level2">
+          <div class="tree-node" id="node-b1" data-level="2">
+            <div class="node-icon">&#127981;</div>
+            <div class="node-title">B-2026-0338</div>
+            <div class="node-subtitle">Granola Mix A<br>8 Feb</div>
+          </div>
+          <div class="tree-node" id="node-b2" data-level="2">
+            <div class="node-icon">&#127981;</div>
+            <div class="node-title">B-2026-0341</div>
+            <div class="node-subtitle">Granola Mix B<br>10 Feb</div>
+          </div>
+          <div class="tree-node" id="node-b3" data-level="2">
+            <div class="node-icon">&#127981;</div>
+            <div class="node-title">B-2026-0345</div>
+            <div class="node-subtitle">Muesli Base<br>12 Feb</div>
+          </div>
+        </div>
+
+        <!-- Level 3: Finished Products -->
+        <div class="tree-level-label">Finished Products</div>
+        <div class="tree-level" id="level3">
+          <div class="tree-node" id="node-p1" data-level="3">
+            <div class="node-icon">&#128230;</div>
+            <div class="node-title">Granola Bar 6pk</div>
+            <div class="node-subtitle">2,400 units</div>
+          </div>
+          <div class="tree-node" id="node-p2" data-level="3">
+            <div class="node-icon">&#128230;</div>
+            <div class="node-title">Granola Bar 12pk</div>
+            <div class="node-subtitle">800 units</div>
+          </div>
+          <div class="tree-node" id="node-p3" data-level="3">
+            <div class="node-icon">&#128230;</div>
+            <div class="node-title">Bulk Granola 1kg</div>
+            <div class="node-subtitle">400 bags</div>
+          </div>
+          <div class="tree-node" id="node-p4" data-level="3">
+            <div class="node-icon">&#128230;</div>
+            <div class="node-title">Bircher Muesli 750g</div>
+            <div class="node-subtitle">600 packs</div>
+          </div>
+          <div class="tree-node" id="node-p5" data-level="3">
+            <div class="node-icon">&#128230;</div>
+            <div class="node-title">Muesli Cup 80g</div>
+            <div class="node-subtitle">1,200 cups</div>
+          </div>
+        </div>
+
+        <!-- Level 4: Customers -->
+        <div class="tree-level-label">Affected Customers</div>
+        <div class="tree-level" id="level4">
+          <div class="tree-node" id="node-c1" data-level="4">
+            <div class="node-icon">&#128722;</div>
+            <div class="node-title">Woolworths Epping</div>
+            <div class="node-subtitle">800 units</div>
+          </div>
+          <div class="tree-node" id="node-c2" data-level="4">
+            <div class="node-icon">&#128722;</div>
+            <div class="node-title">Coles Craigieburn</div>
+            <div class="node-subtitle">600 units</div>
+          </div>
+          <div class="tree-node" id="node-c3" data-level="4">
+            <div class="node-icon">&#128722;</div>
+            <div class="node-title">IGA Thomastown</div>
+            <div class="node-subtitle">200 units</div>
+          </div>
+          <div class="tree-node" id="node-c4" data-level="4">
+            <div class="node-icon">&#128722;</div>
+            <div class="node-title">Aldi Campbellfield</div>
+            <div class="node-subtitle">450 units</div>
+          </div>
+          <div class="tree-node" id="node-c5" data-level="4">
+            <div class="node-icon">&#128187;</div>
+            <div class="node-title">Online Direct</div>
+            <div class="node-subtitle">350 orders</div>
+          </div>
+          <div class="tree-node" id="node-c6" data-level="4">
+            <div class="node-icon">&#127978;</div>
+            <div class="node-title">FoodWorks Roxburgh Park</div>
+            <div class="node-subtitle">150 units</div>
+          </div>
+          <div class="tree-node" id="node-c7" data-level="4">
+            <div class="node-icon">&#9749;</div>
+            <div class="node-title">Cafe Wholesaler</div>
+            <div class="node-subtitle">650 units</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: Impact Summary -->
+    <div class="panel panel-right" id="panelRight">
+      <div class="panel-heading">Impact Summary</div>
+
+      <div class="impact-stats-area" id="impactStats">
+        <div class="impact-stat">
+          <span class="stat-label">Affected Batches</span>
+          <span class="stat-value" id="statBatches">0</span>
+        </div>
+        <div class="impact-stat">
+          <span class="stat-label">Affected SKUs</span>
+          <span class="stat-value" id="statSkus">0</span>
+        </div>
+        <div class="impact-stat">
+          <span class="stat-label">Affected Customers</span>
+          <span class="stat-value" id="statCustomers">0</span>
+        </div>
+        <div class="impact-stat">
+          <span class="stat-label">Units in Market</span>
+          <span class="stat-value" id="statUnits">0</span>
+        </div>
+
+        <div class="timer-box" id="timerBox">
+          <div class="timer-ai" id="timerText">Trace completed in 2.8 seconds</div>
+          <div class="timer-manual">Manual process: 3&ndash;5 days</div>
+        </div>
+      </div>
+
+      <!-- Draft Communications -->
+      <div class="comm-section" id="commSection">
+        <div class="panel-heading" style="margin-top: 8px;">Draft Communications</div>
+
+        <div class="comm-tabs">
+          <div class="comm-tab active" data-tab="customer" onclick="switchTab(this)">Customer Notification</div>
+          <div class="comm-tab" data-tab="regulator" onclick="switchTab(this)">Regulator Report</div>
+          <div class="comm-tab" data-tab="internal" onclick="switchTab(this)">Internal Memo</div>
+        </div>
+
+        <div class="comm-content active" id="tab-customer">
+          <p><strong>Subject: Urgent Product Recall Notice &mdash; Potential Listeria Contamination</strong></p>
+          <p>Dear [Customer],</p>
+          <p>We are writing to advise that batch [X] of [product] may be affected by a potential Listeria contamination from supplier lot MV-2847. Please quarantine all stock from the following batch numbers: B-2026-0338, B-2026-0341, B-2026-0345.</p>
+          <p>Our quality team will arrange collection within 24 hours. Do not sell or distribute any remaining stock from these batches. Please confirm receipt of this notice by reply.</p>
+          <p>For questions, contact our Recall Hotline: 1800 XXX XXX.</p>
+          <p>Regards,<br>Quality Assurance Team</p>
+        </div>
+
+        <div class="comm-content" id="tab-regulator">
+          <p><strong>FOOD RECALL NOTIFICATION &mdash; FSANZ</strong></p>
+          <p><strong>Product:</strong> Granola Bar 6pk, Granola Bar 12pk, Bulk Granola 1kg, Bircher Muesli 750g, Muesli Cup 80g</p>
+          <p><strong>Hazard:</strong> Potential Listeria monocytogenes contamination</p>
+          <p><strong>Source:</strong> Supplier lot MV-2847 (Organic Oats, Murray Valley Farms)</p>
+          <p><strong>Affected batches:</strong> B-2026-0338, B-2026-0341, B-2026-0345</p>
+          <p><strong>Units in market:</strong> Approximately 4,200</p>
+          <p><strong>Distribution:</strong> VIC &mdash; 7 retail and wholesale customers</p>
+          <p><strong>Action taken:</strong> Voluntary recall initiated. Customer notifications dispatched. Stock quarantine in progress.</p>
+        </div>
+
+        <div class="comm-content" id="tab-internal">
+          <p><strong>INTERNAL MEMO &mdash; RECALL ACTION ITEMS</strong></p>
+          <p><strong>Priority:</strong> CRITICAL</p>
+          <p><strong>1.</strong> Quality team to halt all production using lot MV-2847 immediately</p>
+          <p><strong>2.</strong> Warehouse to quarantine remaining raw material and WIP stock</p>
+          <p><strong>3.</strong> Customer service to contact all 7 affected customers within 2 hours</p>
+          <p><strong>4.</strong> Logistics to schedule collection runs for recalled product (target: 24hr)</p>
+          <p><strong>5.</strong> QA to submit FSANZ notification within 24 hours</p>
+          <p><strong>6.</strong> Procurement to source alternative oat supplier for production continuity</p>
+          <p><strong>7.</strong> Schedule post-incident review for 48 hours after recall completion</p>
+        </div>
+      </div>
+
+      <button class="btn-export" id="btnExport" onclick="exportAll()">
+        &#128196; Export All
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Connection map: parent -> children ── */
+    const connections = {
+      rootToBatches: [
+        ['node-root', 'node-b1'],
+        ['node-root', 'node-b2'],
+        ['node-root', 'node-b3']
+      ],
+      batchesToProducts: [
+        ['node-b1', 'node-p1'],
+        ['node-b1', 'node-p2'],
+        ['node-b1', 'node-p3'],
+        ['node-b2', 'node-p1'],
+        ['node-b2', 'node-p2'],
+        ['node-b3', 'node-p4'],
+        ['node-b3', 'node-p5']
+      ],
+      productsToCustomers: [
+        ['node-p1', 'node-c1'],
+        ['node-p1', 'node-c2'],
+        ['node-p2', 'node-c3'],
+        ['node-p2', 'node-c4'],
+        ['node-p3', 'node-c5'],
+        ['node-p4', 'node-c6'],
+        ['node-p5', 'node-c7']
+      ]
+    };
+
+    let traceRunning = false;
+    let traceComplete = false;
+    let drawnLines = [];
+
+    /* ── Draw SVG line between two nodes within the genealogy container ── */
+    function drawTreeLine(fromId, toId, duration = 400, color = '#EF4444') {
+      return new Promise(resolve => {
+        const svg = document.getElementById('genealogySvg');
+        const container = document.getElementById('genealogyMap');
+        const fromEl = document.getElementById(fromId);
+        const toEl = document.getElementById(toId);
+
+        if (!fromEl || !toEl) { resolve(); return; }
+
+        const containerRect = container.getBoundingClientRect();
+        const fromRect = fromEl.getBoundingClientRect();
+        const toRect = toEl.getBoundingClientRect();
+
+        const x1 = fromRect.left + fromRect.width / 2 - containerRect.left;
+        const y1 = fromRect.bottom - containerRect.top;
+        const x2 = toRect.left + toRect.width / 2 - containerRect.left;
+        const y2 = toRect.top - containerRect.top;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-linecap', 'round');
+        line.setAttribute('stroke-opacity', '0.6');
+
+        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        line.setAttribute('stroke-dasharray', length);
+        line.setAttribute('stroke-dashoffset', length);
+        line.style.transition = `stroke-dashoffset ${duration}ms ease`;
+
+        svg.appendChild(line);
+        drawnLines.push(line);
+
+        requestAnimationFrame(() => {
+          line.setAttribute('stroke-dashoffset', '0');
+          setTimeout(resolve, duration);
+        });
+      });
+    }
+
+    /* ── Spawn a ripple ring from a node ── */
+    function spawnRipple(nodeId) {
+      const node = document.getElementById(nodeId);
+      const container = document.getElementById('genealogyMap');
+      if (!node || !container) return;
+
+      const nodeRect = node.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple-ring';
+      ripple.style.left = (nodeRect.left + nodeRect.width / 2 - containerRect.left - 30) + 'px';
+      ripple.style.top = (nodeRect.top + nodeRect.height / 2 - containerRect.top - 30) + 'px';
+      container.appendChild(ripple);
+
+      setTimeout(() => ripple.remove(), 2000);
+    }
+
+    /* ── Show a node with animation ── */
+    function showNode(nodeId, colorClass) {
+      const node = document.getElementById(nodeId);
+      if (!node) return;
+      node.classList.add('visible', colorClass);
+    }
+
+    /* ── Main trace sequence ── */
+    async function runTrace() {
+      if (traceRunning) return;
+      traceRunning = true;
+
+      /* Reset first */
+      resetWarRoom();
+      await wait(100);
+
+      /* Show the genealogy map, hide empty state */
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('genealogyMap').style.display = 'block';
+
+      /* Shimmer the input panel */
+      await shimmer(document.getElementById('panelLeft'), 1000);
+
+      /* Step 1: Root node appears with red pulse */
+      showNode('node-root', 'node-red');
+      document.getElementById('node-root').classList.add('pulse');
+      spawnRipple('node-root');
+      await wait(800);
+
+      /* Step 2: Level 2 batch nodes appear staggered */
+      const batchIds = ['node-b1', 'node-b2', 'node-b3'];
+      for (const id of batchIds) {
+        showNode(id, 'node-orange');
+        await wait(500);
+      }
+
+      /* Step 3: Draw lines from root to batches */
+      for (const [from, to] of connections.rootToBatches) {
+        drawTreeLine(from, to, 400, '#EF4444');
+        await wait(150);
+      }
+      spawnRipple('node-b2');
+      await wait(400);
+
+      /* Step 4: Level 3 product nodes appear staggered */
+      const productIds = ['node-p1', 'node-p2', 'node-p3', 'node-p4', 'node-p5'];
+      for (const id of productIds) {
+        showNode(id, 'node-yellow');
+        await wait(300);
+      }
+
+      /* Step 5: Draw lines from batches to products */
+      for (const [from, to] of connections.batchesToProducts) {
+        drawTreeLine(from, to, 350, '#F59E0B');
+        await wait(100);
+      }
+      await wait(400);
+
+      /* Step 6: Level 4 customer nodes appear staggered */
+      const customerIds = ['node-c1', 'node-c2', 'node-c3', 'node-c4', 'node-c5', 'node-c6', 'node-c7'];
+      for (const id of customerIds) {
+        showNode(id, 'node-orange');
+        await wait(250);
+      }
+
+      /* Step 7: Draw lines from products to customers */
+      for (const [from, to] of connections.productsToCustomers) {
+        drawTreeLine(from, to, 300, '#F59E0B');
+        await wait(80);
+      }
+
+      /* Final ripple wave */
+      spawnRipple('node-root');
+      await wait(300);
+
+      /* Step 8: Show impact summary with countUp */
+      const impactStats = document.getElementById('impactStats');
+      impactStats.classList.add('visible');
+
+      await Promise.all([
+        countUp(document.getElementById('statBatches'), 0, 3, 800),
+        countUp(document.getElementById('statSkus'), 0, 5, 800),
+        countUp(document.getElementById('statCustomers'), 0, 7, 800),
+        countUp(document.getElementById('statUnits'), 0, 4200, 1200, '', '', 0)
+      ]);
+
+      /* Format units with comma */
+      document.getElementById('statUnits').textContent = '4,200';
+
+      /* Step 9: Show timer */
+      document.getElementById('timerBox').classList.add('visible');
+      await wait(400);
+
+      /* Step 10: Show communication tabs */
+      document.getElementById('commSection').classList.add('visible');
+      await wait(300);
+
+      /* Step 11: Show export button */
+      document.getElementById('btnExport').classList.add('visible');
+
+      traceComplete = true;
+      traceRunning = false;
+    }
+
+    /* ── Tab switching ── */
+    function switchTab(clickedTab) {
+      const tabs = document.querySelectorAll('.comm-tab');
+      const contents = document.querySelectorAll('.comm-content');
+
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+
+      clickedTab.classList.add('active');
+      const targetId = 'tab-' + clickedTab.getAttribute('data-tab');
+      document.getElementById(targetId).classList.add('active');
+    }
+
+    /* ── Export all ── */
+    function exportAll() {
+      toast('Recall package exported — 3 documents generated', 'success', 4000);
+    }
+
+    /* ── Reset everything ── */
+    function resetWarRoom() {
+      traceRunning = false;
+      traceComplete = false;
+
+      /* Reset all nodes */
+      document.querySelectorAll('.tree-node').forEach(node => {
+        node.classList.remove('visible', 'node-red', 'node-orange', 'node-yellow', 'node-grey', 'pulse');
+      });
+
+      /* Remove all drawn SVG lines */
+      const svg = document.getElementById('genealogySvg');
+      if (svg) svg.innerHTML = '';
+      drawnLines = [];
+
+      /* Remove ripple rings */
+      document.querySelectorAll('.ripple-ring').forEach(r => r.remove());
+
+      /* Show empty state, hide genealogy map */
+      document.getElementById('emptyState').style.display = 'flex';
+      document.getElementById('genealogyMap').style.display = 'none';
+
+      /* Reset impact stats */
+      document.getElementById('impactStats').classList.remove('visible');
+      document.getElementById('statBatches').textContent = '0';
+      document.getElementById('statSkus').textContent = '0';
+      document.getElementById('statCustomers').textContent = '0';
+      document.getElementById('statUnits').textContent = '0';
+
+      /* Reset timer */
+      document.getElementById('timerBox').classList.remove('visible');
+
+      /* Reset comms section */
+      document.getElementById('commSection').classList.remove('visible');
+
+      /* Reset export button */
+      document.getElementById('btnExport').classList.remove('visible');
+
+      /* Reset tabs to first */
+      document.querySelectorAll('.comm-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.comm-content').forEach(c => c.classList.remove('active'));
+      document.querySelector('.comm-tab[data-tab="customer"]').classList.add('active');
+      document.getElementById('tab-customer').classList.add('active');
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Redraw lines on resize ── */
+    function redrawAllLines() {
+      if (drawnLines.length === 0) return;
+
+      const svg = document.getElementById('genealogySvg');
+      const container = document.getElementById('genealogyMap');
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
+
+      const allConns = [
+        ...connections.rootToBatches,
+        ...connections.batchesToProducts,
+        ...connections.productsToCustomers
+      ];
+
+      drawnLines.forEach((line, i) => {
+        if (i >= allConns.length) return;
+        const [fromId, toId] = allConns[i];
+        const fromEl = document.getElementById(fromId);
+        const toEl = document.getElementById(toId);
+        if (!fromEl || !toEl) return;
+
+        const fromRect = fromEl.getBoundingClientRect();
+        const toRect = toEl.getBoundingClientRect();
+
+        line.setAttribute('x1', fromRect.left + fromRect.width / 2 - containerRect.left);
+        line.setAttribute('y1', fromRect.bottom - containerRect.top);
+        line.setAttribute('x2', toRect.left + toRect.width / 2 - containerRect.left);
+        line.setAttribute('y2', toRect.top - containerRect.top);
+      });
+    }
+
+    window.addEventListener('resize', redrawAllLines);
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!traceRunning && !traceComplete) runTrace();
+    }, 2000);
+  </script>
+</body>
+</html>
