@@ -1,0 +1,1075 @@
+<!-- ABOUTME: Contract Clause Review mockup for NorthLink AI. -->
+<!-- ABOUTME: AI reviews contracts against firm playbook, flagging risky clauses with suggested redlines. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contract Clause Review — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Three-panel demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px);
+    }
+
+    .panel-left {
+      flex: 0 0 20%;
+      padding: 16px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fafafa;
+    }
+
+    .panel-centre {
+      flex: 0 0 50%;
+      padding: 24px 32px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      position: relative;
+    }
+
+    .panel-right {
+      flex: 0 0 30%;
+      padding: 20px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-heading .count-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--color-light-gray);
+      color: var(--color-slate-black);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* ── Left panel: Document Navigator ── */
+    .nav-stats {
+      font-size: 12px;
+      color: var(--color-slate-black);
+      margin-bottom: 12px;
+      line-height: 1.6;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .nav-stats strong {
+      color: var(--color-black);
+    }
+
+    .nav-stats .stat-flagged {
+      color: var(--color-warning);
+      font-weight: 600;
+    }
+
+    .nav-stats .stat-risk {
+      color: var(--color-danger);
+      font-weight: 600;
+    }
+
+    .flagged-jumps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 14px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .flagged-jump-btn {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .flagged-jump-btn:hover {
+      transform: scale(1.08);
+    }
+
+    .flagged-jump-btn.jump-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .flagged-jump-btn.jump-amber {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .page-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .page-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: var(--color-slate-black);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .page-item:hover {
+      background: #e8e8ec;
+    }
+
+    .page-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: transparent;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .page-dot.dot-green {
+      background: var(--color-success);
+    }
+
+    .page-dot.dot-amber {
+      background: var(--color-warning);
+    }
+
+    .page-dot.dot-red {
+      background: var(--color-danger);
+      box-shadow: 0 0 4px var(--color-danger);
+    }
+
+    /* ── Centre panel: Contract View ── */
+    .contract-doc {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 32px 36px;
+      font-family: 'Lora', 'Georgia', serif;
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: #2a2a2a;
+      text-align: justify;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contract-doc h2 {
+      font-family: 'Lora', 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 24px;
+      color: #1a1a1a;
+    }
+
+    .clause {
+      margin-bottom: 22px;
+      padding: 12px 14px;
+      border-radius: 6px;
+      border-left: 4px solid transparent;
+      position: relative;
+      transition: background 0.5s, border-color 0.5s, box-shadow 0.3s;
+    }
+
+    .clause .clause-number {
+      font-family: var(--font-stack);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-slate-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .clause .clause-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #1a1a1a;
+    }
+
+    .clause .clause-text {
+      font-style: italic;
+      color: #3a3a3a;
+    }
+
+    /* Clause highlight states */
+    .clause.highlight-green {
+      background: #f0fdf4;
+      border-left-color: var(--color-success);
+    }
+
+    .clause.highlight-amber {
+      background: #fffbeb;
+      border-left-color: var(--color-warning);
+    }
+
+    .clause.highlight-red {
+      background: #fef2f2;
+      border-left-color: var(--color-danger);
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      50% { box-shadow: 0 0 12px 3px rgba(239, 68, 68, 0.25); }
+    }
+
+    .clause.pulse {
+      animation: pulse-red 1s ease 3;
+    }
+
+    /* Clause annotation badge */
+    .clause-annotation {
+      font-family: var(--font-stack);
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .clause-annotation.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .clause-annotation.annotation-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .clause-annotation.annotation-amber {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .clause-annotation.annotation-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* Hover popup for firm position */
+    .clause-popup {
+      display: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(100% + 8px);
+      background: var(--color-black);
+      color: #fff;
+      font-family: var(--font-stack);
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      width: 340px;
+      z-index: 50;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      text-align: left;
+    }
+
+    .clause-popup::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 8px solid transparent;
+      border-top-color: var(--color-black);
+    }
+
+    .clause-popup .popup-heading {
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-purple);
+      margin-bottom: 6px;
+    }
+
+    .clause-popup .popup-label {
+      font-weight: 600;
+      font-size: 11px;
+      color: var(--color-slate-gray);
+      margin-top: 8px;
+      margin-bottom: 2px;
+    }
+
+    .clause-popup .popup-text {
+      font-size: 12px;
+      color: #ccc;
+    }
+
+    .clause-popup .redline-text {
+      font-size: 12px;
+      color: var(--color-warning);
+      font-style: italic;
+    }
+
+    .clause.has-popup:hover .clause-popup {
+      display: block;
+    }
+
+    /* Flash highlight when clicking from right panel */
+    @keyframes flash-highlight {
+      0%, 100% { box-shadow: none; }
+      25%, 75% { box-shadow: 0 0 0 3px var(--color-purple); }
+    }
+
+    .clause.flash {
+      animation: flash-highlight 1.2s ease;
+    }
+
+    /* Scanning animation line */
+    .scan-line {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--color-purple), transparent);
+      opacity: 0;
+      z-index: 5;
+      pointer-events: none;
+      transition: none;
+    }
+
+    .scan-line.scanning {
+      opacity: 1;
+      animation: scan-down 2s ease-in-out forwards;
+    }
+
+    @keyframes scan-down {
+      0% { top: 0; opacity: 0; }
+      5% { opacity: 1; }
+      95% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* ── Right panel: Risk Summary ── */
+    .heatmap-section {
+      margin-bottom: 20px;
+    }
+
+    .heatmap-section h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-slate-black);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .clause-heatmap {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 3px;
+      margin-bottom: 16px;
+    }
+
+    .heatmap-cell {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: var(--color-light-gray);
+      transition: background 0.4s, box-shadow 0.3s;
+      cursor: default;
+    }
+
+    .heatmap-cell.cell-green {
+      background: var(--color-success);
+    }
+
+    .heatmap-cell.cell-amber {
+      background: var(--color-warning);
+    }
+
+    .heatmap-cell.cell-red {
+      background: var(--color-danger);
+      box-shadow: 0 0 4px var(--color-danger);
+    }
+
+    .risk-section {
+      margin-bottom: 16px;
+    }
+
+    .risk-section-heading {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-slate-black);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .risk-section-heading .risk-count {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      color: #fff;
+    }
+
+    .risk-count-red {
+      background: var(--color-danger);
+    }
+
+    .risk-count-amber {
+      background: var(--color-warning);
+      color: #1A1B25 !important;
+    }
+
+    .risk-item {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .risk-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .risk-item:hover {
+      border-color: var(--color-purple);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+
+    .risk-item .risk-clause {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 3px;
+    }
+
+    .risk-item .risk-desc {
+      font-size: 11px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+    }
+
+    .risk-item.risk-high {
+      border-left: 3px solid var(--color-danger);
+    }
+
+    .risk-item.risk-medium {
+      border-left: 3px solid var(--color-warning);
+    }
+
+    .collapsed-items {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+
+    .collapsed-items.expanded {
+      max-height: 400px;
+    }
+
+    .collapse-toggle {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-purple);
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 4px 0;
+      font-family: var(--font-stack);
+    }
+
+    .collapse-toggle:hover {
+      text-decoration: underline;
+    }
+
+    .risk-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .risk-actions .btn {
+      flex: 1;
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-centre, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-centre, .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+      .clause-popup {
+        width: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/professional-services.html">Professional Services</a> &rarr; Contract Review
+      </div>
+      <div class="demo-title">Contract Clause Review</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Review Contract</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Document Navigator -->
+    <div class="panel-left">
+      <div class="panel-heading">Document Navigator</div>
+
+      <div class="nav-stats" id="navStats">
+        <strong>47</strong> clauses reviewed. <span class="stat-flagged">5 flagged.</span> <span class="stat-risk">2 high-risk.</span>
+      </div>
+
+      <div class="flagged-jumps" id="flaggedJumps">
+        <button class="flagged-jump-btn jump-red" onclick="scrollToClause('clause-12-3')">Cl. 12.3</button>
+        <button class="flagged-jump-btn jump-red" onclick="scrollToClause('clause-18-1')">Cl. 18.1</button>
+        <button class="flagged-jump-btn jump-amber" onclick="scrollToClause('clause-22-4')">Cl. 22.4</button>
+        <button class="flagged-jump-btn jump-amber" onclick="scrollToClause('clause-14-2')">Cl. 14.2</button>
+        <button class="flagged-jump-btn jump-amber" onclick="scrollToClause('clause-19-3')">Cl. 19.3</button>
+      </div>
+
+      <div class="page-list" id="pageList">
+        <!-- Pages generated by JS -->
+      </div>
+    </div>
+
+    <!-- Centre panel: Contract View -->
+    <div class="panel-centre" id="contractPanel">
+      <div class="contract-doc" id="contractDoc">
+        <div class="scan-line" id="scanLine"></div>
+
+        <h2>Professional Services Agreement</h2>
+        <p style="text-align:center; font-size:12px; color:#888; margin-bottom:28px;">
+          Between: Supplier Pty Ltd (ABN 12 345 678 901) and Client Corp Ltd (ABN 98 765 432 109)<br>
+          Effective Date: 1 January 2026 &nbsp;|&nbsp; Agreement No: PSA-2026-0471
+        </p>
+
+        <!-- Clause 8.2 — Limitation of Liability (GREEN) -->
+        <div class="clause has-popup" id="clause-8-2" data-risk="green" data-page="12">
+          <div class="clause-number">Clause 8.2</div>
+          <div class="clause-title">Limitation of Liability</div>
+          <div class="clause-text">
+            "The Supplier's total aggregate liability under or in connection with this Agreement shall not exceed the total fees paid by the Client in the 12-month period immediately preceding the event giving rise to the claim."
+          </div>
+          <div class="clause-annotation annotation-green" id="ann-8-2">
+            &#10003; Standard limitation of liability &mdash; matches firm playbook
+          </div>
+          <div class="clause-popup">
+            <div class="popup-heading">Firm Playbook</div>
+            <div class="popup-label">Position</div>
+            <div class="popup-text">Liability capped at fees paid in preceding 12 months is our standard accepted position.</div>
+            <div class="popup-label">Suggested Redline</div>
+            <div class="redline-text">No changes required. Clause acceptable as drafted.</div>
+          </div>
+        </div>
+
+        <!-- Clause 12.3 — Indemnity (RED) -->
+        <div class="clause has-popup" id="clause-12-3" data-risk="red" data-page="18">
+          <div class="clause-number">Clause 12.3</div>
+          <div class="clause-title">Indemnity</div>
+          <div class="clause-text">
+            "The Client shall indemnify and keep indemnified the Supplier against any and all claims, losses, damages, costs and expenses (including consequential loss) arising from or in connection with the Client's use of the Services, without limitation."
+          </div>
+          <div class="clause-annotation annotation-red" id="ann-12-3">
+            &#10060; UNLIMITED indemnity for consequential loss &mdash; Our position: cap indemnity at 2x annual fees, exclude consequential loss
+          </div>
+          <div class="clause-popup">
+            <div class="popup-heading">Firm Playbook</div>
+            <div class="popup-label">Position</div>
+            <div class="popup-text">Indemnities must be capped and mutual. Consequential loss should always be excluded from indemnity scope.</div>
+            <div class="popup-label">Suggested Redline</div>
+            <div class="redline-text">Replace "without limitation" with "up to a maximum of 2x the annual fees paid under this Agreement". Delete "(including consequential loss)". Add mutual indemnity obligation.</div>
+          </div>
+        </div>
+
+        <!-- Clause 15.1 — Intellectual Property (GREEN) -->
+        <div class="clause has-popup" id="clause-15-1" data-risk="green" data-page="24">
+          <div class="clause-number">Clause 15.1</div>
+          <div class="clause-title">Intellectual Property</div>
+          <div class="clause-text">
+            "All intellectual property rights in materials created by the Supplier in the course of providing the Services shall vest in the Client upon payment in full."
+          </div>
+          <div class="clause-annotation annotation-green" id="ann-15-1">
+            &#10003; Standard IP assignment &mdash; acceptable
+          </div>
+          <div class="clause-popup">
+            <div class="popup-heading">Firm Playbook</div>
+            <div class="popup-label">Position</div>
+            <div class="popup-text">IP vesting in Client upon payment is our preferred standard. Consistent with firm playbook.</div>
+            <div class="popup-label">Suggested Redline</div>
+            <div class="redline-text">No changes required. Clause acceptable as drafted.</div>
+          </div>
+        </div>
+
+        <!-- Clause 18.1 — IP Assignment (RED) -->
+        <div class="clause has-popup" id="clause-18-1" data-risk="red" data-page="32">
+          <div class="clause-number">Clause 18.1</div>
+          <div class="clause-title">IP Assignment</div>
+          <div class="clause-text">
+            "The Client hereby assigns to the Supplier all rights, title, and interest in any improvements, modifications, or derivative works created using the Supplier's proprietary tools, methodologies, or frameworks."
+          </div>
+          <div class="clause-annotation annotation-red" id="ann-18-1">
+            &#10060; Reverse IP assignment &mdash; Supplier claims IP in client improvements. Our position: delete entirely or limit to Supplier's pre-existing IP
+          </div>
+          <div class="clause-popup">
+            <div class="popup-heading">Firm Playbook</div>
+            <div class="popup-label">Position</div>
+            <div class="popup-text">Reverse IP assignment is unacceptable. Client must retain ownership of all improvements and derivative works.</div>
+            <div class="popup-label">Suggested Redline</div>
+            <div class="redline-text">Delete clause 18.1 entirely. If Supplier insists, limit to: "The Supplier retains all rights in its pre-existing IP, tools, and methodologies. The Client retains all rights in deliverables and derivative works."</div>
+          </div>
+        </div>
+
+        <!-- Clause 22.4 — Termination (AMBER) -->
+        <div class="clause has-popup" id="clause-22-4" data-risk="amber" data-page="42">
+          <div class="clause-number">Clause 22.4</div>
+          <div class="clause-title">Termination</div>
+          <div class="clause-text">
+            "Either party may terminate this Agreement by giving 30 days written notice to the other party."
+          </div>
+          <div class="clause-annotation annotation-amber" id="ann-22-4">
+            &#9888;&#65039; Termination notice 30 days &mdash; Below our minimum of 60 days. Recommend: increase to 60 days
+          </div>
+          <div class="clause-popup">
+            <div class="popup-heading">Firm Playbook</div>
+            <div class="popup-label">Position</div>
+            <div class="popup-text">Minimum termination notice is 60 days for professional services agreements. 30 days is insufficient for transition planning.</div>
+            <div class="popup-label">Suggested Redline</div>
+            <div class="redline-text">Replace "30 days" with "60 days". Consider adding transition assistance obligations upon termination.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right panel: Risk Summary -->
+    <div class="panel-right">
+      <div class="panel-heading">Risk Summary</div>
+
+      <!-- Clause Heatmap -->
+      <div class="heatmap-section">
+        <h3>Clause Heatmap</h3>
+        <div class="clause-heatmap" id="clauseHeatmap">
+          <!-- 60 cells generated by JS -->
+        </div>
+      </div>
+
+      <!-- High-risk items -->
+      <div class="risk-section" id="highRiskSection">
+        <div class="risk-section-heading">
+          High-Risk Items <span class="risk-count risk-count-red">2</span>
+        </div>
+        <div class="risk-item risk-high" id="risk-12-3" onclick="scrollToClause('clause-12-3')">
+          <div class="risk-clause">Clause 12.3 &mdash; Unlimited Indemnity</div>
+          <div class="risk-desc">CRITICAL: Remove "without limitation" and cap at 2x annual fees. Exclude consequential loss from indemnity scope.</div>
+        </div>
+        <div class="risk-item risk-high" id="risk-18-1" onclick="scrollToClause('clause-18-1')">
+          <div class="risk-clause">Clause 18.1 &mdash; IP Assignment</div>
+          <div class="risk-desc">CRITICAL: Reverse IP assignment gives Supplier ownership of client improvements. Delete or limit to pre-existing IP.</div>
+        </div>
+      </div>
+
+      <!-- Medium-risk items -->
+      <div class="risk-section" id="mediumRiskSection">
+        <div class="risk-section-heading">
+          Medium-Risk Items <span class="risk-count risk-count-amber">3</span>
+        </div>
+        <button class="collapse-toggle" id="collapseToggle" onclick="toggleMediumRisk()">Show 3 items &#9660;</button>
+        <div class="collapsed-items" id="mediumRiskItems">
+          <div class="risk-item risk-medium" id="risk-22-4" onclick="scrollToClause('clause-22-4')">
+            <div class="risk-clause">Clause 22.4 &mdash; Termination</div>
+            <div class="risk-desc">30-day notice below firm minimum of 60 days. Recommend increasing to 60 days with transition provisions.</div>
+          </div>
+          <div class="risk-item risk-medium" id="risk-14-2" onclick="scrollToClause('clause-14-2')">
+            <div class="risk-clause">Clause 14.2 &mdash; Data Retention</div>
+            <div class="risk-desc">No deletion timeline specified. Recommend: add 30-day deletion obligation post-termination.</div>
+          </div>
+          <div class="risk-item risk-medium" id="risk-19-3" onclick="scrollToClause('clause-19-3')">
+            <div class="risk-clause">Clause 19.3 &mdash; Jurisdiction</div>
+            <div class="risk-desc">Victorian courts preferred, contract specifies NSW. Recommend: amend to Victoria or agree on mutual jurisdiction.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="risk-actions" id="riskActions">
+        <button class="btn btn-primary" onclick="toast('Redlined contract generated with 5 markup annotations', 'success')">Generate Redline</button>
+        <button class="btn btn-approve" onclick="toast('Risk report exported as PDF', 'success')">Export Risk Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── State ── */
+    let demoRunning = false;
+    let animationTimeouts = [];
+
+    /* ── Heatmap configuration ── */
+    /* Pages with coloured dots: map of page number to colour */
+    const PAGE_COLOURS = {
+      3: 'green', 7: 'green', 12: 'green', 15: 'green',
+      18: 'red', 20: 'green', 24: 'green', 27: 'green',
+      30: 'green', 32: 'red', 35: 'green', 37: 'green',
+      39: 'amber', 42: 'amber', 45: 'green', 47: 'green',
+      49: 'green', 51: 'amber', 53: 'green', 55: 'green',
+      57: 'green', 59: 'green'
+    };
+
+    /* Clause definitions with their review order and timing */
+    const CLAUSES = [
+      { id: 'clause-8-2', risk: 'green', annId: 'ann-8-2', page: 12 },
+      { id: 'clause-15-1', risk: 'green', annId: 'ann-15-1', page: 24 },
+      { id: 'clause-22-4', risk: 'amber', annId: 'ann-22-4', page: 42 },
+      { id: 'clause-12-3', risk: 'red', annId: 'ann-12-3', page: 18 },
+      { id: 'clause-18-1', risk: 'red', annId: 'ann-18-1', page: 32 },
+    ];
+
+    /* Risk item IDs linked to clause IDs */
+    const RISK_ITEMS = {
+      'clause-12-3': 'risk-12-3',
+      'clause-18-1': 'risk-18-1',
+      'clause-22-4': 'risk-22-4',
+      'clause-14-2': 'risk-14-2',
+      'clause-19-3': 'risk-19-3',
+    };
+
+    /* ── Initialise page list and heatmap ── */
+    function initPageList() {
+      const list = document.getElementById('pageList');
+      list.innerHTML = '';
+      for (let i = 1; i <= 60; i++) {
+        const item = document.createElement('div');
+        item.className = 'page-item';
+        item.innerHTML = `<span class="page-dot" id="dot-${i}"></span><span>Page ${i}</span>`;
+        list.appendChild(item);
+      }
+    }
+
+    function initHeatmap() {
+      const grid = document.getElementById('clauseHeatmap');
+      grid.innerHTML = '';
+      for (let i = 1; i <= 60; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        cell.id = `heatcell-${i}`;
+        cell.title = `Page ${i}`;
+        grid.appendChild(cell);
+      }
+    }
+
+    /* ── Helpers ── */
+    function schedule(fn, delay) {
+      const tid = setTimeout(fn, delay);
+      animationTimeouts.push(tid);
+      return tid;
+    }
+
+    function scrollToClause(clauseId) {
+      const el = document.getElementById(clauseId);
+      if (!el) return;
+      const panel = document.getElementById('contractPanel');
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('flash');
+      setTimeout(() => el.classList.remove('flash'), 1200);
+    }
+
+    function toggleMediumRisk() {
+      const items = document.getElementById('mediumRiskItems');
+      const btn = document.getElementById('collapseToggle');
+      if (items.classList.contains('expanded')) {
+        items.classList.remove('expanded');
+        btn.innerHTML = 'Show 3 items &#9660;';
+      } else {
+        items.classList.add('expanded');
+        btn.innerHTML = 'Hide items &#9650;';
+      }
+    }
+
+    /* ── Colour page dots in the navigator ── */
+    function colourPageDots(pages) {
+      pages.forEach(page => {
+        const colour = PAGE_COLOURS[page];
+        if (!colour) return;
+        const dot = document.getElementById(`dot-${page}`);
+        if (dot) dot.classList.add(`dot-${colour}`);
+      });
+    }
+
+    /* ── Colour heatmap cells ── */
+    function colourHeatmapCells(pages) {
+      pages.forEach(page => {
+        const colour = PAGE_COLOURS[page];
+        if (!colour) return;
+        const cell = document.getElementById(`heatcell-${page}`);
+        if (cell) cell.classList.add(`cell-${colour}`);
+      });
+    }
+
+    /* ── Animation sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      /* Brief pause before scanning begins */
+      await wait(500);
+
+      /* Start scanning animation */
+      const scanLine = document.getElementById('scanLine');
+      scanLine.classList.add('scanning');
+
+      /* Wait for scan to complete */
+      await wait(2000);
+      scanLine.classList.remove('scanning');
+
+      /* Phase 1: Green clauses appear first (fast) */
+      const greenClauses = CLAUSES.filter(c => c.risk === 'green');
+      for (const clause of greenClauses) {
+        if (!demoRunning) return;
+        const el = document.getElementById(clause.id);
+        el.classList.add('highlight-green');
+        const ann = document.getElementById(clause.annId);
+        ann.classList.add('visible');
+        await wait(300);
+      }
+
+      /* Colour green page dots and heatmap cells */
+      const greenPages = Object.entries(PAGE_COLOURS)
+        .filter(([, c]) => c === 'green')
+        .map(([p]) => parseInt(p));
+      colourPageDots(greenPages);
+      colourHeatmapCells(greenPages);
+
+      await wait(600);
+
+      /* Phase 2: Amber clauses (pause before) */
+      const amberClauses = CLAUSES.filter(c => c.risk === 'amber');
+      for (const clause of amberClauses) {
+        if (!demoRunning) return;
+        const el = document.getElementById(clause.id);
+        el.classList.add('highlight-amber');
+        const ann = document.getElementById(clause.annId);
+        ann.classList.add('visible');
+
+        /* Show matching risk item */
+        const riskId = RISK_ITEMS[clause.id];
+        if (riskId) {
+          const riskEl = document.getElementById(riskId);
+          if (riskEl) riskEl.classList.add('visible');
+        }
+
+        await wait(500);
+      }
+
+      /* Colour amber page dots and heatmap cells */
+      const amberPages = Object.entries(PAGE_COLOURS)
+        .filter(([, c]) => c === 'amber')
+        .map(([p]) => parseInt(p));
+      colourPageDots(amberPages);
+      colourHeatmapCells(amberPages);
+
+      /* Also show medium risk items that are not tied to visible clauses */
+      const riskDataRetention = document.getElementById('risk-14-2');
+      const riskJurisdiction = document.getElementById('risk-19-3');
+      if (riskDataRetention) riskDataRetention.classList.add('visible');
+      await wait(200);
+      if (riskJurisdiction) riskJurisdiction.classList.add('visible');
+
+      await wait(800);
+
+      /* Phase 3: Red clauses with pulse animation */
+      const redClauses = CLAUSES.filter(c => c.risk === 'red');
+      for (const clause of redClauses) {
+        if (!demoRunning) return;
+        const el = document.getElementById(clause.id);
+        el.classList.add('highlight-red', 'pulse');
+        const ann = document.getElementById(clause.annId);
+        ann.classList.add('visible');
+
+        /* Show matching risk item */
+        const riskId = RISK_ITEMS[clause.id];
+        if (riskId) {
+          const riskEl = document.getElementById(riskId);
+          if (riskEl) riskEl.classList.add('visible');
+        }
+
+        /* Scroll contract to show the red clause */
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        await wait(700);
+      }
+
+      /* Colour red page dots and heatmap cells */
+      const redPages = Object.entries(PAGE_COLOURS)
+        .filter(([, c]) => c === 'red')
+        .map(([p]) => parseInt(p));
+      colourPageDots(redPages);
+      colourHeatmapCells(redPages);
+
+      /* Show nav stats and flagged jumps */
+      document.getElementById('navStats').style.opacity = '1';
+      document.getElementById('flaggedJumps').style.opacity = '1';
+
+      /* Show action buttons */
+      await wait(400);
+      document.getElementById('riskActions').style.opacity = '1';
+
+      toast('Contract review complete \u2014 47 clauses analysed, 5 flagged', 'info', 4000);
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+
+      /* Reset scan line */
+      const scanLine = document.getElementById('scanLine');
+      scanLine.classList.remove('scanning');
+
+      /* Reset clauses */
+      document.querySelectorAll('.clause').forEach(el => {
+        el.classList.remove('highlight-green', 'highlight-amber', 'highlight-red', 'pulse', 'flash');
+      });
+
+      /* Reset annotations */
+      document.querySelectorAll('.clause-annotation').forEach(el => {
+        el.classList.remove('visible');
+      });
+
+      /* Reset page dots */
+      document.querySelectorAll('.page-dot').forEach(el => {
+        el.classList.remove('dot-green', 'dot-amber', 'dot-red');
+      });
+
+      /* Reset heatmap cells */
+      document.querySelectorAll('.heatmap-cell').forEach(el => {
+        el.classList.remove('cell-green', 'cell-amber', 'cell-red');
+      });
+
+      /* Reset risk items */
+      document.querySelectorAll('.risk-item').forEach(el => {
+        el.classList.remove('visible');
+      });
+
+      /* Reset nav stats and flagged jumps */
+      document.getElementById('navStats').style.opacity = '0';
+      document.getElementById('flaggedJumps').style.opacity = '0';
+
+      /* Reset action buttons */
+      document.getElementById('riskActions').style.opacity = '0';
+
+      /* Collapse medium risk items */
+      const mediumItems = document.getElementById('mediumRiskItems');
+      mediumItems.classList.remove('expanded');
+      document.getElementById('collapseToggle').innerHTML = 'Show 3 items &#9660;';
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+
+      /* Scroll contract back to top */
+      document.getElementById('contractPanel').scrollTop = 0;
+    }
+
+    /* ── Init ── */
+    initPageList();
+    initHeatmap();
+
+    /* Auto-start after 2 seconds */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
