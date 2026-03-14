@@ -1,5 +1,5 @@
 <!-- ABOUTME: Professional Services industry story page for NorthLink AI. -->
-<!-- ABOUTME: Pain points, expandable deep-dives, and 3 interactive demo links. -->
+<!-- ABOUTME: Two-tier layout: overview grid of 12 AI use cases + deep-dive cards with pain points, solutions, and ROI. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +9,17 @@
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <link rel="stylesheet" href="../assets/css/shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>html { scroll-behavior: smooth; }</style>
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header">
     <div class="logo-area">
-      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-      <span class="logo-text">Real Minds AI</span>
+      <a href="https://realmindsai.com.au" class="logo-link">
+        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+        <span class="logo-text">Real Minds AI</span>
+      </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
     <nav>
@@ -41,110 +44,291 @@
     <p class="intro">Your clients send shoe boxes of receipts. Your lawyers read 60-page contracts clause by clause. Your paralegals build chronologies by hand. Here's what changes when AI reads, categorises, and analyses for you.</p>
   </div>
 
-  <!-- Pain Points -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 1: Overview Grid — scannable tiles linking to deep dives
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="pain-cards">
+    <div class="overview-intro">
+      <div class="section-label">The AI Opportunity</div>
+      <h2>12 ways AI is transforming professional services</h2>
+      <p>From document processing to compliance, AI handles the grunt work so your team focuses on advice.</p>
+      <div class="click-hint">Click any tile to see the full story below</div>
+    </div>
 
-      <div class="pain-card border-orange">
-        <span class="pain-icon">&#129534;</span>
-        <div>
-          <h3>"Tax returns start with a pile of blurry receipts"</h3>
-          <p>Your client hands over a folder of receipts, bank statements, and PAYG summaries. Someone spends half a day sorting, categorising, and entering data. Then they find a duplicate.</p>
-        </div>
-      </div>
+    <div class="overview-grid">
 
-      <div class="pain-card border-blue">
-        <span class="pain-icon">&#128220;</span>
-        <div>
-          <h3>"Contract review takes hours per document"</h3>
-          <p>A 60-page supply agreement lands on your desk. You read every clause, checking against your firm's playbook. Most clauses are standard. But the three that aren't could cost your client millions.</p>
-        </div>
-      </div>
+      <div class="category-label">Document Processing</div>
 
-      <div class="pain-card border-green">
-        <span class="pain-icon">&#128194;</span>
-        <div>
-          <h3>"Building a chronology from 50 documents takes days"</h3>
-          <p>In a construction dispute, you have emails, contracts, invoices, meeting notes, and text messages from multiple parties spanning 18 months. A paralegal manually builds a timeline.</p>
-        </div>
-      </div>
+      <a href="#detail-tax-return" class="overview-tile has-demo" onclick="highlightCard('detail-tax-return')">
+        <div class="tile-icon">&#129534;</div>
+        <h4>Tax Return Prep</h4>
+        <div class="tile-stat">Half a day &rarr; 2 minutes</div>
+        <div class="tile-desc">AI extracts, categorises, and deduplicates from receipts and statements</div>
+      </a>
+
+      <a href="#detail-contract-review" class="overview-tile has-demo" onclick="highlightCard('detail-contract-review')">
+        <div class="tile-icon">&#128220;</div>
+        <h4>Contract Review</h4>
+        <div class="tile-stat">Hours &rarr; 45 seconds</div>
+        <div class="tile-desc">AI highlights risky clauses and generates tracked-changes redline</div>
+      </a>
+
+      <a href="#detail-chronology" class="overview-tile has-demo" onclick="highlightCard('detail-chronology')">
+        <div class="tile-icon">&#128194;</div>
+        <h4>Evidence Chronology</h4>
+        <div class="tile-stat">Days &rarr; 30 seconds</div>
+        <div class="tile-desc">AI builds dated timelines from 50+ documents with source links</div>
+      </a>
+
+      <div class="category-label">Client &amp; Matter Management</div>
+
+      <a href="#detail-client-intake" class="overview-tile" onclick="highlightCard('detail-client-intake')">
+        <div class="tile-icon">&#128100;</div>
+        <h4>Client Intake Automation</h4>
+        <div class="tile-stat">2 hrs &rarr; 15 minutes</div>
+        <div class="tile-desc">AI extracts client details, runs conflict checks, drafts engagement letters</div>
+      </a>
+
+      <a href="#detail-matter-summary" class="overview-tile" onclick="highlightCard('detail-matter-summary')">
+        <div class="tile-icon">&#128196;</div>
+        <h4>Matter Summarisation</h4>
+        <div class="tile-stat">Half a day &rarr; 5 minutes</div>
+        <div class="tile-desc">AI generates current-state summary of any matter with key dates and actions</div>
+      </a>
+
+      <a href="#detail-time-entry" class="overview-tile" onclick="highlightCard('detail-time-entry')">
+        <div class="tile-icon">&#9201;&#65039;</div>
+        <h4>Time Entry &amp; Billing</h4>
+        <div class="tile-stat">Guesswork &rarr; real-time capture</div>
+        <div class="tile-desc">AI suggests time entries with narratives as you work</div>
+      </a>
+
+      <div class="category-label">Compliance &amp; Risk</div>
+
+      <a href="#detail-regulatory" class="overview-tile" onclick="highlightCard('detail-regulatory')">
+        <div class="tile-icon">&#128227;</div>
+        <h4>Regulatory Update Monitoring</h4>
+        <div class="tile-stat">Missed windows &rarr; same-day alerts</div>
+        <div class="tile-desc">AI flags legislative changes affecting your practice areas and clients</div>
+      </a>
+
+      <a href="#detail-aml-kyc" class="overview-tile" onclick="highlightCard('detail-aml-kyc')">
+        <div class="tile-icon">&#128373;&#65039;</div>
+        <h4>AML/KYC Screening</h4>
+        <div class="tile-stat">45 min &rarr; 5 minutes</div>
+        <div class="tile-desc">AI automates identity verification, PEP and sanctions screening</div>
+      </a>
+
+      <a href="#detail-trust-recon" class="overview-tile" onclick="highlightCard('detail-trust-recon')">
+        <div class="tile-icon">&#128178;</div>
+        <h4>Trust Account Reconciliation</h4>
+        <div class="tile-stat">Full day &rarr; 30 minutes</div>
+        <div class="tile-desc">AI reconciles trust transactions and generates compliance reports</div>
+      </a>
+
+      <div class="category-label">Firm Growth &amp; Efficiency</div>
+
+      <a href="#detail-proposal" class="overview-tile" onclick="highlightCard('detail-proposal')">
+        <div class="tile-icon">&#128221;</div>
+        <h4>Proposal &amp; Pitch Generation</h4>
+        <div class="tile-stat">2 days &rarr; 2 hours</div>
+        <div class="tile-desc">AI generates customised proposals from firm credentials and experience</div>
+      </a>
+
+      <a href="#detail-knowledge" class="overview-tile" onclick="highlightCard('detail-knowledge')">
+        <div class="tile-icon">&#128269;</div>
+        <h4>Knowledge Management</h4>
+        <div class="tile-stat">Can't find it &rarr; instant retrieval</div>
+        <div class="tile-desc">AI enables natural-language search across all firm documents</div>
+      </a>
+
+      <a href="#detail-training" class="overview-tile" onclick="highlightCard('detail-training')">
+        <div class="tile-icon">&#127891;</div>
+        <h4>Training Material Generation</h4>
+        <div class="tile-stat">Days of senior time &rarr; draft in 1 hour</div>
+        <div class="tile-desc">AI generates CPD content from firm precedents and recent case law</div>
+      </a>
 
     </div>
   </div>
 
-  <!-- Accordion Deep-Dives -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 2: Deep Dive — detailed cards with pain/solution/ROI
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="accordion-group">
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        The numbers behind professional services in Melbourne's north
-      </div>
-      <div class="accordion-content">
-        <p>Melbourne's north is home to 11,464 professional services businesses including accounting firms, law practices, consulting agencies, and financial advisors. These businesses serve the region's growing commercial and residential base, handling everything from tax returns to contract disputes. Despite the knowledge-intensive nature of the work, much of the time is spent on document processing, data entry, and manual review tasks that are ripe for AI augmentation.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        Where AI fits in a typical professional services workflow
-      </div>
-      <div class="accordion-content">
-        <p>AI integrates into professional services workflows at three document-heavy bottlenecks: tax preparation (extracting, categorising, and deduplicating financial documents), contract review (comparing clauses against firm playbooks and flagging non-standard terms), and evidence chronology (assembling dated timelines from multi-source document sets). These are tasks where AI excels because it can process large volumes of text quickly and consistently.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        What other professional services businesses are doing with AI right now
-      </div>
-      <div class="accordion-content">
-        <p>Accounting and law firms in Melbourne's north are deploying AI to pre-process client document packs, automatically review contracts against internal standards, and build chronologies from scattered evidence in hours instead of days. These tools don't replace professional judgement — they eliminate the manual grunt work so professionals can focus on the analysis and advice that clients actually pay for.</p>
-      </div>
-
+    <div class="deep-dive-intro">
+      <div class="section-label">Dig Deeper</div>
+      <h2>How each one works</h2>
+      <p>Real pain points, real solutions, real time savings. Three of these have live demos you can try right now.</p>
     </div>
-  </div>
 
-  <!-- Demo Cards -->
-  <div class="section">
-    <h2 class="section-heading">See it in action</h2>
-    <div class="demo-cards">
+    <!-- Document Processing -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128196;</span> Document Processing <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
 
-      <a href="../demos/profservices_tax-return.html" class="demo-card">
-        <div class="demo-card-header gradient-purple-orange">
-          <div class="demo-icon">&#129534;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-tax-return">
+          <h4>&#129534; Tax Return Prep</h4>
+          <div class="pain">"Tax returns start with a pile of blurry receipts. Someone spends half a day sorting, categorising, and entering data. Then they find a duplicate."</div>
+          <div class="solution">AI extracts transactions from receipts, bank statements, and PAYG summaries, auto-categorises expenses, detects duplicates, flags depreciation items, and estimates the refund. Your accountant reviews the output instead of doing the data entry.</div>
+          <div class="roi-line">
+            <span class="before">Half a day of data entry</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2 minutes</span>
+          </div>
+          <a href="../demos/profservices_tax-return.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Tax Return Prep</h3>
-          <p>AI extracts, categorises, and detects duplicates across receipts, statements, and summaries.</p>
-          <div class="time-savings">Half a day &rarr; 2 minutes</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/profservices_contract-review.html" class="demo-card">
-        <div class="demo-card-header gradient-blue-green">
-          <div class="demo-icon">&#128220;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-contract-review">
+          <h4>&#128220; Contract Review</h4>
+          <div class="pain">"Contract review takes hours per document. A 60-page supply agreement lands on your desk. You read every clause, checking against your firm's playbook. Most are standard. But the three that aren't could cost your client millions."</div>
+          <div class="solution">AI highlights clauses by risk level (green/amber/red), compares against your firm's preferred wording, generates a risk heatmap, and produces a tracked-changes redline. You focus on the clauses that matter.</div>
+          <div class="roi-line">
+            <span class="before">Hours per document</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">45 seconds</span>
+          </div>
+          <a href="../demos/profservices_contract-review.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Contract Review</h3>
-          <p>AI reviews contracts against your firm's playbook, flagging risky clauses with suggested redlines.</p>
-          <div class="time-savings">3 hours &rarr; 45 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/profservices_chronology.html" class="demo-card">
-        <div class="demo-card-header gradient-green-yellow">
-          <div class="demo-icon">&#128194;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-chronology">
+          <h4>&#128194; Evidence Chronology</h4>
+          <div class="pain">"Building a chronology from 50 documents takes days. Emails, contracts, invoices, meeting notes, and text messages from multiple parties spanning 18 months. A paralegal manually assembles the timeline."</div>
+          <div class="solution">AI builds a dated timeline from the document pile, links each event to source documents, and identifies gaps in the evidence chain. What took days of paralegal time happens in seconds.</div>
+          <div class="roi-line">
+            <span class="before">Days of paralegal time</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">30 seconds</span>
+          </div>
+          <a href="../demos/profservices_chronology.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Evidence Chronology</h3>
-          <p>AI builds a dated chronology from 50+ documents, linking events to source evidence.</p>
-          <div class="time-savings">2 days &rarr; 30 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
+      </div>
     </div>
+
+    <!-- Client & Matter Management -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128100;</span> Client &amp; Matter Management <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-client-intake">
+          <h4>&#128100; Client Intake Automation</h4>
+          <div class="pain">"New client onboarding takes 2 hours of form-filling. Manual data entry from identification documents, conflict checks, engagement letters. Every new matter starts with the same administrative drag."</div>
+          <div class="solution">AI extracts client details from ID documents, runs conflict checks against your existing client base, drafts engagement letters, and populates the practice management system. Onboarding becomes a review task, not a data entry task.</div>
+          <div class="roi-line">
+            <span class="before">2 hours</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">15 minutes</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-matter-summary">
+          <h4>&#128196; Matter Summarisation</h4>
+          <div class="pain">"Catching up on a file that's been dormant for 6 months takes half a day. You re-read correspondence, notes, and file history just to remember where things stand."</div>
+          <div class="solution">AI generates a current-state summary of any matter: key dates, outstanding actions, last communications, and upcoming deadlines. Pick up any file in minutes instead of hours.</div>
+          <div class="roi-line">
+            <span class="before">Half a day</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">5 minutes</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-time-entry">
+          <h4>&#9201;&#65039; Time Entry &amp; Billing</h4>
+          <div class="pain">"Reconstructing timesheets at month-end is guesswork. Under-recording of billable time due to manual entry lag costs the firm thousands every month."</div>
+          <div class="solution">AI monitors work activity — documents opened, emails sent, meetings attended — and suggests time entries with narrative descriptions in real time. No more end-of-month reconstruction.</div>
+          <div class="roi-line">
+            <span class="before">Month-end guesswork</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Real-time capture</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Compliance & Risk -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128203;</span> Compliance &amp; Risk <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-regulatory">
+          <h4>&#128227; Regulatory Update Monitoring</h4>
+          <div class="pain">"The new privacy amendment passed and we missed the 30-day compliance window. Manual monitoring of legislation, case law, and regulatory changes just doesn't scale."</div>
+          <div class="solution">AI monitors relevant regulatory feeds, flags changes affecting your practice areas and clients, and suggests required actions. You hear about it the same day it happens, not after the deadline passes.</div>
+          <div class="roi-line">
+            <span class="before">Missed compliance windows</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Same-day alerts</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-aml-kyc">
+          <h4>&#128373;&#65039; AML/KYC Screening</h4>
+          <div class="pain">"CDD checks take 45 minutes per new client. Manual identity verification, PEP screening, and sanctions checking. Multiply that by every new matter and it's a serious overhead."</div>
+          <div class="solution">AI automates customer due diligence: verifies identity documents, screens against PEP and sanctions lists, and generates risk assessments. Compliance is thorough and fast.</div>
+          <div class="roi-line">
+            <span class="before">45 minutes per client</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">5 minutes</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-trust-recon">
+          <h4>&#128178; Trust Account Reconciliation</h4>
+          <div class="pain">"Monthly trust reconciliation takes a full day and everyone hates it. Manual matching of trust receipts, disbursements, and ledger entries. One mistake and the regulator comes knocking."</div>
+          <div class="solution">AI reconciles trust transactions automatically, flags discrepancies, and generates compliance-ready reports. What used to ruin someone's day now takes half an hour.</div>
+          <div class="roi-line">
+            <span class="before">Full day</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">30 minutes</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Firm Growth & Efficiency -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128200;</span> Firm Growth &amp; Efficiency <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-proposal">
+          <h4>&#128221; Proposal &amp; Pitch Generation</h4>
+          <div class="pain">"Writing a pitch for a new client takes 2 days. Manual assembly of credentials, case studies, and fee proposals. Half the time you're reformatting old documents."</div>
+          <div class="solution">AI generates customised proposals from your firm's credentials, relevant experience, and standard fee structures, tailored to the prospect's industry and needs. You refine instead of build from scratch.</div>
+          <div class="roi-line">
+            <span class="before">2 days</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2 hours</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-knowledge">
+          <h4>&#128269; Knowledge Management</h4>
+          <div class="pain">"I know we advised on this exact issue 2 years ago but can't find the memo. Institutional knowledge locked in email threads and file servers, invisible to anyone who wasn't on the original matter."</div>
+          <div class="solution">AI indexes all firm documents and communications, enabling natural-language search across matters, memos, and precedents. Ask a question and get the answer with source links in seconds.</div>
+          <div class="roi-line">
+            <span class="before">Can't find it</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Instant retrieval</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-training">
+          <h4>&#127891; Training Material Generation</h4>
+          <div class="pain">"Creating CPD content takes senior partners away from billable work. Manual preparation of internal training materials and CPD presentations eats into revenue-generating time."</div>
+          <div class="solution">AI generates training materials from firm precedents, recent case law, and regulatory updates, structured for CPD compliance. A senior partner reviews a draft instead of writing from blank.</div>
+          <div class="roi-line">
+            <span class="before">Days of senior time</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Draft in 1 hour</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Industry CTA -->

@@ -197,6 +197,26 @@ function wait(ms) {
 }
 
 /**
+ * Highlight card — scrolls to a deep-dive card and pulses its border.
+ * Used by overview tiles to link to their corresponding detail cards.
+ * @param {string} id - The id of the target use-case-card element
+ */
+function highlightCard(id) {
+  document.querySelectorAll('.use-case-card.highlighted').forEach(function(el) {
+    el.classList.remove('highlighted');
+  });
+  setTimeout(function() {
+    var card = document.getElementById(id);
+    if (card) {
+      card.classList.add('highlighted');
+      setTimeout(function() {
+        card.classList.remove('highlighted');
+      }, 1500);
+    }
+  }, 400);
+}
+
+/**
  * Accordion toggle — expands/collapses an accordion section.
  * Call from onclick on the accordion header.
  * @param {HTMLElement} header - The clicked accordion header

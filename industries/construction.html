@@ -1,5 +1,5 @@
 <!-- ABOUTME: Construction & Trades industry story page for NorthLink AI. -->
-<!-- ABOUTME: Pain points, expandable deep-dives, and 3 interactive demo links. -->
+<!-- ABOUTME: Two-tier layout: overview grid of 12 AI use cases + deep-dive cards with pain points, solutions, and ROI. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +9,17 @@
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <link rel="stylesheet" href="../assets/css/shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>html { scroll-behavior: smooth; }</style>
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header">
     <div class="logo-area">
-      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-      <span class="logo-text">Real Minds AI</span>
+      <a href="https://realmindsai.com.au" class="logo-link">
+        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+        <span class="logo-text">Real Minds AI</span>
+      </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
     <nav>
@@ -41,110 +44,291 @@
     <p class="intro">You count windows from plans by hand. You write progress reports from memory. You build variation claims from a pile of emails and texts. Here's what changes when AI reads your plans, your photos, and your paper trail.</p>
   </div>
 
-  <!-- Pain Points -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 1: Overview Grid — scannable tiles linking to deep dives
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="pain-cards">
+    <div class="overview-intro">
+      <div class="section-label">The AI Opportunity</div>
+      <h2>12 ways AI is transforming construction</h2>
+      <p>From the office to the site, AI handles the paperwork so your team stays on the tools.</p>
+      <div class="click-hint">Click any tile to see the full story below</div>
+    </div>
 
-      <div class="pain-card border-orange">
-        <span class="pain-icon">&#128208;</span>
-        <div>
-          <h3>"Takeoffs from plans take a whole day"</h3>
-          <p>Your estimator prints the plan, counts windows, measures walls, calculates areas. A 3-bedroom house takes a full day. A 20-unit development takes a week.</p>
-        </div>
-      </div>
+    <div class="overview-grid">
 
-      <div class="pain-card border-blue">
-        <span class="pain-icon">&#128248;</span>
-        <div>
-          <h3>"Progress reports are a weekly chore"</h3>
-          <p>Every Friday, the site manager walks the job, takes 30 photos, then spends 2 hours writing a report from memory. By Monday, the builder wants changes.</p>
-        </div>
-      </div>
+      <div class="category-label">Estimating &amp; Tendering</div>
 
-      <div class="pain-card border-green">
-        <span class="pain-icon">&#128194;</span>
-        <div>
-          <h3>"Variation claims are a box of unsorted evidence"</h3>
-          <p>The client asked for extra power to the shed. It was in an email. Or a text. Or a site diary entry. Building the claim means hunting through a year of correspondence.</p>
-        </div>
-      </div>
+      <a href="#detail-takeoffs" class="overview-tile has-demo" onclick="highlightCard('detail-takeoffs')">
+        <div class="tile-icon">&#128208;</div>
+        <h4>Takeoffs from Plans</h4>
+        <div class="tile-stat">1 day &rarr; 30 seconds</div>
+        <div class="tile-desc">AI traces walls, counts openings, measures areas</div>
+      </a>
+
+      <a href="#detail-cost-matching" class="overview-tile" onclick="highlightCard('detail-cost-matching')">
+        <div class="tile-icon">&#128200;</div>
+        <h4>Historical Cost Matching</h4>
+        <div class="tile-stat">Save 3 hrs per quote</div>
+        <div class="tile-desc">Match new jobs to past costing data automatically</div>
+      </a>
+
+      <a href="#detail-tender" class="overview-tile" onclick="highlightCard('detail-tender')">
+        <div class="tile-icon">&#128233;</div>
+        <h4>Tender Response Drafting</h4>
+        <div class="tile-stat">2 days &rarr; 2 hours</div>
+        <div class="tile-desc">AI reads specs, drafts compliant tender responses</div>
+      </a>
+
+      <div class="category-label">Site &amp; Project Management</div>
+
+      <a href="#detail-progress" class="overview-tile has-demo" onclick="highlightCard('detail-progress')">
+        <div class="tile-icon">&#128248;</div>
+        <h4>Photo to Progress Report</h4>
+        <div class="tile-stat">2 hrs &rarr; 30 seconds</div>
+        <div class="tile-desc">Site photos become formatted reports with trade tracking</div>
+      </a>
+
+      <a href="#detail-scheduling" class="overview-tile" onclick="highlightCard('detail-scheduling')">
+        <div class="tile-icon">&#128197;</div>
+        <h4>Scheduling &amp; Dispatch</h4>
+        <div class="tile-stat">45 min &rarr; instant</div>
+        <div class="tile-desc">Optimise crew schedules across multiple sites</div>
+      </a>
+
+      <a href="#detail-subcontractor" class="overview-tile" onclick="highlightCard('detail-subcontractor')">
+        <div class="tile-icon">&#128736;&#65039;</div>
+        <h4>Subcontractor Tracking</h4>
+        <div class="tile-stat">Rate &amp; monitor performance</div>
+        <div class="tile-desc">Score subs on timeliness, quality, compliance history</div>
+      </a>
+
+      <a href="#detail-weather" class="overview-tile" onclick="highlightCard('detail-weather')">
+        <div class="tile-icon">&#127783;&#65039;</div>
+        <h4>Weather Impact Planning</h4>
+        <div class="tile-stat">Predict delays before they happen</div>
+        <div class="tile-desc">Auto-adjust schedules based on BOM forecasts</div>
+      </a>
+
+      <div class="category-label">Compliance &amp; Safety</div>
+
+      <a href="#detail-swms" class="overview-tile" onclick="highlightCard('detail-swms')">
+        <div class="tile-icon">&#128203;</div>
+        <h4>SWMS Generation</h4>
+        <div class="tile-stat">4 hrs &rarr; 5 min</div>
+        <div class="tile-desc">Auto-generate Safe Work Method Statements from job scope</div>
+      </a>
+
+      <a href="#detail-incidents" class="overview-tile" onclick="highlightCard('detail-incidents')">
+        <div class="tile-icon">&#128680;</div>
+        <h4>Incident Pattern Detection</h4>
+        <div class="tile-stat">Spot trends across sites</div>
+        <div class="tile-desc">Find recurring near-misses before they become injuries</div>
+      </a>
+
+      <a href="#detail-bim" class="overview-tile" onclick="highlightCard('detail-bim')">
+        <div class="tile-icon">&#9989;</div>
+        <h4>BIM Clash Detection</h4>
+        <div class="tile-stat">Catch conflicts pre-build</div>
+        <div class="tile-desc">Flag structural, mechanical, electrical clashes in models</div>
+      </a>
+
+      <div class="category-label">Finance &amp; Claims</div>
+
+      <a href="#detail-variation" class="overview-tile has-demo" onclick="highlightCard('detail-variation')">
+        <div class="tile-icon">&#128194;</div>
+        <h4>Variation Claim Builder</h4>
+        <div class="tile-stat">4 hrs &rarr; 2 minutes</div>
+        <div class="tile-desc">Assemble evidence chronology from emails, texts, diaries</div>
+      </a>
+
+      <a href="#detail-invoicing" class="overview-tile" onclick="highlightCard('detail-invoicing')">
+        <div class="tile-icon">&#128176;</div>
+        <h4>Invoice &amp; Payment Chasing</h4>
+        <div class="tile-stat">Reduce aged receivables 40%</div>
+        <div class="tile-desc">Auto-draft follow-ups, flag overdue accounts, predict slow payers</div>
+      </a>
 
     </div>
   </div>
 
-  <!-- Accordion Deep-Dives -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 2: Deep Dive — detailed cards with pain/solution/ROI
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="accordion-group">
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        The numbers behind construction in Melbourne's north
-      </div>
-      <div class="accordion-content">
-        <p>With 20,807 construction businesses, Melbourne's north is one of the fastest-growing building corridors in Australia. From residential builders and electricians to civil contractors and plumbers, the region is experiencing sustained demand driven by population growth and infrastructure investment. Despite this growth, most businesses still rely on manual takeoffs, handwritten site diaries, and ad-hoc variation tracking.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        Where AI fits in a typical construction workflow
-      </div>
-      <div class="accordion-content">
-        <p>AI fits into the construction workflow at three labour-intensive stages: quantity takeoffs (reading floor plans and generating material lists), progress reporting (analysing site photos and generating formatted reports), and variation management (assembling correspondence, diary entries, and cost records into structured claims). Each of these tasks currently consumes hours of skilled time that could be spent on-site.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        What other construction businesses are doing with AI right now
-      </div>
-      <div class="accordion-content">
-        <p>Builders and trades in Melbourne's north are starting to use AI to automate quantity takeoffs from architectural plans, generate progress reports from site photos, and compile variation claims from scattered communications. These aren't replacing tradies — they're eliminating the paperwork that keeps them in the office instead of on the tools.</p>
-      </div>
-
+    <div class="deep-dive-intro">
+      <div class="section-label">Dig Deeper</div>
+      <h2>How each one works</h2>
+      <p>Real pain points, real solutions, real time savings. Three of these have live demos you can try right now.</p>
     </div>
-  </div>
 
-  <!-- Demo Cards -->
-  <div class="section">
-    <h2 class="section-heading">See it in action</h2>
-    <div class="demo-cards">
+    <!-- Estimating & Tendering -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128200;</span> Estimating &amp; Tendering <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
 
-      <a href="../demos/construction_quote-from-plans.html" class="demo-card">
-        <div class="demo-card-header gradient-purple-orange">
-          <div class="demo-icon">&#128208;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-takeoffs">
+          <h4>&#128208; Takeoffs from Plans</h4>
+          <div class="pain">"The estimator prints the plan, counts windows, measures walls. A house takes a day. A development takes a week."</div>
+          <div class="solution">AI reads architectural plans and traces walls, counts openings, shades wet areas, and calculates material quantities. Outputs a line-item takeoff with framing, windows, doors, waterproofing, and plasterboard.</div>
+          <div class="roi-line">
+            <span class="before">1 full day</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">30 seconds</span>
+          </div>
+          <a href="../demos/construction_quote-from-plans.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Quote from Plans</h3>
-          <p>AI traces walls, counts windows, shades wet areas, and generates a material takeoff from floor plans.</p>
-          <div class="time-savings">1 day &rarr; 30 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/construction_photo-to-report.html" class="demo-card">
-        <div class="demo-card-header gradient-blue-green">
-          <div class="demo-icon">&#128248;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card" id="detail-cost-matching">
+          <h4>&#128200; Historical Cost Matching</h4>
+          <div class="pain">"Every quote starts from scratch, even though we did a similar job 6 months ago."</div>
+          <div class="solution">AI matches new project specs against your past job costings — adjusting for material price changes, location, and scope differences. Gives you a starting estimate in minutes, not hours.</div>
+          <div class="roi-line">
+            <span class="before">3 hours per quote</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">15 minutes</span>
+          </div>
         </div>
-        <div class="demo-card-body">
-          <h3>Photo to Progress Report</h3>
-          <p>AI analyses site photos and generates a formatted progress report with trade status tracking.</p>
-          <div class="time-savings">2 hours &rarr; 30 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/construction_variation-claim.html" class="demo-card">
-        <div class="demo-card-header gradient-green-yellow">
-          <div class="demo-icon">&#128194;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card" id="detail-tender">
+          <h4>&#128233; Tender Response Drafting</h4>
+          <div class="pain">"A 40-page tender spec means 2 days just writing the response, before we even price the job."</div>
+          <div class="solution">AI reads the tender specification, extracts all requirements, and drafts a compliant response document. You review and refine instead of writing from blank.</div>
+          <div class="roi-line">
+            <span class="before">2 days</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2 hours</span>
+          </div>
         </div>
-        <div class="demo-card-body">
-          <h3>Variation Claim Builder</h3>
-          <p>AI assembles emails, texts, and diary entries into a chronological variation claim with cost build-up.</p>
-          <div class="time-savings">4 hours &rarr; 2 minutes</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
+      </div>
     </div>
+
+    <!-- Site & Project Management -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#127959;&#65039;</span> Site &amp; Project Management <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card demo-card-special" id="detail-progress">
+          <h4>&#128248; Photo to Progress Report</h4>
+          <div class="pain">"Every Friday: walk the job, take 30 photos, spend 2 hours writing a report from memory."</div>
+          <div class="solution">AI analyses site photos, identifies trade progress (framing 85%, electrical started, plumbing stalled), compares to last week, and generates a formatted report with risk flags and weather notes.</div>
+          <div class="roi-line">
+            <span class="before">2 hours</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">30 seconds</span>
+          </div>
+          <a href="../demos/construction_photo-to-report.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card" id="detail-scheduling">
+          <h4>&#128197; Scheduling &amp; Dispatch</h4>
+          <div class="pain">"One tradie calls in sick and the whole week's schedule falls apart across 3 sites."</div>
+          <div class="solution">AI optimises crew allocation across your active projects — factoring in skills, travel time, dependencies, and weather. Rebalances the schedule when things change.</div>
+          <div class="roi-line">
+            <span class="before">45 min reworking</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Instant rebalance</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-subcontractor">
+          <h4>&#128736;&#65039; Subcontractor Tracking</h4>
+          <div class="pain">"We keep using the same subbies because we don't have time to evaluate alternatives."</div>
+          <div class="solution">AI builds a scorecard for each subcontractor — on-time rate, defect history, compliance documentation, pricing trends. Recommends alternatives when performance dips.</div>
+          <div class="roi-line">
+            <span class="before">Gut feel</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Data-driven decisions</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-weather">
+          <h4>&#127783;&#65039; Weather Impact Planning</h4>
+          <div class="pain">"Rain forecast on Thursday means we scramble to rearrange the concrete pour."</div>
+          <div class="solution">AI monitors BOM forecasts and cross-references your schedule. Flags weather-sensitive tasks 5 days out and suggests rescheduling options before the crew gets sent home.</div>
+          <div class="roi-line">
+            <span class="before">Reactive scramble</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">5-day advance warning</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Compliance & Safety -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128203;</span> Compliance &amp; Safety <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-swms">
+          <h4>&#128203; SWMS Generation</h4>
+          <div class="pain">"Writing a new SWMS for every job takes half a day, and they all look the same anyway."</div>
+          <div class="solution">AI generates Safe Work Method Statements from the job scope, site conditions, and trade activities. Pre-populates hazards, controls, and PPE requirements. You review and sign off.</div>
+          <div class="roi-line">
+            <span class="before">4 hours</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">5 minutes</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-incidents">
+          <h4>&#128680; Incident Pattern Detection</h4>
+          <div class="pain">"We log near-misses but nobody reads the spreadsheet until after an actual injury."</div>
+          <div class="solution">AI analyses incident and near-miss reports across all your sites. Spots patterns — same task, same time of day, same subcontractor — and alerts you before a trend becomes a claim.</div>
+          <div class="roi-line">
+            <span class="before">Invisible patterns</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Early warning system</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-bim">
+          <h4>&#9989; BIM Clash Detection</h4>
+          <div class="pain">"The plumber and the sparky clashed in the ceiling space — again. $8,000 rework."</div>
+          <div class="solution">AI scans BIM models and flags structural, mechanical, and electrical clashes before construction starts. Saves rework costs and schedule delays.</div>
+          <div class="roi-line">
+            <span class="before">$8k rework per clash</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Caught before pour</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Finance & Claims -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128176;</span> Finance &amp; Claims <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card demo-card-special" id="detail-variation">
+          <h4>&#128194; Variation Claim Builder</h4>
+          <div class="pain">"The client asked for extra power to the shed. It was in an email. Or a text. Or a site diary. Building the claim means hunting through a year of correspondence."</div>
+          <div class="solution">AI assembles emails, texts, photos, diary entries, and invoices into a chronological variation claim. Links each event to its source document. Calculates the cost build-up and flags gaps in evidence.</div>
+          <div class="roi-line">
+            <span class="before">4 hours</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2 minutes</span>
+          </div>
+          <a href="../demos/construction_variation-claim.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card" id="detail-invoicing">
+          <h4>&#128176; Invoice &amp; Payment Chasing</h4>
+          <div class="pain">"We've got $180k outstanding and nobody has time to chase it."</div>
+          <div class="solution">AI monitors your aged receivables, auto-drafts follow-up emails at 30/60/90 days, predicts which clients will pay slow based on history, and flags accounts heading for trouble.</div>
+          <div class="roi-line">
+            <span class="before">$180k outstanding</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">40% reduction in aged debt</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Industry CTA -->

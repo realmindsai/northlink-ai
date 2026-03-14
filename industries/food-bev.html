@@ -1,5 +1,5 @@
 <!-- ABOUTME: Food & Beverage industry story page for NorthLink AI. -->
-<!-- ABOUTME: Pain points, expandable deep-dives, and 3 interactive demo links. -->
+<!-- ABOUTME: Two-tier layout: overview grid of 12 AI use cases + deep-dive cards with pain points, solutions, and ROI. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +9,17 @@
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <link rel="stylesheet" href="../assets/css/shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>html { scroll-behavior: smooth; }</style>
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header">
     <div class="logo-area">
-      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-      <span class="logo-text">Real Minds AI</span>
+      <a href="https://realmindsai.com.au" class="logo-link">
+        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+        <span class="logo-text">Real Minds AI</span>
+      </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
     <nav>
@@ -41,110 +44,291 @@
     <p class="intro">You label by hand, trace by spreadsheet, and pray you never need to do a recall at 2am. Here's what changes when AI reads your labels, tracks your batches, and maps your supply chain.</p>
   </div>
 
-  <!-- Pain Points -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 1: Overview Grid — scannable tiles linking to deep dives
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="pain-cards">
+    <div class="overview-intro">
+      <div class="section-label">The AI Opportunity</div>
+      <h2>12 ways AI is transforming food &amp; beverage</h2>
+      <p>From the factory floor to the supply chain, AI handles the compliance and paperwork so your team stays on production.</p>
+      <div class="click-hint">Click any tile to see the full story below</div>
+    </div>
 
-      <div class="pain-card border-orange">
-        <span class="pain-icon">&#128203;</span>
-        <div>
-          <h3>"Label compliance is a minefield"</h3>
-          <p>FSANZ Standard 1.2.1 has 47 mandatory elements. Your label designer checks them by eye. Your compliance manager double-checks. Mistakes still get through.</p>
-        </div>
-      </div>
+    <div class="overview-grid">
 
-      <div class="pain-card border-blue">
-        <span class="pain-icon">&#128269;</span>
-        <div>
-          <h3>"Tracing a batch takes days, not seconds"</h3>
-          <p>When a customer asks where batch B-2026-0341 ended up, someone opens three spreadsheets and starts cross-referencing. If it's a recall, multiply that by every affected batch.</p>
-        </div>
-      </div>
+      <div class="category-label">Compliance &amp; Labelling</div>
 
-      <div class="pain-card border-green">
-        <span class="pain-icon">&#128680;</span>
-        <div>
-          <h3>"A recall notice means all-hands chaos"</h3>
-          <p>A supplier notification lands at 2am. Which products are affected? Which customers received them? Your team scrambles through paper records and shared drives.</p>
-        </div>
-      </div>
+      <a href="#detail-label-compliance" class="overview-tile has-demo" onclick="highlightCard('detail-label-compliance')">
+        <div class="tile-icon">&#128203;</div>
+        <h4>Label Compliance Checker</h4>
+        <div class="tile-stat">2 hrs &rarr; 30 seconds</div>
+        <div class="tile-desc">AI scans labels against FSANZ standards, flags violations</div>
+      </a>
+
+      <a href="#detail-regulatory-monitoring" class="overview-tile" onclick="highlightCard('detail-regulatory-monitoring')">
+        <div class="tile-icon">&#128240;</div>
+        <h4>Regulatory Change Monitoring</h4>
+        <div class="tile-stat">Real-time alerts</div>
+        <div class="tile-desc">Track FSANZ, state, and export-market regulatory updates</div>
+      </a>
+
+      <a href="#detail-allergen-crossref" class="overview-tile" onclick="highlightCard('detail-allergen-crossref')">
+        <div class="tile-icon">&#9888;&#65039;</div>
+        <h4>Allergen Cross-Reference</h4>
+        <div class="tile-stat">Automated consistency checks</div>
+        <div class="tile-desc">Cross-reference ingredients against labels and allergen declarations</div>
+      </a>
+
+      <div class="category-label">Traceability &amp; Recall</div>
+
+      <a href="#detail-batch-traceability" class="overview-tile has-demo" onclick="highlightCard('detail-batch-traceability')">
+        <div class="tile-icon">&#128269;</div>
+        <h4>Batch Traceability</h4>
+        <div class="tile-stat">Days &rarr; 3 seconds</div>
+        <div class="tile-desc">Map the full genealogy tree from supplier to retail in seconds</div>
+      </a>
+
+      <a href="#detail-recall-war-room" class="overview-tile has-demo" onclick="highlightCard('detail-recall-war-room')">
+        <div class="tile-icon">&#128680;</div>
+        <h4>Recall War Room</h4>
+        <div class="tile-stat">All-hands chaos &rarr; 2.8 seconds</div>
+        <div class="tile-desc">Trace contamination, scope the recall, draft communications</div>
+      </a>
+
+      <a href="#detail-supplier-audit" class="overview-tile" onclick="highlightCard('detail-supplier-audit')">
+        <div class="tile-icon">&#128196;</div>
+        <h4>Supplier Audit Trail</h4>
+        <div class="tile-stat">Continuous monitoring</div>
+        <div class="tile-desc">Track supplier certifications, COAs, and spec changes</div>
+      </a>
+
+      <div class="category-label">Production &amp; Quality</div>
+
+      <a href="#detail-recipe-scaling" class="overview-tile" onclick="highlightCard('detail-recipe-scaling')">
+        <div class="tile-icon">&#9878;&#65039;</div>
+        <h4>Recipe Scaling &amp; Costing</h4>
+        <div class="tile-stat">Accurate scaled costings in minutes</div>
+        <div class="tile-desc">Adjust recipes for batch size, yield losses, and equipment</div>
+      </a>
+
+      <a href="#detail-shelf-life" class="overview-tile" onclick="highlightCard('detail-shelf-life')">
+        <div class="tile-icon">&#128197;</div>
+        <h4>Shelf Life Prediction</h4>
+        <div class="tile-stat">Reduce waste 30%</div>
+        <div class="tile-desc">Predict shelf life from formulation, packaging, and storage</div>
+      </a>
+
+      <a href="#detail-oee" class="overview-tile" onclick="highlightCard('detail-oee')">
+        <div class="tile-icon">&#128200;</div>
+        <h4>Production Line OEE</h4>
+        <div class="tile-stat">Real-time OEE dashboard</div>
+        <div class="tile-desc">Monitor performance, categorise stops, identify loss patterns</div>
+      </a>
+
+      <div class="category-label">Supply Chain &amp; Demand</div>
+
+      <a href="#detail-demand-forecasting" class="overview-tile" onclick="highlightCard('detail-demand-forecasting')">
+        <div class="tile-icon">&#128200;</div>
+        <h4>Demand Forecasting</h4>
+        <div class="tile-stat">Predict demand 8 weeks out</div>
+        <div class="tile-desc">Analyse sales, seasons, promotions, and external signals</div>
+      </a>
+
+      <a href="#detail-inventory-optimisation" class="overview-tile" onclick="highlightCard('detail-inventory-optimisation')">
+        <div class="tile-icon">&#128230;</div>
+        <h4>Inventory Optimisation</h4>
+        <div class="tile-stat">Reduce spoilage 35%</div>
+        <div class="tile-desc">Optimise stock levels, rotation, and ordering to minimise waste</div>
+      </a>
+
+      <a href="#detail-price-benchmarking" class="overview-tile" onclick="highlightCard('detail-price-benchmarking')">
+        <div class="tile-icon">&#128176;</div>
+        <h4>Supplier Price Benchmarking</h4>
+        <div class="tile-stat">Save 8-12% on key inputs</div>
+        <div class="tile-desc">Benchmark purchase prices against market rates and alternatives</div>
+      </a>
 
     </div>
   </div>
 
-  <!-- Accordion Deep-Dives -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 2: Deep Dive — detailed cards with pain/solution/ROI
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="accordion-group">
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        The numbers behind food &amp; beverage in Melbourne's north
-      </div>
-      <div class="accordion-content">
-        <p>Melbourne's north is a major food and beverage production hub, with over 400 producers ranging from artisan bakeries to large-scale dairy and meat processors. The region's proximity to freight corridors and cold-chain infrastructure makes it a natural home for food manufacturing. Compliance, traceability, and recall readiness remain the biggest operational burdens for businesses of all sizes.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        Where AI fits in a typical food &amp; beverage workflow
-      </div>
-      <div class="accordion-content">
-        <p>AI integrates into food and beverage operations at three critical points: label compliance checking (scanning labels against FSANZ standards before print), batch traceability (linking raw materials to finished products across the supply chain), and recall management (instantly mapping affected products, batches, and customers when a contamination alert is triggered).</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        What other food &amp; beverage businesses are doing with AI right now
-      </div>
-      <div class="accordion-content">
-        <p>Leading food producers are using AI to automate label compliance reviews that previously took hours, build real-time batch traceability systems that replace spreadsheet lookups, and create recall response playbooks that execute in seconds instead of days. These tools work with the data businesses already capture — they just make it instantly accessible.</p>
-      </div>
-
+    <div class="deep-dive-intro">
+      <div class="section-label">Dig Deeper</div>
+      <h2>How each one works</h2>
+      <p>Real pain points, real solutions, real time savings. Three of these have live demos you can try right now.</p>
     </div>
-  </div>
 
-  <!-- Demo Cards -->
-  <div class="section">
-    <h2 class="section-heading">See it in action</h2>
-    <div class="demo-cards">
+    <!-- Compliance & Labelling -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128203;</span> Compliance &amp; Labelling <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
 
-      <a href="../demos/food_label-compliance.html" class="demo-card">
-        <div class="demo-card-header gradient-purple-orange">
-          <div class="demo-icon">&#128203;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-label-compliance">
+          <h4>&#128203; Label Compliance Checker</h4>
+          <div class="pain">"FSANZ Standard 1.2.1 has 47 mandatory elements. Our compliance manager checks them by eye. Mistakes still get through — and a single missed allergen declaration can trigger a recall."</div>
+          <div class="solution">AI scans food labels against the full FSANZ standards library, flags violations with specific clause references, checks allergen declarations, nutritional panel accuracy, and mandatory warning statements. Returns a compliance report in 30 seconds.</div>
+          <div class="roi-line">
+            <span class="before">2 hours manual review</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">30 seconds</span>
+          </div>
+          <a href="../demos/food_label-compliance.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Label Compliance Checker</h3>
-          <p>AI scans food labels against FSANZ standards and flags violations instantly.</p>
-          <div class="time-savings">2 hours &rarr; 30 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/food_batch-traceability.html" class="demo-card">
-        <div class="demo-card-header gradient-blue-green">
-          <div class="demo-icon">&#128269;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card" id="detail-regulatory-monitoring">
+          <h4>&#128240; Regulatory Change Monitoring</h4>
+          <div class="pain">"A new FSANZ standard dropped and we found out from a customer complaint. We had no idea the rules had changed."</div>
+          <div class="solution">AI monitors FSANZ, state food authorities, and export-market regulatory bodies for updates. When a change is published, it cross-references your product catalogue and flags exactly which products are affected and what needs to change.</div>
+          <div class="roi-line">
+            <span class="before">Customer complaints</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Real-time alerts</span>
+          </div>
         </div>
-        <div class="demo-card-body">
-          <h3>Batch Traceability</h3>
-          <p>Type a batch number and watch the supply chain light up from supplier to customer.</p>
-          <div class="time-savings">3 days &rarr; 3 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/food_recall-war-room.html" class="demo-card">
-        <div class="demo-card-header gradient-green-yellow">
-          <div class="demo-icon">&#128680;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card" id="detail-allergen-crossref">
+          <h4>&#9888;&#65039; Allergen Cross-Reference</h4>
+          <div class="pain">"We reformulated 3 products but forgot to update the allergen matrix. The mismatch sat there for weeks."</div>
+          <div class="solution">AI cross-references ingredient specifications against product labels and allergen declarations. When an ingredient changes, it flags every downstream product that needs a label update — before the mismatch reaches the shelf.</div>
+          <div class="roi-line">
+            <span class="before">Manual spreadsheet tracking</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Automated consistency checks</span>
+          </div>
         </div>
-        <div class="demo-card-body">
-          <h3>Recall War Room</h3>
-          <p>AI traces contaminated ingredients through your entire production chain in seconds.</p>
-          <div class="time-savings">3-5 days &rarr; 2.8 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
+      </div>
     </div>
+
+    <!-- Traceability & Recall -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128269;</span> Traceability &amp; Recall <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card demo-card-special" id="detail-batch-traceability">
+          <h4>&#128269; Batch Traceability</h4>
+          <div class="pain">"Tracing a batch takes days of spreadsheet cross-referencing. Three systems, no links between them, and someone always has the file open."</div>
+          <div class="solution">AI maps the full genealogy tree: suppliers &rarr; raw materials &rarr; production runs &rarr; finished goods &rarr; distribution &rarr; retail. Type a batch number and see the complete forward and backward trace in 3 seconds.</div>
+          <div class="roi-line">
+            <span class="before">Days of cross-referencing</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">3 seconds</span>
+          </div>
+          <a href="../demos/food_batch-traceability.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card demo-card-special" id="detail-recall-war-room">
+          <h4>&#128680; Recall War Room</h4>
+          <div class="pain">"A recall notice at 2am means all-hands chaos. Which batches? Which SKUs? Which customers? Everyone scrambles through paper records and shared drives."</div>
+          <div class="solution">AI traces contamination forward through the entire supply chain — from the affected ingredient to every batch, SKU, and customer that received it. Scopes the recall in 2.8 seconds and drafts communications for customers, regulators, and internal teams.</div>
+          <div class="roi-line">
+            <span class="before">All-hands chaos</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2.8 seconds to scope</span>
+          </div>
+          <a href="../demos/food_recall-war-room.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card" id="detail-supplier-audit">
+          <h4>&#128196; Supplier Audit Trail</h4>
+          <div class="pain">"Our supplier changed their soy source and didn't tell us. We only found out when a customer flagged an allergen issue."</div>
+          <div class="solution">AI continuously monitors supplier certifications, Certificates of Analysis, and specification documents. When an ingredient source shifts or a certification lapses, you get an alert — not a customer complaint.</div>
+          <div class="roi-line">
+            <span class="before">No upstream visibility</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Continuous monitoring</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Production & Quality -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#9878;&#65039;</span> Production &amp; Quality <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-recipe-scaling">
+          <h4>&#9878;&#65039; Recipe Scaling &amp; Costing</h4>
+          <div class="pain">"Scaling from 50kg to 500kg batch isn't just multiply by 10. Emulsifiers behave differently, yield losses change, and equipment has its own limits."</div>
+          <div class="solution">AI adjusts recipes for batch size, accounting for non-linear ingredient behaviour, yield losses, ingredient interactions, and equipment constraints. Produces accurate scaled costings in minutes instead of trial-and-error.</div>
+          <div class="roi-line">
+            <span class="before">Trial-and-error scaling</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Accurate costings in minutes</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-shelf-life">
+          <h4>&#128197; Shelf Life Prediction</h4>
+          <div class="pain">"We set shelf life conservatively and waste 12% of production. But accelerated testing for every formulation tweak costs a fortune."</div>
+          <div class="solution">AI predicts shelf life from formulation, packaging, and storage conditions using historical stability data and degradation models. Optimise shelf life without expensive testing for every change.</div>
+          <div class="roi-line">
+            <span class="before">12% production waste</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Reduce waste 30%</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-oee">
+          <h4>&#128200; Production Line OEE</h4>
+          <div class="pain">"We know the line stops but not why or how often. The whiteboard tracking system gave up months ago."</div>
+          <div class="solution">AI monitors production line performance in real time, categorises every stop event, and identifies the patterns driving availability, performance, and quality losses. Turns invisible downtime into actionable data.</div>
+          <div class="roi-line">
+            <span class="before">Invisible downtime</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Real-time OEE dashboard</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Supply Chain & Demand -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128176;</span> Supply Chain &amp; Demand <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-demand-forecasting">
+          <h4>&#128200; Demand Forecasting</h4>
+          <div class="pain">"Christmas orders caught us off guard again. We ordered based on last year's numbers plus gut feel, and still ran out of stock."</div>
+          <div class="solution">AI analyses historical sales, seasonal patterns, promotions, and external signals — weather, events, market trends — to forecast demand 8 weeks out. Turns reactive ordering into proactive planning.</div>
+          <div class="roi-line">
+            <span class="before">Gut feel ordering</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">8-week demand forecast</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-inventory-optimisation">
+          <h4>&#128230; Inventory Optimisation</h4>
+          <div class="pain">"We threw out $40k of expired ingredients last quarter. FIFO tracking on spreadsheets just doesn't work at scale."</div>
+          <div class="solution">AI optimises stock levels, rotation schedules, and reorder points to minimise waste while preventing stockouts. Tracks expiry dates across all ingredients and flags items approaching end-of-life before they become write-offs.</div>
+          <div class="roi-line">
+            <span class="before">$40k expired ingredients</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Reduce spoilage 35%</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-price-benchmarking">
+          <h4>&#128176; Supplier Price Benchmarking</h4>
+          <div class="pain">"Are we getting a good price on our flour? No idea. We've used the same supplier for years and never compared."</div>
+          <div class="solution">AI benchmarks your purchase prices against market rates and alternative suppliers for commodity ingredients. Flags savings opportunities and tracks price trends so you negotiate from data, not guesswork.</div>
+          <div class="roi-line">
+            <span class="before">No price visibility</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Save 8-12% on key inputs</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Industry CTA -->

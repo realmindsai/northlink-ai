@@ -119,8 +119,20 @@ h3 {
 }
 
 .site-header .logo-area img {
-  height: 32px;
+  height: 44px;
   width: auto;
+}
+
+.site-header .logo-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.site-header .logo-link:hover {
+  text-decoration: none;
 }
 
 .site-header .logo-area .logo-text {
@@ -353,6 +365,19 @@ h3 {
   font-size: 14px;
   color: var(--color-slate-black);
   margin: 0;
+}
+
+a.pain-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+
+a.pain-card:hover {
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
 }
 
 /* ── Demo Cards ── */
@@ -684,6 +709,8 @@ h3 {
   padding: 16px 32px;
   font-size: 14px;
   color: var(--color-slate-gray);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .breadcrumb-bar a {
@@ -693,7 +720,8 @@ h3 {
 /* ── Industry Header ── */
 .industry-header {
   padding: 32px 32px 24px;
-  max-width: 800px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .industry-header .icon-title {
@@ -778,6 +806,289 @@ h3 {
   }
   .section {
     padding: 32px 16px;
+  }
+}
+
+/* ── Overview Grid (Tier 1: industry use case tiles) ── */
+.overview-intro {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.overview-intro h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.overview-intro p {
+  font-size: 15px;
+  color: var(--color-slate-black);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.overview-intro .click-hint {
+  font-size: 13px;
+  color: var(--color-slate-gray);
+  margin-top: 6px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.overview-tile {
+  background: #fff;
+  border: 1px solid var(--color-light-gray);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+  transition: all 0.25s;
+  cursor: pointer;
+  position: relative;
+  display: block;
+  color: inherit;
+}
+
+.overview-tile:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-color: var(--color-purple);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.overview-tile .tile-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.overview-tile h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--color-black);
+}
+
+.overview-tile .tile-stat {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-purple);
+}
+
+.overview-tile .tile-desc {
+  font-size: 12px;
+  color: var(--color-slate-gray);
+  margin-top: 4px;
+}
+
+.overview-tile.has-demo {
+  border-color: var(--color-purple);
+  background: linear-gradient(135deg, var(--color-off-white), #f3ecf8);
+}
+
+.overview-tile.has-demo::after {
+  content: 'TRY LIVE DEMO';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  background: var(--color-purple);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.overview-grid .category-label {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-slate-black);
+  padding: 8px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.overview-grid .category-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-light-gray);
+}
+
+/* ── Deep Dive Cards (Tier 2: detailed use case descriptions) ── */
+.deep-dive-intro {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.deep-dive-intro h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.deep-dive-intro p {
+  font-size: 15px;
+  color: var(--color-slate-black);
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.category-section {
+  margin-bottom: 36px;
+}
+
+.category-section h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.category-section h3 .cat-icon {
+  font-size: 22px;
+}
+
+.category-section h3 .cat-line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-light-gray);
+}
+
+.use-case-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.use-case-card {
+  background: #fff;
+  border: 1px solid var(--color-light-gray);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.4s;
+  scroll-margin-top: 80px;
+}
+
+.use-case-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
+.use-case-card h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: var(--color-black);
+}
+
+.use-case-card .pain {
+  font-size: 13px;
+  color: var(--color-slate-gray);
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.use-case-card .solution {
+  font-size: 14px;
+  color: var(--color-slate-black);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.use-case-card .roi-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.roi-line .before {
+  color: var(--color-danger);
+  text-decoration: line-through;
+}
+
+.roi-line .arrow {
+  color: var(--color-slate-gray);
+}
+
+.roi-line .after {
+  color: var(--color-green);
+}
+
+@keyframes highlight-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(167,122,205,0.4); }
+  50%  { box-shadow: 0 0 0 8px rgba(167,122,205,0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(167,122,205,0); }
+}
+
+.use-case-card.highlighted {
+  border-color: var(--color-purple);
+  animation: highlight-pulse 1.2s ease-out;
+}
+
+.use-case-card.demo-card-special {
+  border-color: var(--color-purple);
+  position: relative;
+}
+
+.use-case-card.demo-card-special::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-purple), var(--color-orange));
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.demo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-purple);
+  background: #f3ecf8;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+}
+
+.demo-link:hover {
+  text-decoration: none;
+  background: #ebe0f3;
+}
+
+/* ── Responsive: Overview Grid & Use Case Cards ── */
+@media (max-width: 1199px) {
+  .overview-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .use-case-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .use-case-cards {
+    grid-template-columns: 1fr;
   }
 }
 

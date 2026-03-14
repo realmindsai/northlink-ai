@@ -1,5 +1,5 @@
 <!-- ABOUTME: Retail & Hospitality industry story page for NorthLink AI. -->
-<!-- ABOUTME: Pain points, expandable deep-dives, and 3 interactive demo links. -->
+<!-- ABOUTME: Two-tier layout: overview grid of 12 AI use cases + deep-dive cards with pain points, solutions, and ROI. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +9,17 @@
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <link rel="stylesheet" href="../assets/css/shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>html { scroll-behavior: smooth; }</style>
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header">
     <div class="logo-area">
-      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-      <span class="logo-text">Real Minds AI</span>
+      <a href="https://realmindsai.com.au" class="logo-link">
+        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+        <span class="logo-text">Real Minds AI</span>
+      </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
     <nav>
@@ -41,110 +44,291 @@
     <p class="intro">Your best seller might be losing you money. Your customers photograph competitor products. Last night's reviews are sitting unanswered. Here's what changes when AI analyses your menu, recognises products, and writes your responses.</p>
   </div>
 
-  <!-- Pain Points -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 1: Overview Grid — scannable tiles linking to deep dives
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="pain-cards">
+    <div class="overview-intro">
+      <div class="section-label">The AI Opportunity</div>
+      <h2>12 ways AI is transforming retail &amp; hospitality</h2>
+      <p>From the kitchen to the shop floor, AI handles the analysis so your team stays with the customers.</p>
+      <div class="click-hint">Click any tile to see the full story below</div>
+    </div>
 
-      <div class="pain-card border-orange">
-        <span class="pain-icon">&#128202;</span>
-        <div>
-          <h3>"No idea which menu items actually make money"</h3>
-          <p>Your Chicken Parma sells 140 per week. But after food cost, prep time, and waste, it might be your worst performer. You won't know until someone builds a margin analysis.</p>
-        </div>
-      </div>
+    <div class="overview-grid">
 
-      <div class="pain-card border-blue">
-        <span class="pain-icon">&#128241;</span>
-        <div>
-          <h3>"Customers want 'that thing I saw on Instagram'"</h3>
-          <p>A customer shows you a photo of a product they saw online. Your staff shrugs. You've lost a sale and maybe a customer.</p>
-        </div>
-      </div>
+      <div class="category-label">Menu &amp; Product Intelligence</div>
 
-      <div class="pain-card border-green">
-        <span class="pain-icon">&#11088;</span>
-        <div>
-          <h3>"14 new reviews and no time to respond"</h3>
-          <p>Last night, 14 reviews came in across Google, TripAdvisor, and Uber Eats. Each needs a different tone. Your manager doesn't start until 10am.</p>
-        </div>
-      </div>
+      <a href="#detail-menu-engineering" class="overview-tile has-demo" onclick="highlightCard('detail-menu-engineering')">
+        <div class="tile-icon">&#128202;</div>
+        <h4>Menu Engineering Dashboard</h4>
+        <div class="tile-stat">Gut feel &rarr; Real-time margins</div>
+        <div class="tile-desc">AI maps every item on a popularity-vs-profitability matrix</div>
+      </a>
+
+      <a href="#detail-visual-search" class="overview-tile has-demo" onclick="highlightCard('detail-visual-search')">
+        <div class="tile-icon">&#128241;</div>
+        <h4>Visual Product Search</h4>
+        <div class="tile-stat">Lost sale &rarr; 98% match</div>
+        <div class="tile-desc">AI matches customer photos to your inventory instantly</div>
+      </a>
+
+      <a href="#detail-dynamic-pricing" class="overview-tile" onclick="highlightCard('detail-dynamic-pricing')">
+        <div class="tile-icon">&#128181;</div>
+        <h4>Dynamic Pricing &amp; Competitor Monitoring</h4>
+        <div class="tile-stat">Real-time price intelligence</div>
+        <div class="tile-desc">AI monitors competitor prices and recommends adjustments</div>
+      </a>
+
+      <div class="category-label">Customer &amp; Reputation</div>
+
+      <a href="#detail-review-response" class="overview-tile has-demo" onclick="highlightCard('detail-review-response')">
+        <div class="tile-icon">&#11088;</div>
+        <h4>Review Response Generator</h4>
+        <div class="tile-stat">2 hours &rarr; 2 minutes</div>
+        <div class="tile-desc">AI drafts platform-matched responses for every review</div>
+      </a>
+
+      <a href="#detail-social-media" class="overview-tile" onclick="highlightCard('detail-social-media')">
+        <div class="tile-icon">&#128247;</div>
+        <h4>Social Media Content Engine</h4>
+        <div class="tile-stat">Daily posts, 15 min/week</div>
+        <div class="tile-desc">AI generates platform-specific content from your menu and events</div>
+      </a>
+
+      <a href="#detail-loyalty-analytics" class="overview-tile" onclick="highlightCard('detail-loyalty-analytics')">
+        <div class="tile-icon">&#128150;</div>
+        <h4>Customer Loyalty Analytics</h4>
+        <div class="tile-stat">Find your top 20%</div>
+        <div class="tile-desc">AI segments customers by visit frequency, spend, and churn risk</div>
+      </a>
+
+      <div class="category-label">Operations &amp; Inventory</div>
+
+      <a href="#detail-demand-forecasting" class="overview-tile" onclick="highlightCard('detail-demand-forecasting')">
+        <div class="tile-icon">&#128230;</div>
+        <h4>Inventory Demand Forecasting</h4>
+        <div class="tile-stat">Reduce waste 30%</div>
+        <div class="tile-desc">AI forecasts demand by day, factoring weather and events</div>
+      </a>
+
+      <a href="#detail-roster" class="overview-tile" onclick="highlightCard('detail-roster')">
+        <div class="tile-icon">&#128197;</div>
+        <h4>Staff Roster Optimisation</h4>
+        <div class="tile-stat">Match staffing to demand within 5%</div>
+        <div class="tile-desc">AI generates rosters from foot traffic and POS data</div>
+      </a>
+
+      <a href="#detail-supplier" class="overview-tile" onclick="highlightCard('detail-supplier')">
+        <div class="tile-icon">&#128666;</div>
+        <h4>Supplier Performance Analytics</h4>
+        <div class="tile-stat">Data-backed supplier conversations</div>
+        <div class="tile-desc">AI scores suppliers on timeliness, quality, and price</div>
+      </a>
+
+      <div class="category-label">Marketing &amp; Growth</div>
+
+      <a href="#detail-campaign-automation" class="overview-tile" onclick="highlightCard('detail-campaign-automation')">
+        <div class="tile-icon">&#128231;</div>
+        <h4>Email &amp; SMS Campaign Automation</h4>
+        <div class="tile-stat">2% &rarr; 25% open rates</div>
+        <div class="tile-desc">AI creates personalised campaigns from purchase history</div>
+      </a>
+
+      <a href="#detail-seasonal-campaigns" class="overview-tile" onclick="highlightCard('detail-seasonal-campaigns')">
+        <div class="tile-icon">&#127876;</div>
+        <h4>Seasonal Campaign Generator</h4>
+        <div class="tile-stat">Auto-generated 12-month calendar</div>
+        <div class="tile-desc">AI plans seasonal themes, offers, and content 4 weeks ahead</div>
+      </a>
+
+      <a href="#detail-local-seo" class="overview-tile" onclick="highlightCard('detail-local-seo')">
+        <div class="tile-icon">&#128269;</div>
+        <h4>Local SEO &amp; Google Business</h4>
+        <div class="tile-stat">Page 3 &rarr; Page 1</div>
+        <div class="tile-desc">AI audits and optimises your local search presence</div>
+      </a>
 
     </div>
   </div>
 
-  <!-- Accordion Deep-Dives -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 2: Deep Dive — detailed cards with pain/solution/ROI
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="accordion-group">
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        The numbers behind retail and hospitality in Melbourne's north
-      </div>
-      <div class="accordion-content">
-        <p>With 10,831 retail and hospitality businesses, Melbourne's north represents one of the largest concentrations of customer-facing businesses in the state. From cafes and restaurants to retail shops and accommodation providers, these businesses operate on thin margins and high volume. Understanding which products and menu items are actually profitable, converting customer interest into sales, and managing online reputation are daily challenges that consume limited management time.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        Where AI fits in a typical retail and hospitality workflow
-      </div>
-      <div class="accordion-content">
-        <p>AI fits into retail and hospitality operations at three customer-impact points: menu engineering (analysing sales, cost, and margin data to identify hidden winners and losers), visual product matching (using image recognition to match customer photos to inventory), and review management (generating contextually appropriate responses across multiple platforms). Each of these capabilities works with data businesses already have but rarely analyse.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        What other retail and hospitality businesses are doing with AI right now
-      </div>
-      <div class="accordion-content">
-        <p>Restaurants, cafes, and retailers in Melbourne's north are beginning to use AI for real-time menu profitability analysis, visual search tools that help staff identify products from customer photos, and automated review response systems that maintain brand voice across Google, TripAdvisor, and delivery platforms. These tools turn existing data into actionable insights without adding headcount.</p>
-      </div>
-
+    <div class="deep-dive-intro">
+      <div class="section-label">Dig Deeper</div>
+      <h2>How each one works</h2>
+      <p>Real pain points, real solutions, real time savings. Three of these have live demos you can try right now.</p>
     </div>
-  </div>
 
-  <!-- Demo Cards -->
-  <div class="section">
-    <h2 class="section-heading">See it in action</h2>
-    <div class="demo-cards">
+    <!-- Menu & Product Intelligence -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128202;</span> Menu &amp; Product Intelligence <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
 
-      <a href="../demos/retail_menu-engineering.html" class="demo-card">
-        <div class="demo-card-header gradient-purple-orange">
-          <div class="demo-icon">&#128202;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-menu-engineering">
+          <h4>&#128202; Menu Engineering Dashboard</h4>
+          <div class="pain">"No idea which menu items actually make money. Chicken Parma sells 140/week but might be $2.10/serve margin."</div>
+          <div class="solution">AI maps every item on a popularity-vs-profitability matrix (Stars, Puzzles, Plowhorses, Dogs), giving you real-time margin visibility across your entire menu. Recommends pricing and portion adjustments with projected revenue impact.</div>
+          <div class="roi-line">
+            <span class="before">Gut feel pricing</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Real-time margin visibility</span>
+          </div>
+          <a href="../demos/retail_menu-engineering.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Menu Engineering Dashboard</h3>
-          <p>AI analyses your menu by popularity and profitability, revealing hidden winners and losers.</p>
-          <div class="time-savings">Manual &rarr; Real-time</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/retail_visual-search.html" class="demo-card">
-        <div class="demo-card-header gradient-blue-green">
-          <div class="demo-icon">&#128241;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-visual-search">
+          <h4>&#128241; Visual Product Search</h4>
+          <div class="pain">"Customers want 'that thing I saw on Instagram' — staff can't identify products from vague descriptions or blurry photos."</div>
+          <div class="solution">AI matches customer photos against your inventory using visual feature extraction — colour, shape, brand — with a 98% match rate. Suggests alternatives at different price points so the sale isn't lost.</div>
+          <div class="roi-line">
+            <span class="before">Lost sale</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">98% match rate</span>
+          </div>
+          <a href="../demos/retail_visual-search.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Visual Product Search</h3>
-          <p>Customer shows a photo, AI matches it to your inventory with confidence scores.</p>
-          <div class="time-savings">Lost sale &rarr; 98% match</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/retail_review-response.html" class="demo-card">
-        <div class="demo-card-header gradient-green-yellow">
-          <div class="demo-icon">&#11088;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card" id="detail-dynamic-pricing">
+          <h4>&#128181; Dynamic Pricing &amp; Competitor Monitoring</h4>
+          <div class="pain">"Our competitors changed prices and we found out from a customer. Manual price-checking at competitor stores wastes hours."</div>
+          <div class="solution">AI monitors competitor pricing, seasonal demand signals, and inventory levels to recommend dynamic pricing adjustments that protect margins. Real-time price intelligence replaces reactive guesswork.</div>
+          <div class="roi-line">
+            <span class="before">Found out from customers</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Real-time price intelligence</span>
+          </div>
         </div>
-        <div class="demo-card-body">
-          <h3>Review Response Generator</h3>
-          <p>AI drafts contextually appropriate responses for reviews across all platforms.</p>
-          <div class="time-savings">2 hours &rarr; 2 minutes</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
+      </div>
     </div>
+
+    <!-- Customer & Reputation -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#11088;</span> Customer &amp; Reputation <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card demo-card-special" id="detail-review-response">
+          <h4>&#11088; Review Response Generator</h4>
+          <div class="pain">"14 new reviews and no time to respond. Google, TripAdvisor, Uber Eats — each needs a different tone and urgency level."</div>
+          <div class="solution">AI drafts responses matched to rating and platform: warm for 5-star, apologetic for 4-star, flagging 1-star for personal attention. Tone selector for brand voice. All platforms done in 2 minutes.</div>
+          <div class="roi-line">
+            <span class="before">2 hours</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2 minutes for all platforms</span>
+          </div>
+          <a href="../demos/retail_review-response.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card" id="detail-social-media">
+          <h4>&#128247; Social Media Content Engine</h4>
+          <div class="pain">"We haven't posted in 3 weeks because nobody has time. Inconsistent social media presence hurts our algorithm reach."</div>
+          <div class="solution">AI generates platform-specific content from your menu, events, and photos — Instagram stories, Facebook posts, Google Business updates — maintaining your brand voice daily with just 15 minutes of input per week.</div>
+          <div class="roi-line">
+            <span class="before">3 weeks between posts</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Daily posts, 15 min/week effort</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-loyalty-analytics">
+          <h4>&#128150; Customer Loyalty Analytics</h4>
+          <div class="pain">"We have a loyalty program but don't know if it works. No analysis of program effectiveness or customer lifetime value."</div>
+          <div class="solution">AI segments customers by visit frequency, spend patterns, and churn risk. Identifies your top 20% who drive 80% of revenue, then recommends targeted offers for each segment.</div>
+          <div class="roi-line">
+            <span class="before">One-size-fits-all rewards</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Identify top 20% driving 80% of revenue</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Operations & Inventory -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128230;</span> Operations &amp; Inventory <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-demand-forecasting">
+          <h4>&#128230; Inventory Demand Forecasting</h4>
+          <div class="pain">"We threw out $3k of produce last month. Manual ordering based on gut feel and last week's numbers."</div>
+          <div class="solution">AI forecasts demand by day and product category, factoring in weather, events, holidays, and historical patterns to optimise order quantities. Reduces waste by 30% while avoiding stockouts.</div>
+          <div class="roi-line">
+            <span class="before">$3k waste per month</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Reduce waste 30%</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-roster">
+          <h4>&#128197; Staff Roster Optimisation</h4>
+          <div class="pain">"We're overstaffed Tuesday lunch and understaffed Friday dinner. Manual rostering based on availability, not demand."</div>
+          <div class="solution">AI analyses foot traffic, POS data, and booking patterns to generate optimal rosters that match labour to demand curves. Staffing accuracy within 5% of actual need.</div>
+          <div class="roi-line">
+            <span class="before">Overstaffed and understaffed</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Match staffing to demand within 5%</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-supplier">
+          <h4>&#128666; Supplier Performance Analytics</h4>
+          <div class="pain">"Our fish supplier delivered late 3 times this month and we just cop it. No systematic tracking of supplier reliability."</div>
+          <div class="solution">AI scores suppliers on delivery timeliness, quality consistency, price competitiveness, and order accuracy. Gives you data-backed leverage in negotiations and flags underperformers early.</div>
+          <div class="roi-line">
+            <span class="before">Just cop it</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Data-backed supplier conversations</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Marketing & Growth -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128231;</span> Marketing &amp; Growth <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-campaign-automation">
+          <h4>&#128231; Email &amp; SMS Campaign Automation</h4>
+          <div class="pain">"We send the same offer to everyone and get 2% open rates. Batch-and-blast marketing with no segmentation."</div>
+          <div class="solution">AI creates personalised campaigns based on purchase history, visit recency, and preferences — different messages for your brunch regulars vs your Friday night crowd. Personalisation drives 25% open rates.</div>
+          <div class="roi-line">
+            <span class="before">2% open rates</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">25% open rates with personalisation</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-seasonal-campaigns">
+          <h4>&#127876; Seasonal Campaign Generator</h4>
+          <div class="pain">"Christmas promo planning starts too late every year. Reactive seasonal marketing instead of planned campaigns."</div>
+          <div class="solution">AI generates a 12-month campaign calendar with seasonal themes, suggested offers, and content drafts. Alerts you 4 weeks before each campaign window so you're always ahead.</div>
+          <div class="roi-line">
+            <span class="before">Reactive and late</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Auto-generated 12-month calendar</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-local-seo">
+          <h4>&#128269; Local SEO &amp; Google Business Optimisation</h4>
+          <div class="pain">"We're on page 3 of Google for 'best coffee Broadmeadows'. Unoptimised profile, inconsistent NAP data across directories."</div>
+          <div class="solution">AI audits your local SEO, suggests Google Business profile improvements, generates keyword-optimised descriptions, and monitors local search rankings. Gets you from page 3 to page 1.</div>
+          <div class="roi-line">
+            <span class="before">Page 3 of Google</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Page 1 ranking</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Industry CTA -->

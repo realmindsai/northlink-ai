@@ -1,5 +1,5 @@
 <!-- ABOUTME: Logistics & Transport industry story page for NorthLink AI. -->
-<!-- ABOUTME: Pain points, expandable deep-dives, and 3 interactive demo links. -->
+<!-- ABOUTME: Two-tier layout: overview grid of 12 AI use cases + deep-dive cards with pain points, solutions, and ROI. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +9,17 @@
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <link rel="stylesheet" href="../assets/css/shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>html { scroll-behavior: smooth; }</style>
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header">
     <div class="logo-area">
-      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-      <span class="logo-text">Real Minds AI</span>
+      <a href="https://realmindsai.com.au" class="logo-link">
+        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+        <span class="logo-text">Real Minds AI</span>
+      </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
     <nav>
@@ -41,110 +44,291 @@
     <p class="intro">Your drivers bring back crumpled dockets. Your routes get blown up by a single sick day. Your carrier invoices don't match your contracts. Here's what changes when AI reads, routes, and reconciles for you.</p>
   </div>
 
-  <!-- Pain Points -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 1: Overview Grid — scannable tiles linking to deep dives
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="pain-cards">
+    <div class="overview-intro">
+      <div class="section-label">The AI Opportunity</div>
+      <h2>12 ways AI is transforming logistics</h2>
+      <p>From the depot to the delivery, AI handles the paperwork so your team stays on the road.</p>
+      <div class="click-hint">Click any tile to see the full story below</div>
+    </div>
 
-      <div class="pain-card border-orange">
-        <span class="pain-icon">&#128196;</span>
-        <div>
-          <h3>"Delivery dockets are a mess of paper and photos"</h3>
-          <p>Drivers bring back crumpled PODs with illegible signatures. Someone has to match each one to an invoice. One wrong digit means a payment dispute.</p>
-        </div>
-      </div>
+    <div class="overview-grid">
 
-      <div class="pain-card border-blue">
-        <span class="pain-icon">&#128506;&#65039;</span>
-        <div>
-          <h3>"One driver calls in sick and the whole day unravels"</h3>
-          <p>48 deliveries across 4 routes. Driver 2 calls in at 6am. Someone spends an hour redistributing stops by hand. Time windows get missed.</p>
-        </div>
-      </div>
+      <div class="category-label">Documentation &amp; Compliance</div>
 
-      <div class="pain-card border-green">
-        <span class="pain-icon">&#128176;</span>
-        <div>
-          <h3>"Carrier invoices never match the contract"</h3>
-          <p>Every month, someone manually checks fuel surcharges, wait times, and zone rates against the contract. Overcharges slip through.</p>
-        </div>
-      </div>
+      <a href="#detail-pod-reconciliation" class="overview-tile has-demo" onclick="highlightCard('detail-pod-reconciliation')">
+        <div class="tile-icon">&#128196;</div>
+        <h4>POD Reconciliation</h4>
+        <div class="tile-stat">4 hrs &rarr; 30 seconds</div>
+        <div class="tile-desc">AI reads crumpled dockets, matches to invoices</div>
+      </a>
+
+      <a href="#detail-cor-documentation" class="overview-tile" onclick="highlightCard('detail-cor-documentation')">
+        <div class="tile-icon">&#128203;</div>
+        <h4>Chain of Responsibility Documentation</h4>
+        <div class="tile-stat">Automated compliance</div>
+        <div class="tile-desc">AI monitors driver hours, rest breaks, generates audit docs</div>
+      </a>
+
+      <a href="#detail-invoice-reconciliation" class="overview-tile has-demo" onclick="highlightCard('detail-invoice-reconciliation')">
+        <div class="tile-icon">&#128176;</div>
+        <h4>Carrier Invoice Reconciliation</h4>
+        <div class="tile-stat">3 hrs &rarr; 45 seconds</div>
+        <div class="tile-desc">AI catches overcharges by matching invoices to contract rates</div>
+      </a>
+
+      <div class="category-label">Fleet &amp; Routing</div>
+
+      <a href="#detail-route-optimisation" class="overview-tile has-demo" onclick="highlightCard('detail-route-optimisation')">
+        <div class="tile-icon">&#128506;&#65039;</div>
+        <h4>Route Optimisation</h4>
+        <div class="tile-stat">1 hour &rarr; 2 seconds</div>
+        <div class="tile-desc">AI reoptimises routes when a driver calls in sick</div>
+      </a>
+
+      <a href="#detail-fleet-lifecycle" class="overview-tile" onclick="highlightCard('detail-fleet-lifecycle')">
+        <div class="tile-icon">&#128663;</div>
+        <h4>Fleet Lifecycle Management</h4>
+        <div class="tile-stat">Extend fleet life 15%</div>
+        <div class="tile-desc">Data-driven replacement timing per vehicle</div>
+      </a>
+
+      <a href="#detail-fuel-efficiency" class="overview-tile" onclick="highlightCard('detail-fuel-efficiency')">
+        <div class="tile-icon">&#9981;&#65039;</div>
+        <h4>Fuel Efficiency Monitoring</h4>
+        <div class="tile-stat">Reduce fuel spend 8-12%</div>
+        <div class="tile-desc">Track fuel use per driver, route, and vehicle</div>
+      </a>
+
+      <div class="category-label">Warehouse &amp; Operations</div>
+
+      <a href="#detail-pick-path" class="overview-tile" onclick="highlightCard('detail-pick-path')">
+        <div class="tile-icon">&#128694;</div>
+        <h4>Pick-Path Optimisation</h4>
+        <div class="tile-stat">Reduce pick time 25%</div>
+        <div class="tile-desc">AI sequences picks by optimal walking path</div>
+      </a>
+
+      <a href="#detail-demand-slotting" class="overview-tile" onclick="highlightCard('detail-demand-slotting')">
+        <div class="tile-icon">&#128230;</div>
+        <h4>Demand-Driven Slotting</h4>
+        <div class="tile-stat">Cut pick time 20%</div>
+        <div class="tile-desc">Fast movers placed closest to dispatch</div>
+      </a>
+
+      <a href="#detail-dock-scheduling" class="overview-tile" onclick="highlightCard('detail-dock-scheduling')">
+        <div class="tile-icon">&#128674;</div>
+        <h4>Dock Scheduling</h4>
+        <div class="tile-stat">Eliminate wait times</div>
+        <div class="tile-desc">AI schedules dock appointments by carrier ETAs</div>
+      </a>
+
+      <div class="category-label">Customer &amp; Visibility</div>
+
+      <a href="#detail-delivery-prediction" class="overview-tile" onclick="highlightCard('detail-delivery-prediction')">
+        <div class="tile-icon">&#128225;</div>
+        <h4>Delivery Prediction &amp; Exception Handling</h4>
+        <div class="tile-stat">Proactive ETA updates</div>
+        <div class="tile-desc">AI predicts delays and notifies customers first</div>
+      </a>
+
+      <a href="#detail-comms-automation" class="overview-tile" onclick="highlightCard('detail-comms-automation')">
+        <div class="tile-icon">&#128172;</div>
+        <h4>Customer Communication Automation</h4>
+        <div class="tile-stat">Save 3 hours/day</div>
+        <div class="tile-desc">Auto-send status updates at key milestones</div>
+      </a>
+
+      <a href="#detail-damage-analytics" class="overview-tile" onclick="highlightCard('detail-damage-analytics')">
+        <div class="tile-icon">&#128200;</div>
+        <h4>Loss &amp; Damage Analytics</h4>
+        <div class="tile-stat">Reduce claims 30%</div>
+        <div class="tile-desc">AI finds root causes across damage incidents</div>
+      </a>
 
     </div>
   </div>
 
-  <!-- Accordion Deep-Dives -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 2: Deep Dive — detailed cards with pain/solution/ROI
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="accordion-group">
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        The numbers behind logistics in Melbourne's north
-      </div>
-      <div class="accordion-content">
-        <p>Melbourne's north is a logistics powerhouse, with 17,700 transport and logistics businesses operating across freight corridors connecting the port, airport, and interstate routes. From last-mile delivery fleets to long-haul carriers, these businesses move billions of dollars worth of goods annually. Paper-based proof of delivery, manual route planning, and invoice disputes remain persistent pain points across the industry.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        Where AI fits in a typical logistics workflow
-      </div>
-      <div class="accordion-content">
-        <p>AI integrates into logistics operations at three high-friction points: POD reconciliation (reading crumpled delivery dockets and matching them to invoices), route optimisation (dynamically redistributing deliveries when drivers or vehicles are unavailable), and invoice reconciliation (comparing carrier charges against contracted rates to catch overcharges automatically).</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        What other logistics businesses are doing with AI right now
-      </div>
-      <div class="accordion-content">
-        <p>Transport operators in Melbourne's north are deploying AI to digitise proof-of-delivery workflows, automatically rebalance routes when disruptions occur, and audit carrier invoices against contracts in seconds rather than hours. These tools pay for themselves within weeks by recovering overcharges and eliminating manual data entry.</p>
-      </div>
-
+    <div class="deep-dive-intro">
+      <div class="section-label">Dig Deeper</div>
+      <h2>How each one works</h2>
+      <p>Real pain points, real solutions, real time savings. Three of these have live demos you can try right now.</p>
     </div>
-  </div>
 
-  <!-- Demo Cards -->
-  <div class="section">
-    <h2 class="section-heading">See it in action</h2>
-    <div class="demo-cards">
+    <!-- Documentation & Compliance -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128203;</span> Documentation &amp; Compliance <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
 
-      <a href="../demos/logistics_pod-reconciliation.html" class="demo-card">
-        <div class="demo-card-header gradient-purple-orange">
-          <div class="demo-icon">&#128196;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-pod-reconciliation">
+          <h4>&#128196; POD Reconciliation</h4>
+          <div class="pain">"Drivers bring back crumpled PODs with illegible signatures. Someone has to match each one to an invoice. One wrong digit means a payment dispute."</div>
+          <div class="solution">AI extracts consignment numbers, receivers, signatures, and GPS coords from messy POD photos, then matches them to invoices automatically. Flags mismatches and missing dockets before they become disputes.</div>
+          <div class="roi-line">
+            <span class="before">4 hours</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">30 seconds</span>
+          </div>
+          <a href="../demos/logistics_pod-reconciliation.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>POD Reconciliation</h3>
-          <p>AI reads crumpled delivery dockets and matches them to invoices automatically.</p>
-          <div class="time-savings">4 hours &rarr; 30 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/logistics_route-optimisation.html" class="demo-card">
-        <div class="demo-card-header gradient-blue-green">
-          <div class="demo-icon">&#128506;&#65039;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card" id="detail-cor-documentation">
+          <h4>&#128203; Chain of Responsibility Documentation</h4>
+          <div class="pain">"CoR compliance means drowning in driver logbooks, maintenance records, and rest break tracking across the whole fleet."</div>
+          <div class="solution">AI monitors driver hours, rest breaks, and vehicle maintenance records for Chain of Responsibility compliance. Auto-generates audit documentation and flags breaches before an inspector does.</div>
+          <div class="roi-line">
+            <span class="before">Manual tracking</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Automated compliance</span>
+          </div>
         </div>
-        <div class="demo-card-body">
-          <h3>Route Optimisation</h3>
-          <p>Remove a driver and watch AI redistribute 48 deliveries across 3 routes in seconds.</p>
-          <div class="time-savings">1 hour &rarr; 2 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/logistics_invoice-reconciliation.html" class="demo-card">
-        <div class="demo-card-header gradient-green-yellow">
-          <div class="demo-icon">&#128176;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-invoice-reconciliation">
+          <h4>&#128176; Carrier Invoice Reconciliation</h4>
+          <div class="pain">"Every month, someone manually checks fuel surcharges, wait times, and zone rates across dozens of carrier invoices against the contract. Overcharges slip through."</div>
+          <div class="solution">AI extracts line items from carrier invoices (even scanned), matches against contract rates, highlights overcharges, and drafts dispute emails ready to send.</div>
+          <div class="roi-line">
+            <span class="before">3 hours</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">45 seconds</span>
+          </div>
+          <a href="../demos/logistics_invoice-reconciliation.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Invoice Reconciliation</h3>
-          <p>AI catches overcharges by comparing scanned carrier invoices to contracted rates.</p>
-          <div class="time-savings">3 hours &rarr; 45 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
+      </div>
     </div>
+
+    <!-- Fleet & Routing -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128506;&#65039;</span> Fleet &amp; Routing <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card demo-card-special" id="detail-route-optimisation">
+          <h4>&#128506;&#65039; Route Optimisation</h4>
+          <div class="pain">"48 deliveries across 4 routes. Driver 2 calls in at 6am. Someone spends an hour redistributing stops by hand. Time windows get missed."</div>
+          <div class="solution">AI reoptimises routes across remaining drivers, considering delivery windows, vehicle capacity, and traffic. The whole day is replanned in seconds, not hours.</div>
+          <div class="roi-line">
+            <span class="before">1 hour manual rework</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2 seconds</span>
+          </div>
+          <a href="../demos/logistics_route-optimisation.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card" id="detail-fleet-lifecycle">
+          <h4>&#128663; Fleet Lifecycle Management</h4>
+          <div class="pain">"We replace trucks when they break down, not when we should. Last year a blown engine cost us $45k and two weeks off the road."</div>
+          <div class="solution">AI analyses maintenance costs, fuel efficiency, and utilisation trends per vehicle to recommend optimal replacement timing. Extends fleet life while avoiding catastrophic failures.</div>
+          <div class="roi-line">
+            <span class="before">Reactive replacement</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Extend fleet life 15%</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-fuel-efficiency">
+          <h4>&#9981;&#65039; Fuel Efficiency Monitoring</h4>
+          <div class="pain">"Fuel is our biggest cost and we can't tell who's wasting it. Some drivers use 30% more fuel on the same route."</div>
+          <div class="solution">AI monitors fuel consumption per driver, route, and vehicle, identifying inefficient driving patterns — harsh braking, excessive idling, speeding — and suggests corrections with driver-level reporting.</div>
+          <div class="roi-line">
+            <span class="before">No visibility</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Reduce fuel spend 8-12%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Warehouse & Operations -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128230;</span> Warehouse &amp; Operations <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-pick-path">
+          <h4>&#128694; Pick-Path Optimisation</h4>
+          <div class="pain">"Pickers walk 12km per shift and still miss items. The pick list is in entry order, not walking order."</div>
+          <div class="solution">AI sequences pick lists by optimal walking path through warehouse zones, reducing travel distance and errors. Pickers follow a logical route instead of zigzagging across the floor.</div>
+          <div class="roi-line">
+            <span class="before">12km per shift</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Reduce pick time 25%</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-demand-slotting">
+          <h4>&#128230; Demand-Driven Slotting</h4>
+          <div class="pain">"Our best sellers are at the back of the warehouse because that's where they were put when we first stocked them."</div>
+          <div class="solution">AI analyses order frequency and velocity to recommend optimal warehouse slot positions. Fast movers get placed closest to dispatch, seasonal items rotate automatically.</div>
+          <div class="roi-line">
+            <span class="before">Static layout</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Cut pick time 20%</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-dock-scheduling">
+          <h4>&#128674; Dock Scheduling</h4>
+          <div class="pain">"Three trucks arrive at once and two sit idle for 2 hours. No one coordinates inbound deliveries with dock availability."</div>
+          <div class="solution">AI schedules dock appointments based on carrier ETAs, unload times, and available bays. Trucks arrive at staggered times and dock space is used efficiently.</div>
+          <div class="roi-line">
+            <span class="before">2-hour wait times</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Eliminate idle trucks</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Customer & Visibility -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128225;</span> Customer &amp; Visibility <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-delivery-prediction">
+          <h4>&#128225; Delivery Prediction &amp; Exception Handling</h4>
+          <div class="pain">"Customers call asking where their delivery is. Our dispatcher becomes a full-time phone operator instead of managing the fleet."</div>
+          <div class="solution">AI predicts delivery ETAs in real time, proactively notifies customers of delays, and suggests alternatives for exceptions. Customers know before they need to call.</div>
+          <div class="roi-line">
+            <span class="before">Reactive phone calls</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Proactive ETA updates</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-comms-automation">
+          <h4>&#128172; Customer Communication Automation</h4>
+          <div class="pain">"Our dispatcher spends half the day on the phone updating customers on delivery status. Three hours a day, just saying 'it's on its way'."</div>
+          <div class="solution">AI auto-sends status updates at key milestones — dispatched, en route, 30 minutes away, delivered — via SMS and email. Customers stay informed without a single phone call.</div>
+          <div class="roi-line">
+            <span class="before">3 hours/day on phone</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Save 3 hours/day</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-damage-analytics">
+          <h4>&#128200; Loss &amp; Damage Analytics</h4>
+          <div class="pain">"We know we're losing money on damage claims but not where or why. Same products keep arriving broken and nobody connects the dots."</div>
+          <div class="solution">AI analyses damage claims by route, driver, product type, and packaging to identify root causes and recommend preventive actions. Turns scattered incident reports into actionable patterns.</div>
+          <div class="roi-line">
+            <span class="before">No pattern analysis</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Reduce claims 30%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Industry CTA -->

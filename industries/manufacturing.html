@@ -1,5 +1,5 @@
 <!-- ABOUTME: Manufacturing industry story page for NorthLink AI. -->
-<!-- ABOUTME: Pain points, expandable deep-dives, and 3 interactive demo links. -->
+<!-- ABOUTME: Two-tier layout: overview grid of 12 AI use cases + deep-dive cards with pain points, solutions, and ROI. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +9,17 @@
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <link rel="stylesheet" href="../assets/css/shared.css">
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>html { scroll-behavior: smooth; }</style>
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header">
     <div class="logo-area">
-      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-      <span class="logo-text">Real Minds AI</span>
+      <a href="https://realmindsai.com.au" class="logo-link">
+        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+        <span class="logo-text">Real Minds AI</span>
+      </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
     <nav>
@@ -41,110 +44,291 @@
     <p class="intro">You quote jobs in spreadsheets. You schedule on whiteboards. Your best estimator's knowledge lives in their head. Here's what changes when AI reads your drawings, your emails, and your shop floor.</p>
   </div>
 
-  <!-- Pain Points -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 1: Overview Grid — scannable tiles linking to deep dives
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="pain-cards">
+    <div class="overview-intro">
+      <div class="section-label">The AI Opportunity</div>
+      <h2>12 ways AI is transforming manufacturing</h2>
+      <p>From the front office to the factory floor, AI handles the repetitive work so your team stays on the machines.</p>
+      <div class="click-hint">Click any tile to see the full story below</div>
+    </div>
 
-      <div class="pain-card border-orange">
-        <span class="pain-icon">&#128196;</span>
-        <div>
-          <h3>"Quoting takes 3 hours per job"</h3>
-          <p>Your estimator opens the drawing, counts features, checks material prices, calculates setup time, types it all into a spreadsheet. Every. Single. Job.</p>
-        </div>
-      </div>
+    <div class="overview-grid">
 
-      <div class="pain-card border-blue">
-        <span class="pain-icon">&#128231;</span>
-        <div>
-          <h3>"Tender packs sit in the inbox for days"</h3>
-          <p>A 12-page RFQ arrives with specs, drawings, and compliance requirements buried in attachments. Someone has to read it all before you can even start quoting.</p>
-        </div>
-      </div>
+      <div class="category-label">Quoting &amp; Estimating</div>
 
-      <div class="pain-card border-green">
-        <span class="pain-icon">&#128197;</span>
-        <div>
-          <h3>"A rush job throws the whole week off"</h3>
-          <p>When the best customer calls with an urgent order, someone spends 45 minutes rearranging the whiteboard. And still misses a deadline.</p>
-        </div>
-      </div>
+      <a href="#detail-quote-from-drawings" class="overview-tile has-demo" onclick="highlightCard('detail-quote-from-drawings')">
+        <div class="tile-icon">&#128196;</div>
+        <h4>Quote from Drawings</h4>
+        <div class="tile-stat">3 hours &rarr; 30 seconds</div>
+        <div class="tile-desc">AI reads engineering drawings and generates line-item quotes</div>
+      </a>
+
+      <a href="#detail-rfq-copilot" class="overview-tile has-demo" onclick="highlightCard('detail-rfq-copilot')">
+        <div class="tile-icon">&#128231;</div>
+        <h4>RFQ-to-Quote Copilot</h4>
+        <div class="tile-stat">Days &rarr; 2 minutes</div>
+        <div class="tile-desc">AI parses tender packs, extracts requirements, builds quotes</div>
+      </a>
+
+      <a href="#detail-historical-costing" class="overview-tile" onclick="highlightCard('detail-historical-costing')">
+        <div class="tile-icon">&#128200;</div>
+        <h4>Historical Job Costing</h4>
+        <div class="tile-stat">Save 2 hrs per quote</div>
+        <div class="tile-desc">Match new RFQs against past jobs, adjusted for price changes</div>
+      </a>
+
+      <div class="category-label">Production &amp; Operations</div>
+
+      <a href="#detail-scheduling" class="overview-tile has-demo" onclick="highlightCard('detail-scheduling')">
+        <div class="tile-icon">&#128197;</div>
+        <h4>Scheduling Optimiser</h4>
+        <div class="tile-stat">45 min &rarr; 2 seconds</div>
+        <div class="tile-desc">AI re-optimises work orders when rush jobs arrive</div>
+      </a>
+
+      <a href="#detail-predictive-maintenance" class="overview-tile" onclick="highlightCard('detail-predictive-maintenance')">
+        <div class="tile-icon">&#128295;</div>
+        <h4>Predictive Maintenance</h4>
+        <div class="tile-stat">$100k savings on $25k invest</div>
+        <div class="tile-desc">Sensor-driven AI predicts failures before they halt production</div>
+      </a>
+
+      <a href="#detail-changeover" class="overview-tile" onclick="highlightCard('detail-changeover')">
+        <div class="tile-icon">&#128260;</div>
+        <h4>Production Planning &amp; Changeover</h4>
+        <div class="tile-stat">Cut changeover time 40%</div>
+        <div class="tile-desc">AI sequences jobs to minimise tool changes between setups</div>
+      </a>
+
+      <div class="category-label">Quality &amp; Compliance</div>
+
+      <a href="#detail-vision-qc" class="overview-tile" onclick="highlightCard('detail-vision-qc')">
+        <div class="tile-icon">&#128247;</div>
+        <h4>Computer Vision QC</h4>
+        <div class="tile-stat">99.2% detection rate</div>
+        <div class="tile-desc">AI cameras detect surface defects and dimensional errors in real time</div>
+      </a>
+
+      <a href="#detail-spc" class="overview-tile" onclick="highlightCard('detail-spc')">
+        <div class="tile-icon">&#128200;</div>
+        <h4>Statistical Process Control</h4>
+        <div class="tile-stat">Catch drift in real time</div>
+        <div class="tile-desc">AI monitors production parameters and alerts on tolerance trends</div>
+      </a>
+
+      <a href="#detail-compliance-docs" class="overview-tile" onclick="highlightCard('detail-compliance-docs')">
+        <div class="tile-icon">&#128203;</div>
+        <h4>Compliance Documentation</h4>
+        <div class="tile-stat">1 week &rarr; 1 day</div>
+        <div class="tile-desc">Auto-generate audit-ready docs from production data</div>
+      </a>
+
+      <div class="category-label">Supply Chain</div>
+
+      <a href="#detail-supplier-risk" class="overview-tile" onclick="highlightCard('detail-supplier-risk')">
+        <div class="tile-icon">&#128680;</div>
+        <h4>Supplier Risk Monitoring</h4>
+        <div class="tile-stat">Early warning system</div>
+        <div class="tile-desc">AI monitors supplier signals and flags risks before they hit production</div>
+      </a>
+
+      <a href="#detail-demand-supply" class="overview-tile" onclick="highlightCard('detail-demand-supply')">
+        <div class="tile-icon">&#128230;</div>
+        <h4>Demand-Supply Matching</h4>
+        <div class="tile-stat">Reduce inventory 25%</div>
+        <div class="tile-desc">AI matches demand signals to lead times, optimises ordering</div>
+      </a>
+
+      <a href="#detail-material-pricing" class="overview-tile" onclick="highlightCard('detail-material-pricing')">
+        <div class="tile-icon">&#128176;</div>
+        <h4>Material Price Tracking</h4>
+        <div class="tile-stat">Real-time margin protection</div>
+        <div class="tile-desc">AI tracks commodity prices across suppliers, alerts when margins are at risk</div>
+      </a>
 
     </div>
   </div>
 
-  <!-- Accordion Deep-Dives -->
+  <!-- ═══════════════════════════════════════════════════════
+       TIER 2: Deep Dive — detailed cards with pain/solution/ROI
+       ═══════════════════════════════════════════════════════ -->
   <div class="section">
-    <div class="accordion-group">
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        The numbers behind manufacturing in Melbourne's north
-      </div>
-      <div class="accordion-content">
-        <p>Melbourne's north is home to one of Australia's densest manufacturing corridors. With 3,809 manufacturers spanning precision engineering, plastics, food processing, and metal fabrication, the region contributes billions to Victoria's economy. Many of these businesses still rely on manual quoting, paper-based scheduling, and tribal knowledge that walks out the door when key staff leave.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        Where AI fits in a typical manufacturing workflow
-      </div>
-      <div class="accordion-content">
-        <p>AI slots into the manufacturing workflow at three key friction points: quote generation (reading drawings and pricing jobs), tender management (extracting requirements from RFQ packs), and production scheduling (optimising job sequences across machines and labour). Each of these tasks is repetitive, data-rich, and currently handled by your most expensive people.</p>
-      </div>
-
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        What other manufacturing businesses are doing with AI right now
-      </div>
-      <div class="accordion-content">
-        <p>Forward-thinking manufacturers in Melbourne's north are already using AI to auto-generate quotes from engineering drawings, extract compliance requirements from tender documents, and dynamically reschedule production when rush jobs arrive. These aren't science fiction — they're working tools built on the same data these businesses already have.</p>
-      </div>
-
+    <div class="deep-dive-intro">
+      <div class="section-label">Dig Deeper</div>
+      <h2>How each one works</h2>
+      <p>Real pain points, real solutions, real time savings. Three of these have live demos you can try right now.</p>
     </div>
-  </div>
 
-  <!-- Demo Cards -->
-  <div class="section">
-    <h2 class="section-heading">See it in action</h2>
-    <div class="demo-cards">
+    <!-- Quoting & Estimating -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128200;</span> Quoting &amp; Estimating <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
 
-      <a href="../demos/manufacturing_quote-from-drawings.html" class="demo-card">
-        <div class="demo-card-header gradient-purple-orange">
-          <div class="demo-icon">&#128203;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-quote-from-drawings">
+          <h4>&#128196; Quote from Drawings</h4>
+          <div class="pain">"The estimator opens the drawing, counts features, checks material prices, calculates setup time, types it all into a spreadsheet. Every. Single. Job. Three hours gone."</div>
+          <div class="solution">AI reads engineering drawings, annotates features, identifies materials and operations, and generates a detailed line-item quote with margin slider. Your estimator reviews and adjusts instead of building from scratch.</div>
+          <div class="roi-line">
+            <span class="before">3 hours per job</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">30 seconds</span>
+          </div>
+          <a href="../demos/manufacturing_quote-from-drawings.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>Quote from Drawings</h3>
-          <p>AI reads engineering drawings and generates detailed quotes with material costs, operations, and lead times.</p>
-          <div class="time-savings">3 hours &rarr; 30 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/manufacturing_rfq-copilot.html" class="demo-card">
-        <div class="demo-card-header gradient-blue-green">
-          <div class="demo-icon">&#128232;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card demo-card-special" id="detail-rfq-copilot">
+          <h4>&#128231; RFQ-to-Quote Copilot</h4>
+          <div class="pain">"A 12-page RFQ arrives with specs, drawings, and compliance requirements buried in email attachments. Someone has to read it all before we can even start quoting. Tender packs sit in the inbox for days."</div>
+          <div class="solution">AI parses email and PDF tender packs, extracts structured requirements, identifies key specifications, and builds a draft quote with source attribution linking every line item back to the original document.</div>
+          <div class="roi-line">
+            <span class="before">Days in the inbox</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2 minutes</span>
+          </div>
+          <a href="../demos/manufacturing_rfq-copilot.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
-        <div class="demo-card-body">
-          <h3>RFQ-to-Quote Copilot</h3>
-          <p>AI extracts requirements from email RFQ packs and drafts quotes with source attribution.</p>
-          <div class="time-savings">2 days &rarr; 2 minutes</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
-      <a href="../demos/manufacturing_scheduling.html" class="demo-card">
-        <div class="demo-card-header gradient-green-yellow">
-          <div class="demo-icon">&#128203;</div>
-          <div class="demo-badge">INTERACTIVE DEMO</div>
+        <div class="use-case-card" id="detail-historical-costing">
+          <h4>&#128200; Historical Job Costing</h4>
+          <div class="pain">"Every new quote starts from zero, even though we did a similar job 6 months ago. Nobody remembers what we charged or what it actually cost."</div>
+          <div class="solution">AI matches new RFQs against your past job costings — adjusting for material price changes, scope differences, and lessons learned. Gives you a data-backed starting estimate instead of guesswork.</div>
+          <div class="roi-line">
+            <span class="before">Starting from zero</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Save 2 hours per quote</span>
+          </div>
         </div>
-        <div class="demo-card-body">
-          <h3>Scheduling Optimiser</h3>
-          <p>Drag a rush job onto the Gantt chart and watch AI re-optimise the entire week.</p>
-          <div class="time-savings">45 min &rarr; 2 seconds</div>
-          <span class="launch-link">Launch demo &rarr;</span>
-        </div>
-      </a>
 
+      </div>
     </div>
+
+    <!-- Production & Operations -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#9881;&#65039;</span> Production &amp; Operations <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card demo-card-special" id="detail-scheduling">
+          <h4>&#128197; Scheduling Optimiser</h4>
+          <div class="pain">"When the best customer calls with an urgent order, someone spends 45 minutes rearranging the whiteboard. And still misses a deadline. A rush job throws the whole week off."</div>
+          <div class="solution">AI optimises work order scheduling across machines, minimising changeover time and meeting deadlines. Drag a rush job onto the Gantt chart and watch AI re-optimise the entire week in seconds.</div>
+          <div class="roi-line">
+            <span class="before">45-min manual rearrangement</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">2 seconds</span>
+          </div>
+          <a href="../demos/manufacturing_scheduling.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card" id="detail-predictive-maintenance">
+          <h4>&#128295; Predictive Maintenance</h4>
+          <div class="pain">"Machines fail without warning, halting production for hours or days. Unplanned shutdowns cost $100k in lost output and emergency repairs."</div>
+          <div class="solution">Sensor-driven AI monitors vibration, temperature, and performance patterns to predict equipment failures before they happen. Schedules maintenance during planned downtime, not during a critical production run.</div>
+          <div class="roi-line">
+            <span class="before">$100k unplanned shutdowns</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">$100k savings on $25k investment</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-changeover">
+          <h4>&#128260; Production Planning &amp; Changeover</h4>
+          <div class="pain">"We waste 2 hours per day on changeovers because jobs are sequenced based on when orders came in, not what makes sense for the machines."</div>
+          <div class="solution">AI sequences jobs to minimise changeover between similar setups — grouping materials, tooling, and machine configurations. Reduces unnecessary tool changes and keeps machines running.</div>
+          <div class="roi-line">
+            <span class="before">2 hours per day on changeovers</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Cut changeover time 40%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Quality & Compliance -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#9989;</span> Quality &amp; Compliance <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-vision-qc">
+          <h4>&#128247; Computer Vision QC</h4>
+          <div class="pain">"Defects slip through to customers because human inspection misses subtle surface flaws at production speed. One bad batch and we lose the account."</div>
+          <div class="solution">AI camera systems detect surface defects, dimensional errors, and assembly mistakes in real time on the production line. Flags issues before parts leave the factory, not after a customer complaint.</div>
+          <div class="roi-line">
+            <span class="before">Human inspection misses</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">99.2% detection rate</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-spc">
+          <h4>&#128200; Statistical Process Control</h4>
+          <div class="pain">"We only find drift after a bad batch. Manual checks every 50 units miss gradual process drift until it's too late."</div>
+          <div class="solution">AI monitors production parameters continuously — temperature, pressure, dimensions, cycle times — and alerts operators when tolerance bands are trending toward limits, not after they've been breached.</div>
+          <div class="roi-line">
+            <span class="before">Find drift after bad batch</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Catch drift in real time</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-compliance-docs">
+          <h4>&#128203; Compliance Documentation</h4>
+          <div class="pain">"Audit prep takes a week every quarter. Someone manually assembles quality records, certifications, and test results from three different systems."</div>
+          <div class="solution">AI auto-generates audit-ready documentation from production data with full traceability — linking test results to batch numbers, certifications to suppliers, and quality records to specific jobs.</div>
+          <div class="roi-line">
+            <span class="before">1 week per quarter</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">1 day</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Supply Chain -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#128230;</span> Supply Chain <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card" id="detail-supplier-risk">
+          <h4>&#128680; Supplier Risk Monitoring</h4>
+          <div class="pain">"We didn't know our supplier was struggling until delivery failed. No visibility into their financial health or capacity until it's too late."</div>
+          <div class="solution">AI monitors supplier signals — news, financials, delivery patterns, industry chatter — and flags risks before they hit your production line. Gives you time to find alternatives, not scramble for them.</div>
+          <div class="roi-line">
+            <span class="before">Blindsided by failures</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Early warning system</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-demand-supply">
+          <h4>&#128230; Demand-Supply Matching</h4>
+          <div class="pain">"We're always either overstocked or scrambling. Manual forecasting from gut feel and spreadsheets means we carry too much of what we don't need and run out of what we do."</div>
+          <div class="solution">AI matches demand signals to supplier lead times, optimising order quantities and timing. Reduces excess inventory while ensuring critical materials arrive when needed.</div>
+          <div class="roi-line">
+            <span class="before">Overstocked or scrambling</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Reduce inventory carrying 25%</span>
+          </div>
+        </div>
+
+        <div class="use-case-card" id="detail-material-pricing">
+          <h4>&#128176; Material Price Tracking</h4>
+          <div class="pain">"Steel prices moved 15% and we didn't adjust quotes for 3 weeks. Manual price checking across multiple suppliers means margins erode before anyone notices."</div>
+          <div class="solution">AI tracks commodity and material prices across suppliers in real time. Alerts when margins are at risk on open quotes, suggests price adjustments, and flags the best time to lock in supply contracts.</div>
+          <div class="roi-line">
+            <span class="before">3-week price lag</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Real-time margin protection</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Industry CTA -->
