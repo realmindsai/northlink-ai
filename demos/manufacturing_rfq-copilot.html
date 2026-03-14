@@ -1,0 +1,907 @@
+<!-- ABOUTME: RFQ-to-Quote Copilot mockup for NorthLink AI. -->
+<!-- ABOUTME: AI extracts requirements from email RFQ packs and generates quotes with source attribution. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFQ-to-Quote Copilot — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Three-panel demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px);
+    }
+
+    .panel-inbox {
+      flex: 0 0 40%;
+      padding: 0;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-requirements {
+      flex: 0 0 35%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fafafa;
+    }
+
+    .panel-quote {
+      flex: 0 0 25%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fff;
+    }
+
+    .panel-heading {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-heading .heading-icon {
+      font-size: 18px;
+    }
+
+    /* Inbox email cards */
+    .inbox-list {
+      flex: 0 0 auto;
+    }
+
+    .email-card {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--color-light-gray);
+      cursor: pointer;
+      transition: background 0.2s, border-left 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .email-card:hover {
+      background: #f5f3ff;
+    }
+
+    .email-card.selected {
+      background: #f0ecf9;
+      border-left-color: var(--color-purple);
+    }
+
+    .email-card .email-from {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-black);
+      margin-bottom: 2px;
+    }
+
+    .email-card .email-org {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      margin-bottom: 4px;
+    }
+
+    .email-card .email-subject {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-slate-black);
+      margin-bottom: 4px;
+    }
+
+    .email-card .email-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--color-slate-gray);
+    }
+
+    .email-card .email-meta .unread-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-purple);
+      display: inline-block;
+    }
+
+    /* Attachment chips */
+    .attachment-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .attachment-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--color-light-gray);
+      color: var(--color-slate-black);
+      transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+    }
+
+    .attachment-chip .chip-icon {
+      font-size: 12px;
+    }
+
+    .attachment-chip.scanning {
+      background: var(--color-purple);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(167, 122, 205, 0.5);
+      animation: chip-pulse 0.5s ease-in-out;
+    }
+
+    .attachment-chip.scanned {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    @keyframes chip-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    /* Email body section */
+    .email-body-section {
+      flex: 1;
+      padding: 20px;
+      border-top: 1px solid var(--color-light-gray);
+      background: #fff;
+      overflow-y: auto;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .email-body-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .email-body-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-black);
+      margin-bottom: 4px;
+    }
+
+    .email-body-subject {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 12px;
+    }
+
+    .email-body-text {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--color-slate-black);
+      white-space: pre-line;
+    }
+
+    /* AI scanning overlay on email body */
+    .email-scan-highlight {
+      position: relative;
+    }
+
+    .email-scan-highlight::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--color-purple), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .email-scan-highlight.scanning::after {
+      opacity: 1;
+      animation: scan-line 1.5s ease-in-out;
+    }
+
+    @keyframes scan-line {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* Requirements panel - extracted fields */
+    .req-field {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .req-field.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .req-field .req-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-slate-gray);
+      min-width: 80px;
+      padding-top: 2px;
+    }
+
+    .req-field .req-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-black);
+      flex: 1;
+    }
+
+    .req-field .req-source {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--color-purple);
+      background: #f5f0ff;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .req-field .req-source .source-icon {
+      font-size: 11px;
+    }
+
+    /* Confidence bar */
+    .confidence-section {
+      margin-top: 16px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .confidence-section.visible {
+      opacity: 1;
+    }
+
+    .confidence-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .confidence-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--color-light-gray);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .confidence-bar-fill {
+      height: 100%;
+      background: var(--color-success);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 1s ease-out;
+    }
+
+    .confidence-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-success);
+    }
+
+    /* Quote panel line items */
+    .quote-line-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .quote-line-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .quote-line-item .ql-label {
+      color: var(--color-slate-black);
+    }
+
+    .quote-line-item .ql-value {
+      font-weight: 700;
+      color: var(--color-black);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .quote-total-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 8px;
+      border-top: 2px solid var(--color-purple);
+      margin-top: 8px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .quote-total-line.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .quote-total-line .ql-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .quote-total-line .ql-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-purple);
+    }
+
+    .quote-per-unit {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      text-align: right;
+      margin-bottom: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .quote-per-unit.visible {
+      opacity: 1;
+    }
+
+    .quote-lead-time {
+      font-size: 13px;
+      color: var(--color-slate-black);
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .quote-lead-time.visible {
+      opacity: 1;
+    }
+
+    .quote-lead-time strong {
+      color: var(--color-black);
+    }
+
+    /* Risk flag */
+    .risk-flag {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #fef3c7;
+      border-left: 3px solid var(--color-warning);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #92400e;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .risk-flag.visible {
+      opacity: 1;
+    }
+
+    .risk-flag.pulse {
+      animation: amber-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes amber-pulse {
+      0%, 100% { box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+      50% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
+    }
+
+    .risk-flag .risk-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* Quote action buttons */
+    .quote-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .quote-actions.visible {
+      opacity: 1;
+    }
+
+    .quote-actions .btn {
+      width: 100%;
+      font-size: 13px;
+      padding: 8px 14px;
+    }
+
+    .hitl-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .hitl-row .btn {
+      flex: 1;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-inbox, .panel-requirements, .panel-quote {
+        flex: none;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/manufacturing.html">Manufacturing</a> &rarr; RFQ-to-Quote Copilot
+      </div>
+      <div class="demo-title">RFQ-to-Quote Copilot</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Start Demo</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main three-panel layout -->
+  <div class="demo-main">
+
+    <!-- Left panel: Inbox (40%) -->
+    <div class="panel-inbox">
+      <div style="padding: 16px 20px 8px;">
+        <div class="panel-heading"><span class="heading-icon">&#128233;</span> Inbox</div>
+      </div>
+
+      <div class="inbox-list">
+        <!-- Email 1 (primary RFQ) -->
+        <div class="email-card" id="email1" onclick="selectEmail(1)">
+          <div class="email-from">Sarah Chen</div>
+          <div class="email-org">Procurement, AusTech Industries</div>
+          <div class="email-subject">RFQ &mdash; Custom mounting brackets x200 &mdash; urgent</div>
+          <div class="email-meta">
+            <span>2 hours ago</span>
+            <span class="unread-dot"></span>
+          </div>
+          <div class="attachment-chips" id="attachmentChips">
+            <span class="attachment-chip" id="chip1"><span class="chip-icon">&#128206;</span> Mounting_Bracket_Rev2.pdf</span>
+            <span class="attachment-chip" id="chip2"><span class="chip-icon">&#128206;</span> AusTech_Specs_v4.xlsx</span>
+            <span class="attachment-chip" id="chip3"><span class="chip-icon">&#128206;</span> Site_photos_x3.zip</span>
+          </div>
+        </div>
+
+        <!-- Email 2 -->
+        <div class="email-card" id="email2" onclick="selectEmail(2)">
+          <div class="email-from">Tom Wright</div>
+          <div class="email-org">Pacific Steel</div>
+          <div class="email-subject">RE: Quote follow-up &mdash; stainless flanges</div>
+          <div class="email-meta">
+            <span>5 hours ago</span>
+          </div>
+        </div>
+
+        <!-- Email 3 -->
+        <div class="email-card" id="email3" onclick="selectEmail(3)">
+          <div class="email-from">Jessica Park</div>
+          <div class="email-org">Metro Engineering</div>
+          <div class="email-subject">New RFQ &mdash; Bearing housings x500</div>
+          <div class="email-meta">
+            <span>1 day ago</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email body (shown when email 1 is selected) -->
+      <div class="email-body-section" id="emailBody">
+        <div class="email-body-header">From: Sarah Chen &lt;s.chen@austech.com.au&gt;</div>
+        <div class="email-body-subject">RFQ &mdash; Custom mounting brackets x200 &mdash; urgent</div>
+        <div class="email-body-text email-scan-highlight" id="emailText">Hi team,
+
+Please find attached our RFQ for 200 custom mounting brackets per the attached drawing (Rev 2). Material must be 304 Stainless Steel, hot-dip galvanised per AS/NZS 4680. Delivery to our Campbellfield site by 28 March. M10 anchor bolt holes required.
+
+Please quote including freight.
+
+Regards,
+Sarah Chen</div>
+      </div>
+    </div>
+
+    <!-- Centre panel: Extracted Requirements (35%) -->
+    <div class="panel-requirements">
+      <div class="panel-heading"><span class="heading-icon">&#128269;</span> Extracted Requirements</div>
+
+      <div id="requirementsContainer">
+        <div class="req-field" id="req0">
+          <span class="req-label">Part</span>
+          <span class="req-value">Custom Mounting Bracket</span>
+          <span class="req-source"><span class="source-icon">&#128233;</span> email body</span>
+        </div>
+        <div class="req-field" id="req1">
+          <span class="req-label">Drawing</span>
+          <span class="req-value">Mounting_Bracket_Rev2.pdf, Rev 2</span>
+          <span class="req-source"><span class="source-icon">&#128206;</span> attachment</span>
+        </div>
+        <div class="req-field" id="req2">
+          <span class="req-label">Quantity</span>
+          <span class="req-value">200 units</span>
+          <span class="req-source"><span class="source-icon">&#128233;</span> email body</span>
+        </div>
+        <div class="req-field" id="req3">
+          <span class="req-label">Material</span>
+          <span class="req-value">304 Stainless Steel</span>
+          <span class="req-source"><span class="source-icon">&#128233;</span> email body</span>
+        </div>
+        <div class="req-field" id="req4">
+          <span class="req-label">Finish</span>
+          <span class="req-value">Hot-dip galvanised per AS/NZS 4680</span>
+          <span class="req-source"><span class="source-icon">&#128233;</span> email body</span>
+        </div>
+        <div class="req-field" id="req5">
+          <span class="req-label">Delivery</span>
+          <span class="req-value">Campbellfield site, by 28 March 2026</span>
+          <span class="req-source"><span class="source-icon">&#128233;</span> email body</span>
+        </div>
+        <div class="req-field" id="req6">
+          <span class="req-label">Fasteners</span>
+          <span class="req-value">M10 anchor bolt holes</span>
+          <span class="req-source"><span class="source-icon">&#128233;</span> email body</span>
+        </div>
+        <div class="req-field" id="req7">
+          <span class="req-label">Special</span>
+          <span class="req-value">Include freight</span>
+          <span class="req-source"><span class="source-icon">&#128233;</span> email body</span>
+        </div>
+        <div class="req-field" id="req8">
+          <span class="req-label">Tolerances</span>
+          <span class="req-value">&plusmn;0.5mm general, &plusmn;0.1mm hole positions</span>
+          <span class="req-source"><span class="source-icon">&#128196;</span> specs p.3</span>
+        </div>
+        <div class="req-field" id="req9">
+          <span class="req-label">Surface</span>
+          <span class="req-value">Ra 3.2 max</span>
+          <span class="req-source"><span class="source-icon">&#128196;</span> specs p.3</span>
+        </div>
+      </div>
+
+      <div class="confidence-section" id="confidenceSection">
+        <div class="confidence-bar-container">
+          <div class="confidence-bar-track">
+            <div class="confidence-bar-fill" id="confidenceBar"></div>
+          </div>
+          <span class="confidence-label" id="confidenceLabel">0%</span>
+        </div>
+        <div style="font-size: 11px; color: var(--color-slate-gray); margin-top: 4px;">Extraction confidence</div>
+      </div>
+    </div>
+
+    <!-- Right panel: Draft Quote (25%) -->
+    <div class="panel-quote">
+      <div class="panel-heading"><span class="heading-icon">&#128203;</span> Draft Quote</div>
+
+      <div class="quote-line-item" id="ql0">
+        <span class="ql-label">Material</span>
+        <span class="ql-value" id="qlv0">$4,280</span>
+      </div>
+      <div class="quote-line-item" id="ql1">
+        <span class="ql-label">Labour</span>
+        <span class="ql-value" id="qlv1">$6,400</span>
+      </div>
+      <div class="quote-line-item" id="ql2">
+        <span class="ql-label">Finishing (galvanising)</span>
+        <span class="ql-value" id="qlv2">$1,200</span>
+      </div>
+      <div class="quote-line-item" id="ql3">
+        <span class="ql-label">Freight</span>
+        <span class="ql-value" id="qlv3">$380</span>
+      </div>
+
+      <div class="quote-total-line" id="quoteTotal">
+        <span class="ql-label">Total</span>
+        <span class="ql-value" id="quoteTotalValue">$12,260</span>
+      </div>
+
+      <div class="quote-per-unit" id="quotePerUnit">Per unit: $61.30</div>
+
+      <div class="quote-lead-time" id="quoteLeadTime">
+        Lead time: <strong>12 working days</strong>
+      </div>
+
+      <div class="risk-flag" id="riskFlag">
+        <span class="risk-icon">&#9888;&#65039;</span>
+        <span>28 March deadline tight &mdash; requires job start by 12 March</span>
+      </div>
+
+      <div class="quote-actions" id="quoteActions">
+        <button class="btn btn-primary btn-sm" onclick="generatePDF()">Generate Quote PDF</button>
+        <div class="hitl-row">
+          <button class="btn btn-approve btn-sm" onclick="toast('Quote approved and queued for send', 'success')">Approve</button>
+          <button class="btn btn-edit btn-sm" onclick="toast('Opening quote editor...', 'info')">Edit</button>
+          <button class="btn btn-reject btn-sm" onclick="toast('Quote rejected', 'danger')">Reject</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── State ── */
+    let demoRunning = false;
+
+    /* ── Quote values for count-up ── */
+    const QUOTE_VALUES = [4280, 6400, 1200, 380];
+    const QUOTE_TOTAL = 12260;
+    const QUOTE_PER_UNIT = 61.30;
+
+    /* ── Select an email card visually ── */
+    function selectEmail(num) {
+      document.querySelectorAll('.email-card').forEach(c => c.classList.remove('selected'));
+      const card = document.getElementById('email' + num);
+      if (card) card.classList.add('selected');
+    }
+
+    /* ── Generate PDF toast ── */
+    function generatePDF() {
+      toast('Quote PDF generated — ready to send to AusTech Industries', 'success');
+    }
+
+    /* ── Format a number as currency ── */
+    function formatCurrency(val) {
+      return '$' + val.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    /* ── Main animation sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      /* Step 1: Select the top email after a brief pause */
+      await wait(800);
+      selectEmail(1);
+
+      /* Step 2: Expand email body */
+      await wait(400);
+      const emailBody = document.getElementById('emailBody');
+      emailBody.classList.add('visible');
+
+      /* Step 3: Scan email body text with highlight effect */
+      await wait(300);
+      const emailText = document.getElementById('emailText');
+      emailText.classList.add('scanning');
+
+      /* Step 4: Glow attachment chips sequentially (simulating AI reading each attachment) */
+      await wait(500);
+      const chips = [
+        document.getElementById('chip1'),
+        document.getElementById('chip2'),
+        document.getElementById('chip3')
+      ];
+
+      for (let i = 0; i < chips.length; i++) {
+        chips[i].classList.add('scanning');
+        await wait(500);
+        chips[i].classList.remove('scanning');
+        chips[i].classList.add('scanned');
+      }
+
+      /* Step 5: Requirements appear one by one with slide-in animation */
+      const reqCount = 10;
+      for (let i = 0; i < reqCount; i++) {
+        await wait(400);
+        const field = document.getElementById('req' + i);
+        if (field) {
+          field.classList.add('visible');
+          /* Add shimmer effect to newly appeared field */
+          shimmer(field, 600);
+        }
+      }
+
+      /* Step 6: Show confidence bar and animate to 92% */
+      await wait(300);
+      const confSection = document.getElementById('confidenceSection');
+      confSection.classList.add('visible');
+      await wait(100);
+
+      const confBar = document.getElementById('confidenceBar');
+      const confLabel = document.getElementById('confidenceLabel');
+      confBar.style.width = '92%';
+      await countUp(confLabel, 0, 92, 1000, '', '%', 0);
+
+      /* Step 7: Quote line items appear with count-up numbers */
+      await wait(400);
+
+      const lineItems = ['ql0', 'ql1', 'ql2', 'ql3'];
+      const lineValueEls = ['qlv0', 'qlv1', 'qlv2', 'qlv3'];
+
+      for (let i = 0; i < lineItems.length; i++) {
+        const row = document.getElementById(lineItems[i]);
+        const valEl = document.getElementById(lineValueEls[i]);
+        row.classList.add('visible');
+        valEl.textContent = '$0';
+        countUp(valEl, 0, QUOTE_VALUES[i], 600, '$', '', 0).then(() => {
+          valEl.textContent = formatCurrency(QUOTE_VALUES[i]);
+        });
+        await wait(250);
+      }
+
+      /* Step 8: Total line with count-up */
+      await wait(300);
+      const totalLine = document.getElementById('quoteTotal');
+      const totalVal = document.getElementById('quoteTotalValue');
+      totalLine.classList.add('visible');
+      totalVal.textContent = '$0';
+      await countUp(totalVal, 0, QUOTE_TOTAL, 800, '$', '', 0);
+      totalVal.textContent = formatCurrency(QUOTE_TOTAL);
+
+      /* Per-unit display */
+      await wait(100);
+      const perUnit = document.getElementById('quotePerUnit');
+      perUnit.classList.add('visible');
+
+      /* Lead time */
+      await wait(200);
+      document.getElementById('quoteLeadTime').classList.add('visible');
+
+      /* Step 9: Risk flag pulses amber */
+      await wait(300);
+      const riskFlag = document.getElementById('riskFlag');
+      riskFlag.classList.add('visible');
+      await wait(200);
+      riskFlag.classList.add('pulse');
+
+      /* Step 10: Show action buttons */
+      await wait(300);
+      document.getElementById('quoteActions').classList.add('visible');
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      demoRunning = false;
+
+      /* Deselect all emails */
+      document.querySelectorAll('.email-card').forEach(c => c.classList.remove('selected'));
+
+      /* Hide email body */
+      const emailBody = document.getElementById('emailBody');
+      emailBody.classList.remove('visible');
+
+      /* Reset email scan highlight */
+      const emailText = document.getElementById('emailText');
+      emailText.classList.remove('scanning');
+
+      /* Reset attachment chips */
+      document.querySelectorAll('.attachment-chip').forEach(c => {
+        c.classList.remove('scanning', 'scanned');
+      });
+
+      /* Hide all requirement fields */
+      for (let i = 0; i < 10; i++) {
+        const field = document.getElementById('req' + i);
+        if (field) field.classList.remove('visible');
+      }
+
+      /* Hide confidence section */
+      const confSection = document.getElementById('confidenceSection');
+      confSection.classList.remove('visible');
+      document.getElementById('confidenceBar').style.width = '0%';
+      document.getElementById('confidenceLabel').textContent = '0%';
+
+      /* Hide quote line items */
+      ['ql0', 'ql1', 'ql2', 'ql3'].forEach((id, i) => {
+        document.getElementById(id).classList.remove('visible');
+        document.getElementById('qlv' + i).textContent = formatCurrency(QUOTE_VALUES[i]);
+      });
+
+      /* Hide total */
+      document.getElementById('quoteTotal').classList.remove('visible');
+      document.getElementById('quoteTotalValue').textContent = formatCurrency(QUOTE_TOTAL);
+
+      /* Hide per unit, lead time */
+      document.getElementById('quotePerUnit').classList.remove('visible');
+      document.getElementById('quoteLeadTime').classList.remove('visible');
+
+      /* Hide risk flag */
+      const riskFlag = document.getElementById('riskFlag');
+      riskFlag.classList.remove('visible', 'pulse');
+
+      /* Hide action buttons */
+      document.getElementById('quoteActions').classList.remove('visible');
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
