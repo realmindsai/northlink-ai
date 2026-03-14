@@ -1,0 +1,901 @@
+<!-- ABOUTME: Medicare/Insurance Claim Coding Assistant mockup for NorthLink AI. -->
+<!-- ABOUTME: AI analyses clinical notes and recommends MBS items with evidence and audit warnings. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MBS Coding Assistant — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 44px);
+    }
+
+    .panel-left {
+      flex: 0 0 50%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      position: relative;
+    }
+
+    .panel-right {
+      flex: 0 0 50%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    /* Patient info bar */
+    .patient-bar {
+      display: flex;
+      align-items: center;
+      padding: 8px 24px;
+      background: var(--color-oat);
+      font-size: 13px;
+      color: var(--color-slate-black);
+      border-bottom: 1px solid var(--color-light-gray);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .patient-bar .patient-label {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .patient-bar .sep {
+      color: var(--color-slate-gray);
+    }
+
+    /* Panel heading */
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Clinical note styling */
+    .clinical-note {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--color-slate-black);
+    }
+
+    .soap-label {
+      font-weight: 700;
+      color: var(--color-black);
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 4px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .soap-label:first-child {
+      margin-top: 0;
+    }
+
+    .soap-text {
+      margin: 0 0 4px;
+    }
+
+    /* Highlighted phrases in the clinical note */
+    .hl-phrase {
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    .hl-phrase.hl-demographic {
+      border-bottom: 3px solid var(--color-blue);
+    }
+
+    .hl-phrase.hl-consultation {
+      border-bottom: 3px solid var(--color-success);
+    }
+
+    .hl-phrase.hl-examination {
+      border-bottom: 3px solid var(--color-orange);
+    }
+
+    .hl-phrase.hl-time {
+      border-bottom: 3px solid var(--color-danger);
+    }
+
+    .hl-phrase.hl-management {
+      border-bottom: 3px solid var(--color-success);
+    }
+
+    .hl-phrase:hover {
+      background: rgba(167, 122, 205, 0.12);
+    }
+
+    /* Hidden state for highlights before analysis */
+    .hl-phrase.hidden {
+      border-bottom-color: transparent;
+    }
+
+    /* Phrase tooltip */
+    .hl-tooltip {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-black);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 20;
+    }
+
+    .hl-phrase:hover .hl-tooltip {
+      opacity: 1;
+    }
+
+    /* MBS item cards */
+    .mbs-item {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 2px solid var(--color-light-gray);
+      padding: 20px;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .mbs-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .mbs-item.selected {
+      border-color: var(--color-purple);
+      box-shadow: 0 0 0 2px rgba(167, 122, 205, 0.25);
+    }
+
+    .mbs-item.recommended {
+      border-color: var(--color-success);
+    }
+
+    .mbs-item.recommended.visible {
+      animation: pulseGreen 1.5s ease 0.3s;
+    }
+
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    .mbs-item.warning-item {
+      border-color: var(--color-warning);
+    }
+
+    .mbs-item.warning-item.visible {
+      animation: pulseAmber 1.5s ease 0.3s;
+    }
+
+    @keyframes pulseAmber {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    .mbs-item.low-match {
+      border-color: var(--color-light-gray);
+      opacity: 0;
+    }
+
+    .mbs-item.low-match.visible {
+      opacity: 0.7;
+    }
+
+    .mbs-item-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .mbs-item-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .mbs-item-fee {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-purple);
+    }
+
+    .mbs-match {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      margin-bottom: 10px;
+    }
+
+    .mbs-match.match-high {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .mbs-match.match-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .mbs-match.match-low {
+      background: var(--color-light-gray);
+      color: var(--color-slate-gray);
+    }
+
+    .mbs-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      margin-left: 8px;
+    }
+
+    .mbs-tag-recommended {
+      background: var(--color-success);
+      color: #fff;
+    }
+
+    .mbs-tag-warning {
+      background: var(--color-warning);
+      color: #1A1B25;
+    }
+
+    /* Evidence mapping list */
+    .evidence-list {
+      list-style: none;
+      margin: 8px 0 0;
+      padding: 0;
+      font-size: 13px;
+    }
+
+    .evidence-list li {
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--color-slate-black);
+    }
+
+    .evidence-list li .ev-check {
+      color: var(--color-success);
+      font-weight: 700;
+    }
+
+    /* Warning box */
+    .mbs-warning {
+      background: #fef3c7;
+      border: 1px solid var(--color-warning);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #92400e;
+      line-height: 1.5;
+    }
+
+    .mbs-warning strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .audit-risk-line {
+      margin-top: 8px;
+      font-weight: 600;
+      color: var(--color-danger);
+    }
+
+    /* Under-coding note */
+    .mbs-note {
+      background: var(--color-off-white);
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      line-height: 1.5;
+    }
+
+    /* Claim form */
+    .claim-form {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 8px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .claim-form.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .claim-form h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--color-black);
+    }
+
+    .claim-field {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .claim-field:last-of-type {
+      border-bottom: none;
+    }
+
+    .claim-field-label {
+      width: 140px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      flex-shrink: 0;
+    }
+
+    .claim-field-value {
+      color: var(--color-black);
+      font-weight: 500;
+    }
+
+    .claim-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Audit risk indicator */
+    .audit-indicator {
+      margin-top: 16px;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .audit-indicator.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .audit-indicator-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-slate-gray);
+      margin-bottom: 8px;
+    }
+
+    .audit-bar-container {
+      height: 8px;
+      background: var(--color-light-gray);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .audit-bar {
+      height: 100%;
+      width: 0;
+      border-radius: 4px;
+      transition: width 1s ease, background 0.5s ease;
+    }
+
+    .audit-bar.low { background: var(--color-success); }
+    .audit-bar.medium { background: var(--color-warning); }
+    .audit-bar.high { background: var(--color-danger); }
+
+    .audit-status {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .audit-status.status-low { color: #166534; }
+    .audit-status.status-medium { color: #92400e; }
+    .audit-status.status-high { color: #991b1b; }
+
+    /* Connecting lines SVG overlay */
+    .lines-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/healthcare.html">Healthcare</a> &rarr; MBS Coding Assistant
+      </div>
+      <div class="demo-title">MBS Coding Assistant</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" id="btnAnalyse" onclick="startAnalysis()">Analyse for Billing</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Patient info bar -->
+  <div class="patient-bar">
+    <span class="patient-label">Patient:</span> Sarah Mitchell
+    <span class="sep">|</span>
+    <span class="patient-label">DOB:</span> 15/08/1988
+    <span class="sep">|</span>
+    <span class="patient-label">Provider:</span> Dr James Park
+    <span class="sep">|</span>
+    <span class="patient-label">Date:</span> 14 March 2026
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Clinical Note -->
+    <div class="panel-left" id="panelLeft">
+      <div class="panel-heading">Clinical Note</div>
+
+      <div class="clinical-note" id="clinicalNote">
+        <span class="soap-label">Subjective</span>
+        <p class="soap-text">
+          <span class="hl-phrase hidden hl-demographic" id="hl-demographic" data-evidence="0" onclick="scrollToEvidence(0)">
+            Patient (38-year-old female)
+            <span class="hl-tooltip">Demographic</span>
+          </span>
+          reports improvement in right shoulder pain since last visit.
+          Morning stiffness persisting but improved. Pain level reduced from 7/10 to 4/10.
+          Physiotherapy exercises reported as helpful. No adverse effects from ibuprofen.
+        </p>
+
+        <span class="soap-label">Objective</span>
+        <p class="soap-text">
+          Right shoulder
+          <span class="hl-phrase hidden hl-examination" id="hl-examination" data-evidence="2" onclick="scrollToEvidence(2)">
+            examination
+            <span class="hl-tooltip">Examination performed</span>
+          </span>
+          &mdash; active flexion 140&deg; (improved from 110&deg; at previous visit). Clicking present on movement, non-painful. No crepitus. No signs of instability.
+        </p>
+
+        <span class="soap-label">Assessment</span>
+        <p class="soap-text">
+          Right shoulder impingement &mdash; improving. Good response to conservative management (physiotherapy + NSAIDs). Range of motion improving. Pain reducing. ICD-10: M75.1 (Rotator cuff syndrome)
+        </p>
+
+        <span class="soap-label">Plan</span>
+        <p class="soap-text">
+          Reduce ibuprofen from BD to daily x 2 weeks, then cease if pain manageable.
+          Continue physiotherapy (2 sessions remaining).
+          <span class="hl-phrase hidden hl-consultation" id="hl-consultation" data-evidence="1" onclick="scrollToEvidence(1)">
+            Follow-up review
+            <span class="hl-tooltip">Follow-up consultation</span>
+          </span>
+          in 4 weeks. No new referral required.
+          <span class="hl-phrase hidden hl-management" id="hl-management" data-evidence="3" onclick="scrollToEvidence(3)">
+            Treatment plan modified
+            <span class="hl-tooltip">Management change</span>
+          </span>
+          &mdash; medication dose reduced.
+        </p>
+
+        <p class="soap-text" style="margin-top: 12px; font-size: 13px; color: var(--color-slate-gray);">
+          <span class="hl-phrase hidden hl-time" id="hl-time" data-evidence="4" onclick="scrollToEvidence(4)">
+            Consultation duration: ~15 minutes
+            <span class="hl-tooltip">Time marker</span>
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Right panel: MBS Item Suggestions -->
+    <div class="panel-right" id="panelRight">
+      <div class="panel-heading">MBS Item Suggestions</div>
+
+      <!-- MBS Item 1: Level B (recommended) -->
+      <div class="mbs-item recommended" id="mbsItem23" onclick="selectMBSItem(23)">
+        <div class="mbs-item-header">
+          <div>
+            <span class="mbs-item-title">1. Item 23 &mdash; Level B Consultation</span>
+            <span class="mbs-tag mbs-tag-recommended">RECOMMENDED</span>
+          </div>
+          <span class="mbs-item-fee">$39.75</span>
+        </div>
+        <span class="mbs-match match-high">94% match</span>
+        <ul class="evidence-list" id="evidenceList23">
+          <li id="ev-0"><span class="ev-check">&#10003;</span> Follow-up consultation</li>
+          <li id="ev-1"><span class="ev-check">&#10003;</span> Examination performed</li>
+          <li id="ev-2"><span class="ev-check">&#10003;</span> Management plan modified</li>
+          <li id="ev-3"><span class="ev-check">&#10003;</span> Duration &ge;10 minutes</li>
+        </ul>
+      </div>
+
+      <!-- MBS Item 2: Level C (warning) -->
+      <div class="mbs-item warning-item" id="mbsItem36" onclick="selectMBSItem(36)">
+        <div class="mbs-item-header">
+          <div>
+            <span class="mbs-item-title">2. Item 36 &mdash; Level C Consultation</span>
+            <span class="mbs-tag mbs-tag-warning">CAUTION</span>
+          </div>
+          <span class="mbs-item-fee">$76.95</span>
+        </div>
+        <span class="mbs-match match-medium">22% match</span>
+        <div class="mbs-warning">
+          <strong>Your note indicates a ~15-minute consultation. Item 36 requires minimum 20 minutes and a comprehensive examination. Claiming Item 36 may trigger a PSR audit.</strong>
+          <div class="audit-risk-line">AUDIT RISK: Item 36 claims increased 340% in this practice area in Q4 2025</div>
+        </div>
+      </div>
+
+      <!-- MBS Item 3: Level A (under-coding) -->
+      <div class="mbs-item low-match" id="mbsItem3" onclick="selectMBSItem(3)">
+        <div class="mbs-item-header">
+          <div>
+            <span class="mbs-item-title">3. Item 3 &mdash; Level A Consultation</span>
+          </div>
+          <span class="mbs-item-fee">$18.20</span>
+        </div>
+        <span class="mbs-match match-low">8% match</span>
+        <div class="mbs-note">
+          Under-coding. Your note documents examination and management changes that exceed Level A requirements.
+        </div>
+      </div>
+
+      <!-- Claim form -->
+      <div class="claim-form" id="claimForm">
+        <h3>Auto-populated Claim</h3>
+        <div class="claim-field">
+          <span class="claim-field-label">Provider</span>
+          <span class="claim-field-value">Dr James Park</span>
+        </div>
+        <div class="claim-field">
+          <span class="claim-field-label">Patient</span>
+          <span class="claim-field-value">Sarah Mitchell</span>
+        </div>
+        <div class="claim-field">
+          <span class="claim-field-label">Date of Service</span>
+          <span class="claim-field-value">14 March 2026</span>
+        </div>
+        <div class="claim-field">
+          <span class="claim-field-label">MBS Item</span>
+          <span class="claim-field-value" id="claimItem">23</span>
+        </div>
+        <div class="claim-field">
+          <span class="claim-field-label">Fee</span>
+          <span class="claim-field-value" id="claimFee">$39.75</span>
+        </div>
+        <div class="claim-actions">
+          <button class="btn btn-approve btn-sm" onclick="submitClaim()">Submit Claim</button>
+        </div>
+      </div>
+
+      <!-- Audit risk indicator -->
+      <div class="audit-indicator" id="auditIndicator">
+        <div class="audit-indicator-label">Audit Risk Assessment</div>
+        <div class="audit-bar-container">
+          <div class="audit-bar low" id="auditBar"></div>
+        </div>
+        <div class="audit-status status-low" id="auditStatus">
+          <span id="auditIcon">&#9679;</span>
+          <span id="auditText">Low risk</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your practice?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── State ── */
+    let analysisRunning = false;
+    let analysisTimeouts = [];
+    let currentSelectedItem = 23;
+
+    /* ── MBS item data for claim form updates ── */
+    const mbsItems = {
+      23: { label: '23', fee: '$39.75', risk: 'low', riskWidth: '15%' },
+      36: { label: '36', fee: '$76.95', risk: 'high', riskWidth: '85%' },
+      3:  { label: '3',  fee: '$18.20', risk: 'low', riskWidth: '10%' }
+    };
+
+    /* ── Phrase highlight order and their IDs ── */
+    const highlightOrder = [
+      'hl-demographic',
+      'hl-consultation',
+      'hl-examination',
+      'hl-time',
+      'hl-management'
+    ];
+
+    /* ── Evidence mapping: phrase index to evidence list items ── */
+    const phraseToEvidence = {
+      'hl-demographic':  [],
+      'hl-consultation': [0],
+      'hl-examination':  [1],
+      'hl-management':   [2],
+      'hl-time':         [3]
+    };
+
+    /* ── Start analysis sequence ── */
+    async function startAnalysis() {
+      if (analysisRunning) return;
+      analysisRunning = true;
+      resetAll();
+
+      /* Step 1: Shimmer the clinical note to indicate scanning */
+      const noteEl = document.getElementById('clinicalNote');
+      await shimmer(noteEl, 1200);
+
+      /* Step 2: Sequentially reveal highlighted phrases */
+      for (let i = 0; i < highlightOrder.length; i++) {
+        if (!analysisRunning) return;
+        await wait(300);
+        const phrase = document.getElementById(highlightOrder[i]);
+        phrase.classList.remove('hidden');
+        phrase.style.transition = 'border-bottom-color 0.3s ease';
+      }
+
+      await wait(500);
+
+      /* Step 3: Reveal MBS items with staggered animation */
+      if (!analysisRunning) return;
+      const item23 = document.getElementById('mbsItem23');
+      item23.classList.add('visible');
+      item23.classList.add('selected');
+
+      await wait(400);
+      if (!analysisRunning) return;
+      const item36 = document.getElementById('mbsItem36');
+      item36.classList.add('visible');
+
+      await wait(400);
+      if (!analysisRunning) return;
+      const item3 = document.getElementById('mbsItem3');
+      item3.classList.add('visible');
+
+      /* Step 4: Show claim form */
+      await wait(300);
+      if (!analysisRunning) return;
+      const claimForm = document.getElementById('claimForm');
+      claimForm.classList.add('visible');
+
+      /* Step 5: Animate audit indicator */
+      await wait(200);
+      if (!analysisRunning) return;
+      const auditIndicator = document.getElementById('auditIndicator');
+      auditIndicator.classList.add('visible');
+      await wait(100);
+      updateAuditBar('low', '15%');
+
+      /* Scroll right panel to top to show results */
+      document.getElementById('panelRight').scrollTop = 0;
+
+      analysisRunning = false;
+    }
+
+    /* ── Update audit risk bar ── */
+    function updateAuditBar(risk, width) {
+      const bar = document.getElementById('auditBar');
+      const status = document.getElementById('auditStatus');
+      const icon = document.getElementById('auditIcon');
+      const text = document.getElementById('auditText');
+
+      bar.className = 'audit-bar ' + risk;
+      requestAnimationFrame(() => {
+        bar.style.width = width;
+      });
+
+      status.className = 'audit-status status-' + risk;
+
+      if (risk === 'low') {
+        text.textContent = 'Low risk';
+      } else if (risk === 'medium') {
+        text.textContent = 'Medium risk';
+      } else {
+        text.textContent = 'High risk — PSR audit likely';
+      }
+    }
+
+    /* ── Select an MBS item ── */
+    function selectMBSItem(itemNum) {
+      currentSelectedItem = itemNum;
+
+      /* Update visual selection */
+      document.querySelectorAll('.mbs-item').forEach(el => el.classList.remove('selected'));
+      const itemId = itemNum === 23 ? 'mbsItem23' : (itemNum === 36 ? 'mbsItem36' : 'mbsItem3');
+      document.getElementById(itemId).classList.add('selected');
+
+      /* Update claim form */
+      const data = mbsItems[itemNum];
+      document.getElementById('claimItem').textContent = data.label;
+      document.getElementById('claimFee').textContent = data.fee;
+
+      /* Update audit indicator */
+      updateAuditBar(data.risk, data.riskWidth);
+    }
+
+    /* ── Scroll to evidence from clicked phrase ── */
+    function scrollToEvidence(evidenceIdx) {
+      const evId = 'ev-' + evidenceIdx;
+      const evEl = document.getElementById(evId);
+      if (!evEl) return;
+
+      /* Scroll the right panel to show the evidence */
+      const panelRight = document.getElementById('panelRight');
+      const item23 = document.getElementById('mbsItem23');
+
+      item23.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      /* Highlight the evidence line */
+      evEl.style.transition = 'background 0.2s ease';
+      evEl.style.background = 'rgba(167, 122, 205, 0.15)';
+      evEl.style.borderRadius = '4px';
+      evEl.style.padding = '4px 6px';
+      setTimeout(() => {
+        evEl.style.background = 'transparent';
+        evEl.style.padding = '4px 0';
+      }, 1500);
+    }
+
+    /* ── Submit claim toast ── */
+    function submitClaim() {
+      const data = mbsItems[currentSelectedItem];
+      toast('Claim submitted to Medicare — Item ' + data.label + ' — ' + data.fee, 'success');
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      analysisRunning = false;
+
+      /* Clear pending timeouts */
+      analysisTimeouts.forEach(t => clearTimeout(t));
+      analysisTimeouts = [];
+
+      /* Reset highlighted phrases */
+      document.querySelectorAll('.hl-phrase').forEach(el => {
+        el.classList.add('hidden');
+        el.style.transition = '';
+      });
+
+      /* Hide MBS items */
+      document.querySelectorAll('.mbs-item').forEach(el => {
+        el.classList.remove('visible', 'selected');
+      });
+
+      /* Hide claim form */
+      document.getElementById('claimForm').classList.remove('visible');
+
+      /* Hide audit indicator */
+      const auditIndicator = document.getElementById('auditIndicator');
+      auditIndicator.classList.remove('visible');
+      document.getElementById('auditBar').style.width = '0';
+
+      /* Reset claim form to default */
+      currentSelectedItem = 23;
+      document.getElementById('claimItem').textContent = '23';
+      document.getElementById('claimFee').textContent = '$39.75';
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+
+      /* Remove line overlays */
+      document.querySelectorAll('.line-overlay').forEach(el => el.remove());
+
+      /* Reset evidence highlights */
+      document.querySelectorAll('.evidence-list li').forEach(el => {
+        el.style.background = 'transparent';
+        el.style.padding = '4px 0';
+      });
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!analysisRunning) startAnalysis();
+    }, 2000);
+  </script>
+</body>
+</html>
