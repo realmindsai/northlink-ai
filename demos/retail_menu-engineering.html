@@ -1,0 +1,763 @@
+<!-- ABOUTME: Menu Engineering Dashboard mockup for NorthLink AI. -->
+<!-- ABOUTME: 2x2 scatter plot showing menu item profitability vs popularity with AI recommendations. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Engineering Dashboard — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout overrides */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 52px);
+    }
+
+    .panel-left {
+      flex: 0 0 72%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+    }
+
+    .panel-right {
+      flex: 0 0 28%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    /* Quadrant chart container */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      max-height: 520px;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    /* Quadrant backgrounds */
+    .quadrant {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .quadrant.visible {
+      opacity: 1;
+    }
+
+    .quadrant-stars {
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background: rgba(34, 197, 94, 0.08);
+      color: var(--color-success);
+      border-bottom: 2px dashed var(--color-light-gray);
+      border-left: 2px dashed var(--color-light-gray);
+    }
+
+    .quadrant-puzzles {
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 50%;
+      background: rgba(87, 145, 199, 0.08);
+      color: var(--color-blue);
+      border-bottom: 2px dashed var(--color-light-gray);
+      border-right: none;
+    }
+
+    .quadrant-plowhorses {
+      bottom: 0;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background: rgba(245, 158, 11, 0.08);
+      color: var(--color-warning);
+      border-top: none;
+      border-left: 2px dashed var(--color-light-gray);
+    }
+
+    .quadrant-dogs {
+      bottom: 0;
+      left: 0;
+      width: 50%;
+      height: 50%;
+      background: rgba(239, 68, 68, 0.08);
+      color: var(--color-danger);
+      border-top: none;
+    }
+
+    .quadrant-label {
+      pointer-events: none;
+    }
+
+    /* Axis labels */
+    .axis-label {
+      position: absolute;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+    }
+
+    .axis-x {
+      bottom: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .axis-y {
+      top: 50%;
+      left: -56px;
+      transform: translateY(-50%) rotate(-90deg);
+      white-space: nowrap;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      margin: 16px 16px 32px 64px;
+    }
+
+    /* Menu dots */
+    .menu-dot {
+      position: absolute;
+      border-radius: 50%;
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0);
+      transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.2s ease;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .menu-dot.visible {
+      opacity: 0.85;
+      transform: scale(1);
+    }
+
+    .menu-dot:hover {
+      opacity: 1;
+      transform: scale(1.15);
+      z-index: 20;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .menu-dot.clicked {
+      transform: scale(1.3);
+    }
+
+    .menu-dot.hidden-by-filter {
+      opacity: 0 !important;
+      transform: scale(0) !important;
+      pointer-events: none;
+    }
+
+    /* Spotlight / pulse for Chicken Parma */
+    @keyframes pulse-red {
+      0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70%  { box-shadow: 0 0 0 18px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .menu-dot.spotlight {
+      animation: pulse-red 1.5s ease-out infinite;
+      z-index: 15;
+      opacity: 1;
+    }
+
+    /* Tooltip */
+    .dot-tooltip {
+      position: absolute;
+      background: var(--color-black);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      line-height: 1.5;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .dot-tooltip.visible {
+      opacity: 1;
+    }
+
+    .dot-tooltip .tt-name {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .dot-tooltip .tt-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .dot-tooltip .tt-label {
+      color: var(--color-slate-gray);
+    }
+
+    /* Category filter buttons */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 6px 16px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--color-light-gray);
+      background: #fff;
+      font-family: var(--font-stack);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--color-slate-black);
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--color-purple);
+      color: var(--color-purple);
+    }
+
+    .filter-btn.active {
+      background: var(--color-purple);
+      color: #fff;
+      border-color: var(--color-purple);
+    }
+
+    /* Recommendation cards */
+    .rec-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 20px;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.25s ease;
+    }
+
+    .rec-card.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .rec-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .rec-card .rec-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .rec-card .rec-emoji {
+      font-size: 18px;
+    }
+
+    .rec-card .rec-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .rec-card .rec-body {
+      font-size: 14px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .rec-card .rec-impact {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-success);
+      margin-bottom: 12px;
+    }
+
+    .rec-card .rec-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Bottom stats bar */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 16px 24px;
+      background: var(--color-black);
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-item .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-purple);
+    }
+
+    .stat-item .stat-label {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      margin-top: 2px;
+    }
+
+    /* Panel heading */
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/retail-hospo.html">Retail &amp; Hospitality</a> &rarr; Menu Engineering Dashboard
+      </div>
+      <div class="demo-title">Menu Engineering Dashboard</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Start Demo</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Menu Performance Matrix -->
+    <div class="panel-left">
+      <div class="panel-heading">Menu Performance Matrix</div>
+
+      <div class="chart-wrapper">
+        <div class="chart-container" id="chartContainer">
+          <!-- Quadrant backgrounds -->
+          <div class="quadrant quadrant-stars" id="qStars">
+            <span class="quadrant-label">&#11088; Stars</span>
+          </div>
+          <div class="quadrant quadrant-puzzles" id="qPuzzles">
+            <span class="quadrant-label">&#129300; Puzzles</span>
+          </div>
+          <div class="quadrant quadrant-plowhorses" id="qPlowhorses">
+            <span class="quadrant-label">&#128004; Plowhorses</span>
+          </div>
+          <div class="quadrant quadrant-dogs" id="qDogs">
+            <span class="quadrant-label">&#128054; Dogs</span>
+          </div>
+
+          <!-- Dots are created dynamically via JS -->
+        </div>
+        <!-- Axis labels -->
+        <div class="axis-label axis-x">Popularity (orders/week) &rarr;</div>
+        <div class="axis-label axis-y">Profit Margin (%) &rarr;</div>
+      </div>
+
+      <!-- Tooltip (positioned absolutely within chart) -->
+      <div class="dot-tooltip" id="dotTooltip"></div>
+
+      <!-- Category filters -->
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterCategory('All')">All</button>
+        <button class="filter-btn" onclick="filterCategory('Mains')">Mains</button>
+        <button class="filter-btn" onclick="filterCategory('Entrees')">Entrees</button>
+        <button class="filter-btn" onclick="filterCategory('Desserts')">Desserts</button>
+        <button class="filter-btn" onclick="filterCategory('Drinks')">Drinks</button>
+      </div>
+    </div>
+
+    <!-- Right panel: AI Recommendations -->
+    <div class="panel-right">
+      <div class="panel-heading">AI Recommendations</div>
+
+      <div class="rec-card" id="rec1">
+        <div class="rec-header">
+          <span class="rec-emoji">&#128308;</span>
+          <span class="rec-title">Chicken Parma</span>
+        </div>
+        <div class="rec-body">Your #1 seller has the lowest margin. Reduce portion size by 15% or increase price by $2 to move from Plowhorse to Star.</div>
+        <div class="rec-impact">Projected impact: +$340/week</div>
+        <div class="rec-actions">
+          <button class="btn btn-approve btn-sm" onclick="toast('Chicken Parma recommendation approved', 'success')">Approve</button>
+          <button class="btn btn-edit btn-sm" onclick="toast('Opening editor...', 'info')">Edit</button>
+          <button class="btn btn-reject btn-sm" onclick="toast('Recommendation dismissed', 'danger')">Reject</button>
+        </div>
+      </div>
+
+      <div class="rec-card" id="rec2">
+        <div class="rec-header">
+          <span class="rec-emoji">&#128994;</span>
+          <span class="rec-title">Mushroom Risotto</span>
+        </div>
+        <div class="rec-body">Hidden Star. Only 12% menu visibility but highest margin at 72%. Feature on table tents and specials board.</div>
+        <div class="rec-impact">Projected impact: +$280/week</div>
+        <div class="rec-actions">
+          <button class="btn btn-approve btn-sm" onclick="toast('Mushroom Risotto recommendation approved', 'success')">Approve</button>
+          <button class="btn btn-edit btn-sm" onclick="toast('Opening editor...', 'info')">Edit</button>
+          <button class="btn btn-reject btn-sm" onclick="toast('Recommendation dismissed', 'danger')">Reject</button>
+        </div>
+      </div>
+
+      <div class="rec-card" id="rec3">
+        <div class="rec-header">
+          <span class="rec-emoji">&#9899;</span>
+          <span class="rec-title">Prawn Cocktail</span>
+        </div>
+        <div class="rec-body">Dog: low popularity, low margin. Replace with Garlic Prawns (similar cost, 3x popularity at other venues).</div>
+        <div class="rec-impact">Projected impact: +$180/week</div>
+        <div class="rec-actions">
+          <button class="btn btn-approve btn-sm" onclick="toast('Prawn Cocktail recommendation approved', 'success')">Approve</button>
+          <button class="btn btn-edit btn-sm" onclick="toast('Opening editor...', 'info')">Edit</button>
+          <button class="btn btn-reject btn-sm" onclick="toast('Recommendation dismissed', 'danger')">Reject</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-value" id="statFoodCost">--</div>
+      <div class="stat-label">Avg Food Cost</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="statItemsAnalysed">--</div>
+      <div class="stat-label">Menu Items Analysed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="statWeeklyUplift">--</div>
+      <div class="stat-label">Potential Weekly Uplift</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="statNeedingAction">--</div>
+      <div class="stat-label">Items Needing Action</div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Menu item data ── */
+    const menuItems = [
+      { name: 'Chicken Parma',       orders: 140, margin: 18, price: 24, category: 'Mains',    color: '#F26541',  highlight: true },
+      { name: 'Beef Burger',         orders: 95,  margin: 42, price: 22, category: 'Mains',    color: '#A77ACD' },
+      { name: 'Fish & Chips',        orders: 88,  margin: 35, price: 26, category: 'Mains',    color: '#A77ACD' },
+      { name: 'Caesar Salad',        orders: 72,  margin: 68, price: 18, category: 'Mains',    color: '#5791C7' },
+      { name: 'Mushroom Risotto',    orders: 28,  margin: 72, price: 24, category: 'Mains',    color: '#349990' },
+      { name: 'Steak 300g',          orders: 65,  margin: 28, price: 42, category: 'Mains',    color: '#F26541' },
+      { name: 'Lamb Cutlets',        orders: 35,  margin: 45, price: 38, category: 'Mains',    color: '#8D8D92' },
+      { name: 'Calamari',            orders: 55,  margin: 58, price: 16, category: 'Entrees',  color: '#5791C7' },
+      { name: 'Garlic Bread',        orders: 110, margin: 82, price: 8,  category: 'Entrees',  color: '#349990' },
+      { name: 'Bruschetta',          orders: 45,  margin: 75, price: 14, category: 'Entrees',  color: '#349990' },
+      { name: 'Prawn Cocktail',      orders: 12,  margin: 22, price: 18, category: 'Entrees',  color: '#EF4444' },
+      { name: 'Soup of Day',         orders: 30,  margin: 78, price: 12, category: 'Entrees',  color: '#349990' },
+      { name: 'Sticky Date Pudding', orders: 48,  margin: 65, price: 14, category: 'Desserts', color: '#FFDA47' },
+      { name: 'Tiramisu',            orders: 38,  margin: 70, price: 16, category: 'Desserts', color: '#FFDA47' },
+      { name: 'Cheesecake',          orders: 42,  margin: 62, price: 15, category: 'Desserts', color: '#FFDA47' },
+      { name: 'Lemon Tart',          orders: 25,  margin: 68, price: 14, category: 'Desserts', color: '#FFDA47' },
+      { name: 'Panna Cotta',         orders: 18,  margin: 55, price: 15, category: 'Desserts', color: '#FFDA47' },
+      { name: 'Espresso Martini',    orders: 85,  margin: 78, price: 19, category: 'Drinks',   color: '#A77ACD' },
+      { name: 'House Wine',          orders: 120, margin: 72, price: 12, category: 'Drinks',   color: '#A77ACD' },
+      { name: 'Craft Beer',          orders: 95,  margin: 65, price: 14, category: 'Drinks',   color: '#A77ACD' }
+    ];
+
+    /* ── Chart scaling constants ── */
+    const ORDERS_MIN = 0;
+    const ORDERS_MAX = 160;
+    const MARGIN_MIN = 0;
+    const MARGIN_MAX = 100;
+    const PADDING = 20; // px padding inside chart
+
+    let demoRunning = false;
+    let animationTimeouts = [];
+    let dotElements = [];
+
+    /* ── Convert data to chart position (percentage) ── */
+    function dataToPosition(orders, margin) {
+      const xPct = ((orders - ORDERS_MIN) / (ORDERS_MAX - ORDERS_MIN)) * 100;
+      const yPct = ((margin - MARGIN_MIN) / (MARGIN_MAX - MARGIN_MIN)) * 100;
+      return { x: xPct, y: yPct };
+    }
+
+    /* ── Calculate dot size based on weekly revenue ── */
+    function dotSize(orders, price) {
+      const revenue = orders * price;
+      const minRev = 180;   // Prawn Cocktail ~216
+      const maxRev = 3400;  // Chicken Parma ~3360
+      const minSize = 14;
+      const maxSize = 48;
+      const ratio = Math.min(1, Math.max(0, (revenue - minRev) / (maxRev - minRev)));
+      return minSize + ratio * (maxSize - minSize);
+    }
+
+    /* ── Create dot elements ── */
+    function createDots() {
+      const container = document.getElementById('chartContainer');
+      // Remove existing dots
+      container.querySelectorAll('.menu-dot').forEach(d => d.remove());
+      dotElements = [];
+
+      menuItems.forEach((item, i) => {
+        const pos = dataToPosition(item.orders, item.margin);
+        const size = dotSize(item.orders, item.price);
+        const dot = document.createElement('div');
+        dot.className = 'menu-dot';
+        dot.dataset.index = i;
+        dot.dataset.category = item.category;
+        dot.style.width = size + 'px';
+        dot.style.height = size + 'px';
+        dot.style.backgroundColor = item.color;
+        // Position: left = xPct, bottom = yPct (invert Y so higher margin = higher on chart)
+        dot.style.left = `calc(${pos.x}% - ${size / 2}px)`;
+        dot.style.bottom = `calc(${pos.y}% - ${size / 2}px)`;
+
+        dot.addEventListener('mouseenter', (e) => showTooltip(e, item, dot));
+        dot.addEventListener('mouseleave', hideTooltip);
+        dot.addEventListener('click', () => clickDot(dot));
+
+        container.appendChild(dot);
+        dotElements.push(dot);
+      });
+    }
+
+    /* ── Tooltip ── */
+    function showTooltip(e, item, dot) {
+      const tooltip = document.getElementById('dotTooltip');
+      const revenue = (item.orders * item.price).toLocaleString();
+      const foodCost = (100 - item.margin);
+      tooltip.innerHTML = `
+        <div class="tt-name">${item.name}</div>
+        <div class="tt-row"><span class="tt-label">Orders/week:</span> <span>${item.orders}</span></div>
+        <div class="tt-row"><span class="tt-label">Price:</span> <span>$${item.price}</span></div>
+        <div class="tt-row"><span class="tt-label">Food cost:</span> <span>${foodCost}%</span></div>
+        <div class="tt-row"><span class="tt-label">Margin:</span> <span>${item.margin}%</span></div>
+        <div class="tt-row"><span class="tt-label">Weekly revenue:</span> <span>$${revenue}</span></div>
+      `;
+      const chartRect = document.getElementById('chartContainer').getBoundingClientRect();
+      const dotRect = dot.getBoundingClientRect();
+      tooltip.style.left = (dotRect.left - chartRect.left + dotRect.width + 12) + 'px';
+      tooltip.style.top = (dotRect.top - chartRect.top - 20) + 'px';
+
+      // Keep tooltip on screen
+      tooltip.classList.add('visible');
+      requestAnimationFrame(() => {
+        const ttRect = tooltip.getBoundingClientRect();
+        if (ttRect.right > window.innerWidth - 10) {
+          tooltip.style.left = (dotRect.left - chartRect.left - ttRect.width - 12) + 'px';
+        }
+        if (ttRect.bottom > window.innerHeight - 10) {
+          tooltip.style.top = (dotRect.top - chartRect.top - ttRect.height + 10) + 'px';
+        }
+      });
+    }
+
+    function hideTooltip() {
+      document.getElementById('dotTooltip').classList.remove('visible');
+    }
+
+    /* ── Dot click animation ── */
+    function clickDot(dot) {
+      dot.classList.add('clicked');
+      setTimeout(() => dot.classList.remove('clicked'), 300);
+    }
+
+    /* ── Category filter ── */
+    function filterCategory(category) {
+      // Update active button
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === category);
+      });
+
+      dotElements.forEach((dot, i) => {
+        const item = menuItems[i];
+        if (category === 'All' || item.category === category) {
+          dot.classList.remove('hidden-by-filter');
+          // Re-trigger pop-in
+          dot.classList.remove('visible');
+          const delay = dotElements.filter((d, j) => {
+            return j < i && (category === 'All' || menuItems[j].category === category);
+          }).length;
+          const tid = setTimeout(() => dot.classList.add('visible'), delay * 80);
+          animationTimeouts.push(tid);
+        } else {
+          dot.classList.add('hidden-by-filter');
+        }
+      });
+    }
+
+    /* ── Animation sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      // Create dots (hidden initially)
+      createDots();
+
+      // Step 1: Show quadrants
+      await wait(300);
+      document.querySelectorAll('.quadrant').forEach(q => q.classList.add('visible'));
+      await wait(600);
+
+      // Step 2: Pop in dots staggered
+      for (let i = 0; i < dotElements.length; i++) {
+        const tid = setTimeout(() => {
+          dotElements[i].classList.add('visible');
+        }, i * 100);
+        animationTimeouts.push(tid);
+      }
+
+      // Wait for all dots to appear
+      await wait(dotElements.length * 100 + 300);
+
+      // Step 3: Pause, then spotlight Chicken Parma
+      await wait(1000);
+      const chickenDot = dotElements[0]; // index 0 = Chicken Parma
+      chickenDot.classList.add('spotlight');
+
+      // Step 4: Slide in recommendation #1
+      await wait(500);
+      document.getElementById('rec1').classList.add('visible');
+
+      // Step 5: Slide in recommendations #2 and #3
+      await wait(1500);
+      document.getElementById('rec2').classList.add('visible');
+      await wait(300);
+      document.getElementById('rec3').classList.add('visible');
+
+      // Step 6: Animate bottom stats
+      await wait(500);
+      countUp(document.getElementById('statFoodCost'), 0, 32, 800, '', '%');
+      countUp(document.getElementById('statItemsAnalysed'), 0, 47, 800);
+      countUp(document.getElementById('statWeeklyUplift'), 0, 800, 1000, '$');
+      countUp(document.getElementById('statNeedingAction'), 0, 8, 600);
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      // Clear pending timeouts
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+
+      // Hide quadrants
+      document.querySelectorAll('.quadrant').forEach(q => q.classList.remove('visible'));
+
+      // Remove dots
+      document.querySelectorAll('.menu-dot').forEach(d => d.remove());
+      dotElements = [];
+
+      // Hide recommendations
+      document.querySelectorAll('.rec-card').forEach(c => c.classList.remove('visible'));
+
+      // Reset stats
+      document.getElementById('statFoodCost').textContent = '--';
+      document.getElementById('statItemsAnalysed').textContent = '--';
+      document.getElementById('statWeeklyUplift').textContent = '--';
+      document.getElementById('statNeedingAction').textContent = '--';
+
+      // Reset filter
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === 'All');
+      });
+
+      // Hide tooltip
+      hideTooltip();
+
+      // Remove toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
