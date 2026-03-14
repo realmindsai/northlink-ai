@@ -1,0 +1,956 @@
+<!-- ABOUTME: Dynamic Route Optimisation mockup for NorthLink AI. -->
+<!-- ABOUTME: Leaflet map with vehicle routes that re-optimise when a driver is removed. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Route Optimisation — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Two-panel layout: map 70%, sidebar 30% */
+    .demo-main {
+      display: flex;
+      height: calc(100vh - 64px - 49px);
+      overflow: hidden;
+    }
+
+    .map-panel {
+      flex: 0 0 70%;
+      position: relative;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Map shimmer overlay */
+    .map-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1000;
+      background: linear-gradient(90deg, transparent, rgba(167,122,205,0.18), transparent);
+      background-size: 200% 100%;
+      animation: mapShimmer 1.5s ease-in-out;
+      pointer-events: none;
+      display: none;
+    }
+
+    .map-overlay.active {
+      display: block;
+    }
+
+    @keyframes mapShimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Optimising label on map */
+    .optimising-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1001;
+      background: var(--color-black);
+      color: #fff;
+      font-family: var(--font-stack);
+      font-size: 18px;
+      font-weight: 700;
+      padding: 14px 32px;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: none;
+      letter-spacing: 0.5px;
+    }
+
+    .optimising-label.active {
+      display: block;
+    }
+
+    @keyframes dotPulse {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
+
+    .optimising-label::after {
+      content: '';
+      animation: dotPulse 1.5s steps(1) infinite;
+    }
+
+    /* Sidebar */
+    .sidebar-panel {
+      flex: 0 0 30%;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--color-light-gray);
+      background: #fafafa;
+      overflow-y: auto;
+    }
+
+    .sidebar-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      padding: 20px 20px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-heading .icon {
+      font-size: 22px;
+    }
+
+    /* Driver cards */
+    .driver-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0 20px 16px;
+      flex: 1;
+    }
+
+    .driver-card {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+
+    .driver-card.flash-amber {
+      border-color: var(--color-warning);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+    }
+
+    .driver-card.greyed-out {
+      opacity: 0.45;
+      background: #f0f0f0;
+    }
+
+    .driver-card.greyed-out .driver-name,
+    .driver-card.greyed-out .driver-vehicle,
+    .driver-card.greyed-out .driver-stops {
+      text-decoration: line-through;
+    }
+
+    .driver-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .driver-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .driver-color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .driver-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .driver-vehicle {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      font-weight: 500;
+    }
+
+    .driver-details {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--color-slate-black);
+    }
+
+    .driver-stops {
+      font-weight: 600;
+    }
+
+    .driver-status {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-on-route {
+      color: var(--color-success);
+    }
+
+    .status-sick {
+      color: var(--color-danger);
+      font-weight: 700;
+    }
+
+    .capacity-bar-container {
+      height: 6px;
+      background: var(--color-light-gray);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .capacity-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.8s ease;
+    }
+
+    .capacity-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .remove-driver-btn {
+      background: none;
+      border: 1px solid var(--color-light-gray);
+      border-radius: 4px;
+      color: var(--color-slate-gray);
+      cursor: pointer;
+      font-size: 14px;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-family: var(--font-stack);
+    }
+
+    .remove-driver-btn:hover {
+      background: var(--color-danger);
+      color: #fff;
+      border-color: var(--color-danger);
+    }
+
+    /* Sick label overlay on card */
+    .sick-label {
+      display: none;
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-danger);
+      background: #fee2e2;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .sick-label.visible {
+      display: inline-block;
+    }
+
+    /* Fleet stats at bottom of sidebar */
+    .fleet-stats {
+      border-top: 1px solid var(--color-light-gray);
+      padding: 16px 20px;
+      background: #fff;
+    }
+
+    .fleet-stats-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .fleet-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .fleet-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .fleet-stat-label {
+      font-size: 11px;
+      color: var(--color-slate-gray);
+      font-weight: 500;
+    }
+
+    .fleet-stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .fleet-stat-delta {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-success);
+      display: none;
+    }
+
+    .fleet-stat-delta.visible {
+      display: inline;
+    }
+
+    /* Impact banner */
+    .impact-banner {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--color-black);
+      color: #fff;
+      padding: 16px 32px;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 600;
+      z-index: 1002;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      text-align: center;
+      transition: transform 0.5s ease;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    .impact-banner.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .impact-banner .highlight {
+      color: var(--color-purple);
+      font-weight: 700;
+    }
+
+    .impact-banner .highlight-green {
+      color: var(--color-success);
+      font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .map-panel {
+        flex: none;
+        height: 50vh;
+      }
+      .sidebar-panel {
+        flex: none;
+        border-left: none;
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/logistics-transport.html">Logistics &amp; Transport</a> &rarr; Route Optimisation
+      </div>
+      <div class="demo-title">Dynamic Route Optimisation</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" id="btnStart" onclick="startDemo()">Start Demo</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="demo-main">
+
+    <!-- Map panel (70%) -->
+    <div class="map-panel">
+      <div id="map"></div>
+      <div class="map-overlay" id="mapOverlay"></div>
+      <div class="optimising-label" id="optimisingLabel">Optimising routes</div>
+    </div>
+
+    <!-- Sidebar (30%) -->
+    <div class="sidebar-panel">
+      <div class="sidebar-heading"><span class="icon">&#128666;</span> Fleet Manager</div>
+
+      <div class="driver-cards" id="driverCards">
+
+        <!-- Driver 1: Dave M. — Red -->
+        <div class="driver-card" id="driver1Card">
+          <div class="driver-card-top">
+            <div class="driver-info">
+              <div class="driver-color-dot" style="background: #EF4444;"></div>
+              <div>
+                <div class="driver-name">Dave M.</div>
+                <div class="driver-vehicle">Van 1</div>
+              </div>
+            </div>
+            <span class="driver-status status-on-route" id="driver1Status">On route</span>
+          </div>
+          <div class="driver-details">
+            <span class="driver-stops" id="driver1Stops">12 stops</span>
+            <span>Craigieburn / Roxburgh Park</span>
+          </div>
+          <div class="capacity-bar-container">
+            <div class="capacity-bar" id="driver1Cap" style="width: 85%; background: #EF4444;"></div>
+          </div>
+          <div class="capacity-label" id="driver1CapLabel">Capacity: 85%</div>
+        </div>
+
+        <!-- Driver 2: Sarah K. — Blue (removable) -->
+        <div class="driver-card" id="driver2Card">
+          <div class="sick-label" id="driver2Sick">&#10060; CALLED IN SICK</div>
+          <div class="driver-card-top">
+            <div class="driver-info">
+              <div class="driver-color-dot" style="background: #5791C7;"></div>
+              <div>
+                <div class="driver-name">Sarah K.</div>
+                <div class="driver-vehicle">Van 2</div>
+              </div>
+            </div>
+            <button class="remove-driver-btn" id="removeDriver2" onclick="removeDriver()" title="Remove Driver">&#10005;</button>
+          </div>
+          <div class="driver-details">
+            <span class="driver-stops" id="driver2Stops">12 stops</span>
+            <span>Campbellfield / Coolaroo</span>
+          </div>
+          <div class="capacity-bar-container">
+            <div class="capacity-bar" id="driver2Cap" style="width: 78%; background: #5791C7;"></div>
+          </div>
+          <div class="capacity-label" id="driver2CapLabel">Capacity: 78%</div>
+        </div>
+
+        <!-- Driver 3: James T. — Green -->
+        <div class="driver-card" id="driver3Card">
+          <div class="driver-card-top">
+            <div class="driver-info">
+              <div class="driver-color-dot" style="background: #349990;"></div>
+              <div>
+                <div class="driver-name">James T.</div>
+                <div class="driver-vehicle">Van 3</div>
+              </div>
+            </div>
+            <span class="driver-status status-on-route" id="driver3Status">On route</span>
+          </div>
+          <div class="driver-details">
+            <span class="driver-stops" id="driver3Stops">12 stops</span>
+            <span>Thomastown / Epping</span>
+          </div>
+          <div class="capacity-bar-container">
+            <div class="capacity-bar" id="driver3Cap" style="width: 72%; background: #349990;"></div>
+          </div>
+          <div class="capacity-label" id="driver3CapLabel">Capacity: 72%</div>
+        </div>
+
+        <!-- Driver 4: Lisa P. — Orange -->
+        <div class="driver-card" id="driver4Card">
+          <div class="driver-card-top">
+            <div class="driver-info">
+              <div class="driver-color-dot" style="background: #F26541;"></div>
+              <div>
+                <div class="driver-name">Lisa P.</div>
+                <div class="driver-vehicle">Van 4</div>
+              </div>
+            </div>
+            <span class="driver-status status-on-route" id="driver4Status">On route</span>
+          </div>
+          <div class="driver-details">
+            <span class="driver-stops" id="driver4Stops">12 stops</span>
+            <span>Broadmeadows / Airport West</span>
+          </div>
+          <div class="capacity-bar-container">
+            <div class="capacity-bar" id="driver4Cap" style="width: 68%; background: #F26541;"></div>
+          </div>
+          <div class="capacity-label" id="driver4CapLabel">Capacity: 68%</div>
+        </div>
+
+      </div>
+
+      <!-- Fleet stats -->
+      <div class="fleet-stats">
+        <div class="fleet-stats-title">Fleet Overview</div>
+        <div class="fleet-stats-grid">
+          <div class="fleet-stat">
+            <span class="fleet-stat-label">Total km</span>
+            <span class="fleet-stat-value" id="statKm">342</span>
+            <span class="fleet-stat-delta" id="statKmDelta">-44 km</span>
+          </div>
+          <div class="fleet-stat">
+            <span class="fleet-stat-label">Est. fuel</span>
+            <span class="fleet-stat-value" id="statFuel">$148</span>
+            <span class="fleet-stat-delta" id="statFuelDelta">-$19</span>
+          </div>
+          <div class="fleet-stat">
+            <span class="fleet-stat-label">Window compliance</span>
+            <span class="fleet-stat-value" id="statCompliance">96%</span>
+          </div>
+          <div class="fleet-stat">
+            <span class="fleet-stat-label">Fleet utilisation</span>
+            <span class="fleet-stat-value" id="statUtilisation">76%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Impact banner -->
+  <div class="impact-banner" id="impactBanner">
+    Redistributed in <span class="highlight">1.8 seconds</span>.
+    Manual replanning: <span class="highlight-green">~45 minutes</span>.
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Route colours ── */
+    const COLORS = {
+      red: '#EF4444',
+      blue: '#5791C7',
+      green: '#349990',
+      orange: '#F26541'
+    };
+
+    /* ── Delivery stop data (real Melbourne north coordinates) ── */
+    const routeData = {
+      /* Route 1: Red — Craigieburn / Roxburgh Park */
+      route1: [
+        { lat: -37.5920, lng: 144.9380, name: 'Craigieburn Central Hardware', time: '08:00-08:30' },
+        { lat: -37.5955, lng: 144.9445, name: 'NorthPoint Plumbing', time: '08:30-09:00' },
+        { lat: -37.5990, lng: 144.9510, name: 'Summit Auto Parts', time: '09:00-09:30' },
+        { lat: -37.6035, lng: 144.9420, name: 'Highland Electrical', time: '09:30-10:00' },
+        { lat: -37.6080, lng: 144.9360, name: 'Craigieburn Fresh Meats', time: '10:00-10:30' },
+        { lat: -37.6120, lng: 144.9300, name: 'Valley View Cafe', time: '10:30-11:00' },
+        { lat: -37.6200, lng: 144.9280, name: 'Roxburgh Park IGA', time: '11:00-11:30' },
+        { lat: -37.6250, lng: 144.9330, name: 'Pioneer Medical Centre', time: '11:30-12:00' },
+        { lat: -37.6290, lng: 144.9380, name: 'Parkview Bakery', time: '12:00-12:30' },
+        { lat: -37.6330, lng: 144.9250, name: 'Roxburgh Warehouse', time: '12:30-13:00' },
+        { lat: -37.6180, lng: 144.9200, name: 'GreenField Nursery', time: '13:00-13:30' },
+        { lat: -37.6010, lng: 144.9350, name: 'Craigieburn Pet Barn', time: '13:30-14:00' }
+      ],
+      /* Route 2: Blue — Campbellfield / Coolaroo (to be redistributed) */
+      route2: [
+        { lat: -37.6650, lng: 144.9580, name: 'Campbellfield Steel Works', time: '08:00-08:30' },
+        { lat: -37.6690, lng: 144.9630, name: 'Barry Road Auto', time: '08:30-09:00' },
+        { lat: -37.6720, lng: 144.9550, name: 'Northern Timber Supplies', time: '09:00-09:30' },
+        { lat: -37.6610, lng: 144.9500, name: 'Metro Packaging Co', time: '09:30-10:00' },
+        { lat: -37.6580, lng: 144.9450, name: 'Campbellfield Auto Glass', time: '10:00-10:30' },
+        { lat: -37.6550, lng: 144.9380, name: 'Coolaroo Junction Store', time: '10:30-11:00' },
+        { lat: -37.6500, lng: 144.9320, name: 'MegaFresh Wholesale', time: '11:00-11:30' },
+        { lat: -37.6480, lng: 144.9400, name: 'Coolaroo Medical Hub', time: '11:30-12:00' },
+        { lat: -37.6530, lng: 144.9470, name: 'Northland Paper', time: '12:00-12:30' },
+        { lat: -37.6600, lng: 144.9700, name: 'Upfield Industrial', time: '12:30-13:00' },
+        { lat: -37.6570, lng: 144.9650, name: 'Premier Plastics', time: '13:00-13:30' },
+        { lat: -37.6630, lng: 144.9520, name: 'Campbellfield Office Hub', time: '13:30-14:00' }
+      ],
+      /* Route 3: Green — Thomastown / Epping */
+      route3: [
+        { lat: -37.6800, lng: 145.0080, name: 'Thomastown Hardware Depot', time: '08:00-08:30' },
+        { lat: -37.6830, lng: 145.0150, name: 'Settlement Road Motors', time: '08:30-09:00' },
+        { lat: -37.6780, lng: 145.0200, name: 'Mahoneys Road Industrial', time: '09:00-09:30' },
+        { lat: -37.6750, lng: 145.0100, name: 'Northern Cold Storage', time: '09:30-10:00' },
+        { lat: -37.6700, lng: 145.0050, name: 'EcoFresh Produce', time: '10:00-10:30' },
+        { lat: -37.6650, lng: 145.0130, name: 'Thomastown Electrical', time: '10:30-11:00' },
+        { lat: -37.6580, lng: 145.0180, name: 'Epping Central Market', time: '11:00-11:30' },
+        { lat: -37.6530, lng: 145.0100, name: 'Pacific Epping Mall', time: '11:30-12:00' },
+        { lat: -37.6500, lng: 145.0220, name: 'Costco Epping', time: '12:00-12:30' },
+        { lat: -37.6470, lng: 145.0150, name: 'Epping Fresh Foods', time: '12:30-13:00' },
+        { lat: -37.6600, lng: 145.0050, name: 'Northern Recycling Centre', time: '13:00-13:30' },
+        { lat: -37.6730, lng: 145.0000, name: 'Thomastown Business Park', time: '13:30-14:00' }
+      ],
+      /* Route 4: Orange — Broadmeadows / Airport West */
+      route4: [
+        { lat: -37.6810, lng: 144.9520, name: 'Broadmeadows Central', time: '08:00-08:30' },
+        { lat: -37.6850, lng: 144.9450, name: 'Metro Hardware', time: '08:30-09:00' },
+        { lat: -37.6900, lng: 144.9380, name: 'Pascoe Vale Industries', time: '09:00-09:30' },
+        { lat: -37.6940, lng: 144.9300, name: 'Western Ring Distribution', time: '09:30-10:00' },
+        { lat: -37.6980, lng: 144.9200, name: 'Gladstone Park Fresh', time: '10:00-10:30' },
+        { lat: -37.7050, lng: 144.9100, name: 'Tullamarine Freight Hub', time: '10:30-11:00' },
+        { lat: -37.7120, lng: 144.8900, name: 'Airport West Business Park', time: '11:00-11:30' },
+        { lat: -37.7180, lng: 144.8820, name: 'Westfield Airport West', time: '11:30-12:00' },
+        { lat: -37.7220, lng: 144.8780, name: 'Matthews Automotive', time: '12:00-12:30' },
+        { lat: -37.7150, lng: 144.8950, name: 'Keilor Park Drive Hub', time: '12:30-13:00' },
+        { lat: -37.7000, lng: 144.9050, name: 'Airport Gateway Storage', time: '13:00-13:30' },
+        { lat: -37.6880, lng: 144.9480, name: 'Broadmeadows Station Plaza', time: '13:30-14:00' }
+      ]
+    };
+
+    /* ── After redistribution: Blue stops are absorbed into the other 3 routes ── */
+    const redistributedStops = {
+      /* Blue stops 0-3 go to Route 1 (Red) — northern campbellfield stops nearest to Roxburgh Park */
+      toRoute1: [0, 3, 4, 5],
+      /* Blue stops 6-9 go to Route 3 (Green) — eastern campbellfield/coolaroo stops nearest Thomastown */
+      toRoute3: [6, 7, 8, 9],
+      /* Blue stops 2,1,10,11 go to Route 4 (Orange) — southern campbellfield stops nearest Broadmeadows */
+      toRoute4: [1, 2, 10, 11]
+    };
+
+    /* ── Map and layer state ── */
+    let map;
+    let routeLayers = {};
+    let markerLayers = {};
+    let demoRunning = false;
+    let driverRemoved = false;
+    let animationTimeouts = [];
+
+    /* Schedule a timeout and track it for cleanup */
+    function schedule(fn, delay) {
+      const tid = setTimeout(fn, delay);
+      animationTimeouts.push(tid);
+      return tid;
+    }
+
+    /* ── Initialise map ── */
+    function initMap() {
+      map = L.map('map', {
+        center: [-37.6818, 144.9447],
+        zoom: 12,
+        zoomControl: true
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18
+      }).addTo(map);
+
+      drawAllRoutes();
+    }
+
+    /* ── Draw all 4 routes ── */
+    function drawAllRoutes() {
+      drawRoute('route1', routeData.route1, COLORS.red, 'Red');
+      drawRoute('route2', routeData.route2, COLORS.blue, 'Blue');
+      drawRoute('route3', routeData.route3, COLORS.green, 'Green');
+      drawRoute('route4', routeData.route4, COLORS.orange, 'Orange');
+    }
+
+    /* ── Draw a single route with polyline and circle markers ── */
+    function drawRoute(routeId, stops, color, label) {
+      const latlngs = stops.map(s => [s.lat, s.lng]);
+      const polyline = L.polyline(latlngs, {
+        color: color,
+        weight: 4,
+        opacity: 0.8,
+        dashArray: null
+      }).addTo(map);
+      routeLayers[routeId] = polyline;
+
+      const markers = [];
+      stops.forEach((stop, i) => {
+        const marker = L.circleMarker([stop.lat, stop.lng], {
+          radius: 7,
+          fillColor: color,
+          color: '#fff',
+          weight: 2,
+          fillOpacity: 0.9
+        }).addTo(map);
+
+        marker.bindTooltip(
+          `<strong>Stop ${i + 1}</strong> &mdash; ${stop.name}<br>${stop.time}`,
+          { direction: 'top', offset: [0, -8] }
+        );
+        markers.push(marker);
+      });
+      markerLayers[routeId] = markers;
+    }
+
+    /* ── Animate a polyline being drawn (dash animation) ── */
+    function animatePolyline(polyline, duration) {
+      const path = polyline.getElement();
+      if (!path) return;
+      const length = path.getTotalLength();
+      path.style.strokeDasharray = length;
+      path.style.strokeDashoffset = length;
+      path.style.transition = `stroke-dashoffset ${duration}ms ease-in-out`;
+      requestAnimationFrame(() => {
+        path.style.strokeDashoffset = '0';
+      });
+    }
+
+    /* ── Remove a route's polyline and markers ── */
+    function removeRoute(routeId, animate) {
+      if (routeLayers[routeId]) {
+        if (animate) {
+          const el = routeLayers[routeId].getElement();
+          if (el) {
+            el.style.transition = 'opacity 0.6s ease';
+            el.style.opacity = '0';
+          }
+          schedule(() => {
+            map.removeLayer(routeLayers[routeId]);
+            delete routeLayers[routeId];
+          }, 700);
+        } else {
+          map.removeLayer(routeLayers[routeId]);
+          delete routeLayers[routeId];
+        }
+      }
+      if (markerLayers[routeId]) {
+        if (animate) {
+          markerLayers[routeId].forEach((m, i) => {
+            schedule(() => {
+              m.setStyle({ fillOpacity: 0, opacity: 0 });
+              schedule(() => map.removeLayer(m), 400);
+            }, i * 50);
+          });
+          schedule(() => { delete markerLayers[routeId]; }, 800);
+        } else {
+          markerLayers[routeId].forEach(m => map.removeLayer(m));
+          delete markerLayers[routeId];
+        }
+      }
+    }
+
+    /* ── Build redistributed route data ── */
+    function getRedistributedRoutes() {
+      const blue = routeData.route2;
+
+      /* Route 1 original + absorbed blue stops, sorted by lat */
+      const newRoute1 = [
+        ...routeData.route1,
+        ...redistributedStops.toRoute1.map(i => blue[i])
+      ].sort((a, b) => a.lat - b.lat);
+
+      /* Route 3 original + absorbed blue stops */
+      const newRoute3 = [
+        ...routeData.route3,
+        ...redistributedStops.toRoute3.map(i => blue[i])
+      ].sort((a, b) => a.lat - b.lat);
+
+      /* Route 4 original + absorbed blue stops */
+      const newRoute4 = [
+        ...routeData.route4,
+        ...redistributedStops.toRoute4.map(i => blue[i])
+      ].sort((a, b) => a.lat - b.lat);
+
+      return { newRoute1, newRoute3, newRoute4 };
+    }
+
+    /* ── Core demo: remove driver and re-optimise ── */
+    async function removeDriver() {
+      if (driverRemoved || demoRunning) return;
+      demoRunning = true;
+      driverRemoved = true;
+
+      const card = document.getElementById('driver2Card');
+      const sickLabel = document.getElementById('driver2Sick');
+      const removeBtn = document.getElementById('removeDriver2');
+
+      /* Step 1: Grey out driver card */
+      card.classList.add('greyed-out');
+      sickLabel.classList.add('visible');
+      removeBtn.style.display = 'none';
+      document.getElementById('driver2Cap').style.width = '0%';
+      document.getElementById('driver2CapLabel').textContent = 'Offline';
+
+      /* Step 2: Show optimising overlay */
+      await wait(400);
+      const overlay = document.getElementById('mapOverlay');
+      const label = document.getElementById('optimisingLabel');
+      overlay.classList.add('active');
+      label.classList.add('active');
+
+      /* Step 3: Fade out blue route */
+      removeRoute('route2', true);
+
+      /* Step 4: Wait for shimmer */
+      await wait(1500);
+      overlay.classList.remove('active');
+      label.classList.remove('active');
+
+      /* Step 5: Remove existing routes 1, 3, 4 (no animation) */
+      removeRoute('route1', false);
+      removeRoute('route3', false);
+      removeRoute('route4', false);
+
+      /* Step 6: Draw new redistributed routes */
+      const { newRoute1, newRoute3, newRoute4 } = getRedistributedRoutes();
+
+      drawRoute('route1', newRoute1, COLORS.red, 'Red');
+      drawRoute('route3', newRoute3, COLORS.green, 'Green');
+      drawRoute('route4', newRoute4, COLORS.orange, 'Orange');
+
+      /* Animate polylines drawing */
+      if (routeLayers.route1) animatePolyline(routeLayers.route1, 1200);
+      if (routeLayers.route3) animatePolyline(routeLayers.route3, 1200);
+      if (routeLayers.route4) animatePolyline(routeLayers.route4, 1200);
+
+      /* Step 7: Update sidebar driver cards */
+      document.getElementById('driver1Stops').textContent = `${newRoute1.length} stops`;
+      document.getElementById('driver1Cap').style.width = '94%';
+      document.getElementById('driver1CapLabel').textContent = 'Capacity: 94%';
+
+      document.getElementById('driver3Stops').textContent = `${newRoute3.length} stops`;
+      document.getElementById('driver3Cap').style.width = '91%';
+      document.getElementById('driver3CapLabel').textContent = 'Capacity: 91%';
+
+      document.getElementById('driver4Stops').textContent = `${newRoute4.length} stops`;
+      document.getElementById('driver4Cap').style.width = '88%';
+      document.getElementById('driver4CapLabel').textContent = 'Capacity: 88%';
+
+      /* Step 8: Update fleet stats */
+      document.getElementById('statKm').textContent = '298';
+      document.getElementById('statFuel').textContent = '$129';
+      document.getElementById('statCompliance').textContent = '94%';
+      document.getElementById('statUtilisation').textContent = '92%';
+
+      document.getElementById('statKmDelta').classList.add('visible');
+      document.getElementById('statFuelDelta').classList.add('visible');
+
+      /* Step 9: Toast */
+      await wait(600);
+      toast('12 deliveries redistributed across 3 drivers. 0 time windows missed.', 'success', 5000);
+
+      /* Step 10: Impact banner */
+      await wait(1200);
+      document.getElementById('impactBanner').classList.add('visible');
+
+      demoRunning = false;
+    }
+
+    /* ── Start Demo button ── */
+    async function startDemo() {
+      if (demoRunning || driverRemoved) return;
+      demoRunning = true;
+
+      const card = document.getElementById('driver2Card');
+
+      /* Flash amber after 2s */
+      card.classList.add('flash-amber');
+      await wait(1500);
+
+      /* Show sick label */
+      document.getElementById('driver2Sick').classList.add('visible');
+      await wait(1000);
+
+      /* Auto-remove after animation */
+      card.classList.remove('flash-amber');
+      demoRunning = false;
+      removeDriver();
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      /* Clear timeouts */
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+      driverRemoved = false;
+
+      /* Remove all map layers */
+      Object.keys(routeLayers).forEach(key => {
+        if (routeLayers[key]) map.removeLayer(routeLayers[key]);
+      });
+      Object.keys(markerLayers).forEach(key => {
+        if (markerLayers[key]) {
+          markerLayers[key].forEach(m => map.removeLayer(m));
+        }
+      });
+      routeLayers = {};
+      markerLayers = {};
+
+      /* Redraw original routes */
+      drawAllRoutes();
+
+      /* Reset driver 2 card */
+      const card = document.getElementById('driver2Card');
+      card.classList.remove('greyed-out', 'flash-amber');
+      document.getElementById('driver2Sick').classList.remove('visible');
+      document.getElementById('removeDriver2').style.display = '';
+      document.getElementById('driver2Stops').textContent = '12 stops';
+      document.getElementById('driver2Cap').style.width = '78%';
+      document.getElementById('driver2CapLabel').textContent = 'Capacity: 78%';
+
+      /* Reset other driver cards */
+      document.getElementById('driver1Stops').textContent = '12 stops';
+      document.getElementById('driver1Cap').style.width = '85%';
+      document.getElementById('driver1CapLabel').textContent = 'Capacity: 85%';
+
+      document.getElementById('driver3Stops').textContent = '12 stops';
+      document.getElementById('driver3Cap').style.width = '72%';
+      document.getElementById('driver3CapLabel').textContent = 'Capacity: 72%';
+
+      document.getElementById('driver4Stops').textContent = '12 stops';
+      document.getElementById('driver4Cap').style.width = '68%';
+      document.getElementById('driver4CapLabel').textContent = 'Capacity: 68%';
+
+      /* Reset fleet stats */
+      document.getElementById('statKm').textContent = '342';
+      document.getElementById('statFuel').textContent = '$148';
+      document.getElementById('statCompliance').textContent = '96%';
+      document.getElementById('statUtilisation').textContent = '76%';
+
+      document.getElementById('statKmDelta').classList.remove('visible');
+      document.getElementById('statFuelDelta').classList.remove('visible');
+
+      /* Hide overlays */
+      document.getElementById('mapOverlay').classList.remove('active');
+      document.getElementById('optimisingLabel').classList.remove('active');
+      document.getElementById('impactBanner').classList.remove('visible');
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      setTimeout(() => {
+        if (!demoRunning && !driverRemoved) startDemo();
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
