@@ -1,0 +1,923 @@
+<!-- ABOUTME: Label Compliance Checker mockup for NorthLink AI. -->
+<!-- ABOUTME: AI scans food labels against FSANZ standards, highlighting passes and violations. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Label Compliance Checker — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px);
+    }
+
+    .panel-centre {
+      flex: 0 0 60%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      position: relative;
+    }
+
+    .panel-right {
+      flex: 0 0 40%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+    }
+
+    /* Label wrapper */
+    .label-wrapper {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .label-wrapper svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Scanning line */
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent, var(--color-purple), var(--color-purple), transparent);
+      box-shadow: 0 0 12px rgba(167, 122, 205, 0.6), 0 0 24px rgba(167, 122, 205, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .scan-line.scanning {
+      opacity: 1;
+      animation: sweep 2s linear forwards;
+    }
+
+    @keyframes sweep {
+      0%   { left: 0; }
+      100% { left: 100%; }
+    }
+
+    /* Annotation overlays */
+    .annotation {
+      position: absolute;
+      border-radius: 4px;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+      z-index: 10;
+      cursor: pointer;
+    }
+
+    .annotation.visible {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    .annotation.pass {
+      border: 2px solid var(--color-success);
+      background: rgba(34, 197, 94, 0.08);
+    }
+
+    .annotation.warning {
+      border: 2px solid var(--color-warning);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .annotation.fail {
+      border: 2px solid var(--color-danger);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .annotation.fail.visible {
+      animation: bounce-in 0.4s ease;
+    }
+
+    @keyframes bounce-in {
+      0%   { transform: scale(0.3); }
+      50%  { transform: scale(1.1); }
+      70%  { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+
+    .annotation-icon {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      z-index: 11;
+    }
+
+    .annotation.pass .annotation-icon {
+      background: var(--color-success);
+    }
+
+    .annotation.warning .annotation-icon {
+      background: var(--color-warning);
+    }
+
+    .annotation.fail .annotation-icon {
+      background: var(--color-danger);
+    }
+
+    /* Score counter */
+    .score-counter {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .score-main {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .score-main .score-passed {
+      color: var(--color-success);
+    }
+
+    .score-sub {
+      font-size: 14px;
+      color: var(--color-slate-gray);
+      margin-top: 4px;
+    }
+
+    .score-sub .issues-count {
+      color: var(--color-danger);
+      font-weight: 600;
+    }
+
+    /* Checklist items */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .check-item {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.35s ease, transform 0.35s ease, border-color 0.2s ease;
+    }
+
+    .check-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .check-item.highlight {
+      border-color: var(--color-purple);
+      box-shadow: 0 0 0 2px rgba(167, 122, 205, 0.3);
+    }
+
+    .check-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      cursor: default;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .check-item.has-detail .check-header {
+      cursor: pointer;
+    }
+
+    .check-item.has-detail .check-header:hover {
+      background: var(--color-off-white);
+    }
+
+    .check-status-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 1px;
+    }
+
+    .check-status-icon.pass { background: var(--color-success); }
+    .check-status-icon.warning { background: var(--color-warning); }
+    .check-status-icon.fail { background: var(--color-danger); }
+
+    .check-label {
+      flex: 1;
+    }
+
+    .check-label .check-title {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .check-label .check-desc {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      margin-top: 2px;
+    }
+
+    .check-expand-icon {
+      flex-shrink: 0;
+      font-size: 14px;
+      color: var(--color-slate-gray);
+      transition: transform 0.3s;
+      margin-top: 3px;
+    }
+
+    .check-item.expanded .check-expand-icon {
+      transform: rotate(90deg);
+    }
+
+    .check-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 16px;
+      background: var(--color-off-white);
+      border-top: none;
+    }
+
+    .check-item.expanded .check-detail {
+      max-height: 200px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--color-light-gray);
+    }
+
+    .fix-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-purple);
+      margin-bottom: 4px;
+    }
+
+    .fix-text {
+      font-size: 13px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+    }
+
+    /* Export button */
+    .export-btn-wrapper {
+      margin-top: 20px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .export-btn-wrapper.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-centre, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/food-bev.html">Food &amp; Beverage</a> &rarr; Label Compliance Checker
+      </div>
+      <div class="demo-title">Label Compliance Checker</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startScan()">Scan Label</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Centre panel: Product Label -->
+    <div class="panel-centre" id="panelCentre">
+      <div class="panel-heading">Product Label</div>
+
+      <div class="label-wrapper" id="labelWrapper">
+        <!-- Scanning line -->
+        <div class="scan-line" id="scanLine"></div>
+
+        <!-- Annotation overlays (positioned over the SVG label) -->
+        <div class="annotation pass" id="ann-name" data-check="0" style="top: 5%; left: 8%; width: 84%; height: 10%;" onclick="scrollToCheck(0)">
+          <span class="annotation-icon">&#10003;</span>
+        </div>
+        <div class="annotation pass" id="ann-weight" data-check="1" style="top: 16%; left: 60%; width: 32%; height: 5%;" onclick="scrollToCheck(1)">
+          <span class="annotation-icon">&#10003;</span>
+        </div>
+        <div class="annotation pass" id="ann-ingredients" data-check="2" style="top: 24%; left: 4%; width: 46%; height: 26%;" onclick="scrollToCheck(2)">
+          <span class="annotation-icon">&#10003;</span>
+        </div>
+        <div class="annotation fail" id="ann-allergen" data-check="3" style="top: 51%; left: 4%; width: 46%; height: 7%;" onclick="scrollToCheck(3)">
+          <span class="annotation-icon">&#10008;</span>
+        </div>
+        <div class="annotation pass" id="ann-nip" data-check="4" style="top: 24%; left: 52%; width: 44%; height: 18%;" onclick="scrollToCheck(4)">
+          <span class="annotation-icon">&#10003;</span>
+        </div>
+        <div class="annotation warning" id="ann-energy" data-check="5" style="top: 43%; left: 52%; width: 44%; height: 6%;" onclick="scrollToCheck(5)">
+          <span class="annotation-icon">!</span>
+        </div>
+        <div class="annotation pass" id="ann-barcode" data-check="6" style="top: 73%; left: 58%; width: 34%; height: 14%;" onclick="scrollToCheck(6)">
+          <span class="annotation-icon">&#10003;</span>
+        </div>
+        <div class="annotation fail" id="ann-date" data-check="7" style="top: 60%; left: 4%; width: 30%; height: 6%;" onclick="scrollToCheck(7)">
+          <span class="annotation-icon">&#10008;</span>
+        </div>
+        <div class="annotation fail" id="ann-origin" data-check="8" style="top: 67%; left: 4%; width: 36%; height: 8%;" onclick="scrollToCheck(8)">
+          <span class="annotation-icon">&#10008;</span>
+        </div>
+
+        <!-- Inline SVG product label -->
+        <svg viewBox="0 0 600 480" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Epilogue', Arial, sans-serif;">
+          <!-- Background -->
+          <rect width="600" height="480" rx="8" fill="#FEFDF8" stroke="#E0D9C8" stroke-width="1.5"/>
+
+          <!-- Decorative top banner -->
+          <rect x="0" y="0" width="600" height="60" rx="8" fill="#5B7D3A"/>
+          <rect x="0" y="30" width="600" height="30" fill="#5B7D3A"/>
+
+          <!-- Brand / Product Name -->
+          <text x="300" y="28" text-anchor="middle" font-size="11" fill="#C8E6A0" font-weight="500" letter-spacing="2">WHOLESOME VALLEY</text>
+          <text x="300" y="50" text-anchor="middle" font-size="16" fill="#FFFFFF" font-weight="700">Crunchy Oat &amp; Honey Granola Bar</text>
+
+          <!-- Decorative grain illustrations -->
+          <circle cx="45" cy="38" r="12" fill="none" stroke="#C8E6A0" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="555" cy="38" r="12" fill="none" stroke="#C8E6A0" stroke-width="0.8" opacity="0.5"/>
+          <path d="M30 38 Q45 20 60 38" fill="none" stroke="#C8E6A0" stroke-width="0.8" opacity="0.5"/>
+          <path d="M540 38 Q555 20 570 38" fill="none" stroke="#C8E6A0" stroke-width="0.8" opacity="0.5"/>
+
+          <!-- Net weight -->
+          <text x="520" y="82" text-anchor="end" font-size="13" fill="#5B7D3A" font-weight="600">6 x 35g (210g)</text>
+
+          <!-- Tagline -->
+          <text x="40" y="82" font-size="10" fill="#8B7D6B" font-style="italic">Naturally delicious, wholesome goodness</text>
+
+          <!-- Divider -->
+          <line x1="30" y1="94" x2="570" y2="94" stroke="#E0D9C8" stroke-width="0.8"/>
+
+          <!-- INGREDIENTS section -->
+          <text x="30" y="115" font-size="11" fill="#333" font-weight="700">INGREDIENTS:</text>
+          <text x="30" y="130" font-size="9.5" fill="#555" font-weight="400">
+            <tspan x="30" dy="0">Rolled oats (42%), honey (12%), brown rice syrup,</tspan>
+            <tspan x="30" dy="14">canola oil, crisp rice (rice flour, sugar, salt, malt</tspan>
+            <tspan x="30" dy="14">extract), desiccated coconut, almonds (4%), puffed</tspan>
+            <tspan x="30" dy="14">wheat, milk powder (2%), golden syrup, natural</tspan>
+            <tspan x="30" dy="14">flavour, emulsifier (soy lecithin), salt, antioxidant</tspan>
+            <tspan x="30" dy="14">(tocopherols mixed concentrate).</tspan>
+          </text>
+
+          <!-- Allergen statement (deliberately NOT bold - this is the violation) -->
+          <text x="30" y="226" font-size="9.5" fill="#555" font-weight="400">
+            <tspan>Contains: milk, almonds, wheat, soy.</tspan>
+          </text>
+
+          <!-- Use-by date (deliberately wrong format) -->
+          <text x="30" y="268" font-size="10" fill="#333" font-weight="500">USE BY: 15/06/2026</text>
+
+          <!-- Made in Australia (no certification mark - violation) -->
+          <text x="30" y="296" font-size="10" fill="#333" font-weight="500">Made in Australia</text>
+          <text x="30" y="310" font-size="8" fill="#888">from local and imported ingredients</text>
+
+          <!-- Small recycling icon placeholder -->
+          <circle cx="30" cy="340" r="10" fill="none" stroke="#888" stroke-width="0.8"/>
+          <text x="30" y="344" text-anchor="middle" font-size="7" fill="#888">&#x267B;</text>
+          <text x="48" y="344" font-size="8" fill="#888">Please recycle</text>
+
+          <!-- Storage instructions -->
+          <text x="30" y="370" font-size="8.5" fill="#777">Store in a cool, dry place.</text>
+          <text x="30" y="382" font-size="8.5" fill="#777">Once opened, consume within 3 days.</text>
+
+          <!-- Manufacturer details -->
+          <text x="30" y="410" font-size="8" fill="#999">Wholesome Valley Foods Pty Ltd</text>
+          <text x="30" y="422" font-size="8" fill="#999">123 Harvest Lane, Shepparton VIC 3630</text>
+          <text x="30" y="434" font-size="8" fill="#999">www.wholesomevalley.com.au</text>
+
+          <!-- NUTRITION INFORMATION PANEL -->
+          <rect x="320" y="100" width="250" height="210" fill="#FAFAF5" stroke="#CCC" stroke-width="0.8" rx="3"/>
+
+          <text x="330" y="118" font-size="11" fill="#333" font-weight="700">NUTRITION INFORMATION</text>
+          <text x="330" y="132" font-size="8.5" fill="#666">Servings per package: 6</text>
+          <text x="330" y="143" font-size="8.5" fill="#666">Serving size: 35g</text>
+
+          <!-- NIP Table Header -->
+          <line x1="330" y1="148" x2="560" y2="148" stroke="#CCC" stroke-width="0.5"/>
+          <text x="330" y="160" font-size="8.5" fill="#333" font-weight="600"></text>
+          <text x="460" y="160" font-size="8.5" fill="#333" font-weight="600">Per Serving</text>
+          <text x="525" y="160" font-size="8.5" fill="#333" font-weight="600">Per 100g</text>
+          <line x1="330" y1="164" x2="560" y2="164" stroke="#CCC" stroke-width="0.5"/>
+
+          <!-- Energy row (violation: Cal before kJ) -->
+          <text x="330" y="177" font-size="8.5" fill="#333">Energy</text>
+          <text x="460" y="177" font-size="8.5" fill="#333">148 Cal / 620 kJ</text>
+          <text x="525" y="177" font-size="8.5" fill="#333">1770 kJ</text>
+          <line x1="330" y1="182" x2="560" y2="182" stroke="#EEE" stroke-width="0.5"/>
+
+          <!-- Protein -->
+          <text x="330" y="195" font-size="8.5" fill="#333">Protein</text>
+          <text x="460" y="195" font-size="8.5" fill="#333">2.8g</text>
+          <text x="525" y="195" font-size="8.5" fill="#333">8.0g</text>
+          <line x1="330" y1="200" x2="560" y2="200" stroke="#EEE" stroke-width="0.5"/>
+
+          <!-- Fat Total -->
+          <text x="330" y="213" font-size="8.5" fill="#333">Fat, total</text>
+          <text x="460" y="213" font-size="8.5" fill="#333">4.2g</text>
+          <text x="525" y="213" font-size="8.5" fill="#333">12.0g</text>
+          <line x1="330" y1="218" x2="560" y2="218" stroke="#EEE" stroke-width="0.5"/>
+
+          <!-- Saturated Fat -->
+          <text x="342" y="231" font-size="8.5" fill="#555">&#x2013; saturated</text>
+          <text x="460" y="231" font-size="8.5" fill="#333">1.4g</text>
+          <text x="525" y="231" font-size="8.5" fill="#333">4.0g</text>
+          <line x1="330" y1="236" x2="560" y2="236" stroke="#EEE" stroke-width="0.5"/>
+
+          <!-- Carbohydrate -->
+          <text x="330" y="249" font-size="8.5" fill="#333">Carbohydrate</text>
+          <text x="460" y="249" font-size="8.5" fill="#333">22.1g</text>
+          <text x="525" y="249" font-size="8.5" fill="#333">63.1g</text>
+          <line x1="330" y1="254" x2="560" y2="254" stroke="#EEE" stroke-width="0.5"/>
+
+          <!-- Sugars -->
+          <text x="342" y="267" font-size="8.5" fill="#555">&#x2013; sugars</text>
+          <text x="460" y="267" font-size="8.5" fill="#333">8.4g</text>
+          <text x="525" y="267" font-size="8.5" fill="#333">24.0g</text>
+          <line x1="330" y1="272" x2="560" y2="272" stroke="#EEE" stroke-width="0.5"/>
+
+          <!-- Dietary Fibre -->
+          <text x="330" y="285" font-size="8.5" fill="#333">Dietary fibre</text>
+          <text x="460" y="285" font-size="8.5" fill="#333">1.9g</text>
+          <text x="525" y="285" font-size="8.5" fill="#333">5.4g</text>
+          <line x1="330" y1="290" x2="560" y2="290" stroke="#EEE" stroke-width="0.5"/>
+
+          <!-- Sodium -->
+          <text x="330" y="303" font-size="8.5" fill="#333">Sodium</text>
+          <text x="460" y="303" font-size="8.5" fill="#333">65mg</text>
+          <text x="525" y="303" font-size="8.5" fill="#333">186mg</text>
+
+          <!-- Barcode -->
+          <g transform="translate(370, 340)">
+            <!-- Barcode bars (simplified representation) -->
+            <rect x="0" y="0" width="2" height="55" fill="#333"/>
+            <rect x="4" y="0" width="1" height="55" fill="#333"/>
+            <rect x="7" y="0" width="3" height="55" fill="#333"/>
+            <rect x="12" y="0" width="1.5" height="55" fill="#333"/>
+            <rect x="15" y="0" width="2" height="55" fill="#333"/>
+            <rect x="19" y="0" width="1" height="55" fill="#333"/>
+            <rect x="22" y="0" width="2.5" height="55" fill="#333"/>
+            <rect x="27" y="0" width="1" height="55" fill="#333"/>
+            <rect x="30" y="0" width="2" height="55" fill="#333"/>
+            <rect x="34" y="0" width="1.5" height="55" fill="#333"/>
+            <rect x="37" y="0" width="3" height="55" fill="#333"/>
+            <rect x="42" y="0" width="1" height="55" fill="#333"/>
+            <rect x="45" y="0" width="2" height="55" fill="#333"/>
+            <rect x="49" y="0" width="1" height="55" fill="#333"/>
+            <rect x="52" y="0" width="2.5" height="55" fill="#333"/>
+            <rect x="57" y="0" width="1.5" height="55" fill="#333"/>
+            <rect x="61" y="0" width="2" height="55" fill="#333"/>
+            <rect x="65" y="0" width="1" height="55" fill="#333"/>
+            <rect x="68" y="0" width="3" height="55" fill="#333"/>
+            <rect x="73" y="0" width="1" height="55" fill="#333"/>
+            <rect x="76" y="0" width="2" height="55" fill="#333"/>
+            <rect x="80" y="0" width="1.5" height="55" fill="#333"/>
+            <rect x="84" y="0" width="2.5" height="55" fill="#333"/>
+            <rect x="89" y="0" width="1" height="55" fill="#333"/>
+            <rect x="92" y="0" width="2" height="55" fill="#333"/>
+            <rect x="96" y="0" width="1" height="55" fill="#333"/>
+            <rect x="99" y="0" width="3" height="55" fill="#333"/>
+            <rect x="104" y="0" width="1.5" height="55" fill="#333"/>
+            <rect x="108" y="0" width="2" height="55" fill="#333"/>
+            <rect x="113" y="0" width="1" height="55" fill="#333"/>
+            <rect x="116" y="0" width="2" height="55" fill="#333"/>
+            <rect x="120" y="0" width="1" height="55" fill="#333"/>
+            <rect x="124" y="0" width="2.5" height="55" fill="#333"/>
+            <rect x="129" y="0" width="1" height="55" fill="#333"/>
+            <rect x="132" y="0" width="2" height="55" fill="#333"/>
+            <rect x="136" y="0" width="1.5" height="55" fill="#333"/>
+            <rect x="140" y="0" width="3" height="55" fill="#333"/>
+            <text x="72" y="68" text-anchor="middle" font-size="9" fill="#333" font-family="monospace">9 310012 345678</text>
+          </g>
+
+          <!-- Decorative bottom border -->
+          <rect x="0" y="455" width="600" height="25" rx="0" fill="#5B7D3A" opacity="0.15"/>
+          <text x="300" y="472" text-anchor="middle" font-size="8" fill="#5B7D3A" font-weight="500" letter-spacing="3">WHOLESOME VALLEY &#x2022; NATURALLY GOOD</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Right panel: Compliance Checklist -->
+    <div class="panel-right" id="panelRight">
+      <div class="panel-heading">Compliance Checklist</div>
+
+      <!-- Score counter -->
+      <div class="score-counter" id="scoreCounter">
+        <div class="score-main">
+          <span class="score-passed" id="scorePassed">0</span><span id="scoreTotal">/0</span> checks passed
+        </div>
+        <div class="score-sub" id="scoreSub">&nbsp;</div>
+      </div>
+
+      <!-- Checklist -->
+      <div class="checklist" id="checklist">
+
+        <!-- 1. Product name -->
+        <div class="check-item" id="check-0">
+          <div class="check-header" onclick="scrollToAnnotation(0)">
+            <div class="check-status-icon pass">&#10003;</div>
+            <div class="check-label">
+              <div class="check-title">Product name present and prominent</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Net weight -->
+        <div class="check-item" id="check-1">
+          <div class="check-header" onclick="scrollToAnnotation(1)">
+            <div class="check-status-icon pass">&#10003;</div>
+            <div class="check-label">
+              <div class="check-title">Net weight/quantity statement</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Ingredient list -->
+        <div class="check-item" id="check-2">
+          <div class="check-header" onclick="scrollToAnnotation(2)">
+            <div class="check-status-icon pass">&#10003;</div>
+            <div class="check-label">
+              <div class="check-title">Ingredient list in descending order</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Allergen declaration (FAIL) -->
+        <div class="check-item has-detail" id="check-3">
+          <div class="check-header" onclick="toggleCheckDetail(this.parentElement); scrollToAnnotation(3)">
+            <div class="check-status-icon fail">&#10008;</div>
+            <div class="check-label">
+              <div class="check-title">Allergen declaration</div>
+              <div class="check-desc">Milk, Almonds not in bold. FSANZ Standard 1.2.3 requires allergens in bold, capitals, or contrasting font</div>
+            </div>
+            <span class="check-expand-icon">&#9656;</span>
+          </div>
+          <div class="check-detail">
+            <div class="fix-label">Fix Suggestion</div>
+            <div class="fix-text">Update the allergen statement to use bold or uppercase for all allergens: "Contains: <strong>MILK, ALMONDS, WHEAT, SOY</strong>." This meets FSANZ Standard 1.2.3-4 mandatory declaration requirements.</div>
+          </div>
+        </div>
+
+        <!-- 5. Nutrition Information Panel -->
+        <div class="check-item" id="check-4">
+          <div class="check-header" onclick="scrollToAnnotation(4)">
+            <div class="check-status-icon pass">&#10003;</div>
+            <div class="check-label">
+              <div class="check-title">Nutrition Information Panel present</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Energy units (WARNING) -->
+        <div class="check-item has-detail" id="check-5">
+          <div class="check-header" onclick="toggleCheckDetail(this.parentElement); scrollToAnnotation(5)">
+            <div class="check-status-icon warning">!</div>
+            <div class="check-label">
+              <div class="check-title">Energy units</div>
+              <div class="check-desc">Energy listed as 'Cal/kJ'. Standard 1.2.8 requires kJ before Cal</div>
+            </div>
+            <span class="check-expand-icon">&#9656;</span>
+          </div>
+          <div class="check-detail">
+            <div class="fix-label">Fix Suggestion</div>
+            <div class="fix-text">Reorder energy values to list kilojoules first: "620 kJ / 148 Cal". FSANZ Standard 1.2.8 specifies energy must be expressed in kilojoules (kJ) as the primary unit.</div>
+          </div>
+        </div>
+
+        <!-- 7. Barcode -->
+        <div class="check-item" id="check-6">
+          <div class="check-header" onclick="scrollToAnnotation(6)">
+            <div class="check-status-icon pass">&#10003;</div>
+            <div class="check-label">
+              <div class="check-title">Barcode/identification</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Date marking (FAIL) -->
+        <div class="check-item has-detail" id="check-7">
+          <div class="check-header" onclick="toggleCheckDetail(this.parentElement); scrollToAnnotation(7)">
+            <div class="check-status-icon fail">&#10008;</div>
+            <div class="check-label">
+              <div class="check-title">Date marking</div>
+              <div class="check-desc">Format '15/06/2026' non-compliant. Must use 'DD MMM YYYY' format per Standard 1.2.5</div>
+            </div>
+            <span class="check-expand-icon">&#9656;</span>
+          </div>
+          <div class="check-detail">
+            <div class="fix-label">Fix Suggestion</div>
+            <div class="fix-text">Change date format from "15/06/2026" to "15 JUN 2026". FSANZ Standard 1.2.5 requires the month to be expressed as a word or abbreviation, not a numeral.</div>
+          </div>
+        </div>
+
+        <!-- 9. Country of origin (FAIL) -->
+        <div class="check-item has-detail" id="check-8">
+          <div class="check-header" onclick="toggleCheckDetail(this.parentElement); scrollToAnnotation(8)">
+            <div class="check-status-icon fail">&#10008;</div>
+            <div class="check-label">
+              <div class="check-title">Country of origin</div>
+              <div class="check-desc">'Made in Australia' claim without standard certification mark. Requires Country of Origin labelling per CCA</div>
+            </div>
+            <span class="check-expand-icon">&#9656;</span>
+          </div>
+          <div class="check-detail">
+            <div class="fix-label">Fix Suggestion</div>
+            <div class="fix-text">Add the standard kangaroo-in-triangle Country of Origin logo with a bar chart showing percentage of Australian ingredients. Required by the Competition and Consumer Act 2010 (Country of Origin) Information Standard 2016.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Export button -->
+      <div class="export-btn-wrapper" id="exportWrapper">
+        <button class="btn btn-primary" onclick="exportReport()">Export Report</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Check configuration ── */
+    const checks = [
+      { id: 'ann-name',        type: 'pass',    checkIdx: 0 },
+      { id: 'ann-weight',      type: 'pass',    checkIdx: 1 },
+      { id: 'ann-ingredients', type: 'pass',    checkIdx: 2 },
+      { id: 'ann-allergen',    type: 'fail',    checkIdx: 3 },
+      { id: 'ann-nip',         type: 'pass',    checkIdx: 4 },
+      { id: 'ann-energy',      type: 'warning', checkIdx: 5 },
+      { id: 'ann-barcode',     type: 'pass',    checkIdx: 6 },
+      { id: 'ann-date',        type: 'fail',    checkIdx: 7 },
+      { id: 'ann-origin',      type: 'fail',    checkIdx: 8 }
+    ];
+
+    /* Reveal order: passes first, then warning, then failures */
+    const revealOrder = [0, 1, 2, 4, 6, 5, 3, 7, 8];
+
+    let scanRunning = false;
+    let scanTimeouts = [];
+
+    /* ── Start scan sequence ── */
+    async function startScan() {
+      if (scanRunning) return;
+      scanRunning = true;
+      resetAll();
+
+      /* Step 1: Scanning line sweeps across the label */
+      const scanLine = document.getElementById('scanLine');
+      scanLine.classList.add('scanning');
+
+      /* Wait for scan to complete */
+      await wait(2200);
+      scanLine.classList.remove('scanning');
+      scanLine.style.opacity = '0';
+
+      /* Step 2: Reveal annotations and checklist items sequentially */
+      let passedCount = 0;
+      let revealedCount = 0;
+
+      for (let i = 0; i < revealOrder.length; i++) {
+        const idx = revealOrder[i];
+        const check = checks[idx];
+        const annotation = document.getElementById(check.id);
+        const checkItem = document.getElementById('check-' + check.checkIdx);
+
+        /* Determine delay based on type */
+        let delayBefore = 200; // fast for passes
+        if (check.type === 'warning') delayBefore = 600; // pause before warning
+        if (check.type === 'fail') delayBefore = 400; // slight pause before failures
+
+        await wait(delayBefore);
+
+        /* Show annotation */
+        annotation.classList.add('visible');
+
+        /* Show checklist item */
+        checkItem.classList.add('visible');
+
+        /* Update score */
+        revealedCount++;
+        if (check.type === 'pass') passedCount++;
+
+        animateScore(passedCount, revealedCount);
+      }
+
+      /* Step 3: Show final score summary */
+      await wait(300);
+      const scoreSub = document.getElementById('scoreSub');
+      scoreSub.innerHTML = '<span class="issues-count">3 issues found</span>';
+
+      /* Step 4: Show export button */
+      await wait(400);
+      document.getElementById('exportWrapper').classList.add('visible');
+
+      scanRunning = false;
+    }
+
+    /* ── Animate score counter ── */
+    function animateScore(passed, total) {
+      const passedEl = document.getElementById('scorePassed');
+      const totalEl = document.getElementById('scoreTotal');
+      passedEl.textContent = passed;
+      totalEl.textContent = '/' + total;
+    }
+
+    /* ── Toggle checklist detail accordion ── */
+    function toggleCheckDetail(item) {
+      if (!item.classList.contains('has-detail')) return;
+      const wasExpanded = item.classList.contains('expanded');
+
+      /* Close all expanded items */
+      document.querySelectorAll('.check-item.expanded').forEach(el => {
+        el.classList.remove('expanded');
+      });
+
+      /* Open if it was closed */
+      if (!wasExpanded) {
+        item.classList.add('expanded');
+      }
+    }
+
+    /* ── Click annotation to scroll to checklist item ── */
+    function scrollToCheck(idx) {
+      const checkItem = document.getElementById('check-' + idx);
+      if (!checkItem || !checkItem.classList.contains('visible')) return;
+
+      const panelRight = document.getElementById('panelRight');
+      checkItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      /* Brief highlight */
+      checkItem.classList.add('highlight');
+      setTimeout(() => checkItem.classList.remove('highlight'), 1500);
+
+      /* Expand detail if it has one */
+      if (checkItem.classList.contains('has-detail')) {
+        checkItem.classList.add('expanded');
+      }
+    }
+
+    /* ── Click checklist item to highlight annotation ── */
+    function scrollToAnnotation(idx) {
+      const check = checks.find(c => c.checkIdx === idx);
+      if (!check) return;
+      const annotation = document.getElementById(check.id);
+      if (!annotation || !annotation.classList.contains('visible')) return;
+
+      /* Flash the annotation */
+      annotation.style.transition = 'none';
+      annotation.style.transform = 'scale(1.08)';
+      annotation.style.boxShadow = '0 0 12px rgba(167, 122, 205, 0.5)';
+      setTimeout(() => {
+        annotation.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+        annotation.style.transform = 'scale(1)';
+        annotation.style.boxShadow = 'none';
+      }, 400);
+    }
+
+    /* ── Export report (toast) ── */
+    function exportReport() {
+      toast('Compliance report exported as PDF', 'success');
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      /* Clear pending timeouts */
+      scanTimeouts.forEach(t => clearTimeout(t));
+      scanTimeouts = [];
+      scanRunning = false;
+
+      /* Reset scan line */
+      const scanLine = document.getElementById('scanLine');
+      scanLine.classList.remove('scanning');
+      scanLine.style.opacity = '0';
+
+      /* Hide all annotations */
+      document.querySelectorAll('.annotation').forEach(a => {
+        a.classList.remove('visible');
+        a.style.transform = '';
+        a.style.boxShadow = '';
+        a.style.transition = '';
+      });
+
+      /* Hide all checklist items */
+      document.querySelectorAll('.check-item').forEach(c => {
+        c.classList.remove('visible', 'expanded', 'highlight');
+      });
+
+      /* Reset score */
+      document.getElementById('scorePassed').textContent = '0';
+      document.getElementById('scoreTotal').textContent = '/0';
+      document.getElementById('scoreSub').innerHTML = '&nbsp;';
+
+      /* Hide export button */
+      document.getElementById('exportWrapper').classList.remove('visible');
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!scanRunning) startScan();
+    }, 2000);
+  </script>
+</body>
+</html>
