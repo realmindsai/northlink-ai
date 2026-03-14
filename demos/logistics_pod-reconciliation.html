@@ -1,0 +1,1060 @@
+<!-- ABOUTME: Proof of Delivery Reconciliation mockup for NorthLink AI. -->
+<!-- ABOUTME: AI extracts data from messy delivery dockets and matches to invoices with discrepancy detection. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POD Reconciliation — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 12px 24px;
+      background: #fff;
+      border-bottom: 1px solid var(--color-light-gray);
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+    }
+
+    .stat-item .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-purple);
+    }
+
+    .stat-item .stat-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-slate-gray);
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--color-light-gray);
+    }
+
+    /* Three-panel layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 52px - 52px);
+    }
+
+    .panel-left {
+      flex: 0 0 30%;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fafafa;
+    }
+
+    .panel-center {
+      flex: 0 0 40%;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+    }
+
+    .panel-right {
+      flex: 0 0 30%;
+      padding: 20px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-heading .icon {
+      font-size: 20px;
+    }
+
+    /* POD thumbnail cards */
+    .pod-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pod-thumb {
+      background: #fff;
+      border: 2px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      position: relative;
+    }
+
+    .pod-thumb:hover {
+      border-color: var(--color-purple);
+      box-shadow: 0 2px 12px rgba(167, 122, 205, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .pod-thumb.active {
+      border-color: var(--color-purple);
+      box-shadow: 0 2px 16px rgba(167, 122, 205, 0.25);
+    }
+
+    .pod-thumb svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+    }
+
+    .pod-thumb-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding: 2px 4px;
+    }
+
+    .pod-thumb-id {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+    }
+
+    /* Processing indicator on pod thumb */
+    .pod-thumb .processing-indicator {
+      position: absolute;
+      inset: 0;
+      background: rgba(167, 122, 205, 0.1);
+      border-radius: var(--radius-sm);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pod-thumb .processing-indicator.active {
+      display: flex;
+    }
+
+    .processing-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--color-light-gray);
+      border-top-color: var(--color-purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Center panel: enlarged POD with extraction boxes */
+    .pod-viewer {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .pod-viewer svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .extraction-box {
+      position: absolute;
+      border: 2px solid;
+      border-radius: 4px;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .extraction-box.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .extraction-box .box-label {
+      position: absolute;
+      top: -20px;
+      left: 0;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .extraction-box.box-consignment {
+      border-color: var(--color-blue);
+    }
+    .extraction-box.box-consignment .box-label {
+      background: var(--color-blue);
+    }
+
+    .extraction-box.box-receiver {
+      border-color: var(--color-green);
+    }
+    .extraction-box.box-receiver .box-label {
+      background: var(--color-green);
+    }
+
+    .extraction-box.box-signature {
+      border-color: var(--color-purple);
+    }
+    .extraction-box.box-signature .box-label {
+      background: var(--color-purple);
+    }
+
+    .extraction-box.box-date {
+      border-color: var(--color-orange);
+    }
+    .extraction-box.box-date .box-label {
+      background: var(--color-orange);
+    }
+
+    .extraction-box.box-quantity {
+      border-color: var(--color-danger);
+    }
+    .extraction-box.box-quantity .box-label {
+      background: var(--color-danger);
+    }
+
+    .extraction-box.box-quantity-ok {
+      border-color: var(--color-success);
+    }
+    .extraction-box.box-quantity-ok .box-label {
+      background: var(--color-success);
+    }
+
+    /* Extracted data table */
+    .extracted-data {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+
+    .extracted-data h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--color-black);
+    }
+
+    .extracted-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 13px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .extracted-row:last-child {
+      border-bottom: none;
+    }
+
+    .extracted-row .field-name {
+      color: var(--color-slate-gray);
+      font-weight: 500;
+    }
+
+    .extracted-row .field-value {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    /* Right panel: Invoice comparison */
+    .invoice-card {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .invoice-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 4px;
+    }
+
+    .invoice-card .invoice-num {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      margin-bottom: 16px;
+    }
+
+    .comparison-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+
+    .comparison-row:last-child {
+      border-bottom: none;
+    }
+
+    .comparison-row .comp-field {
+      color: var(--color-slate-gray);
+      font-weight: 500;
+      flex: 0 0 100px;
+    }
+
+    .comparison-row .comp-values {
+      flex: 1;
+      text-align: right;
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .comparison-row .comp-status {
+      flex: 0 0 28px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .discrepancy-row {
+      background: #fef2f2;
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      margin: 4px -8px;
+    }
+
+    .discrepancy-detail {
+      font-size: 12px;
+      color: var(--color-danger);
+      font-weight: 700;
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .pulse-warning {
+      animation: pulse-red 1s ease-in-out infinite;
+    }
+
+    .invoice-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--color-slate-gray);
+      font-size: 14px;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    /* Handwritten font for POD SVGs */
+    .handwritten {
+      font-family: 'Caveat', cursive;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-center, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-center, .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/logistics-transport.html">Logistics &amp; Transport</a> &rarr; POD Reconciliation
+      </div>
+      <div class="demo-title">POD Reconciliation</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startProcessing()">Start Processing</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">Matched:</span>
+      <span class="stat-value" id="statMatched">0</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Unmatched:</span>
+      <span class="stat-value" id="statUnmatched">0</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Discrepancies:</span>
+      <span class="stat-value" id="statDiscrepancies">0</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-label">Auto-matched rate:</span>
+      <span class="stat-value" id="statRate">0%</span>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Delivery Dockets -->
+    <div class="panel-left">
+      <div class="panel-heading"><span class="icon">&#128230;</span> Delivery Dockets</div>
+      <div class="pod-list" id="podList">
+
+        <!-- POD 1: CN-2026-4468, Craigieburn Hardware, Matched -->
+        <div class="pod-thumb" id="pod1" onclick="selectPod(1)">
+          <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(-2deg);">
+            <rect x="0" y="0" width="280" height="180" fill="#FDF8EE" rx="4"/>
+            <rect x="0" y="0" width="280" height="28" fill="#E8DCC8" rx="4"/>
+            <rect x="0" y="24" width="280" height="4" fill="#E8DCC8"/>
+            <text x="140" y="19" text-anchor="middle" class="handwritten" font-size="14" font-weight="700" fill="#333">PROOF OF DELIVERY</text>
+            <text x="16" y="52" class="handwritten" font-size="13" fill="#2a2a6a">CN: 2026-4468</text>
+            <text x="16" y="74" class="handwritten" font-size="12" fill="#333">Date: 10/03/2026</text>
+            <text x="16" y="96" class="handwritten" font-size="12" fill="#333">To: Craigieburn Hardware</text>
+            <text x="16" y="118" class="handwritten" font-size="14" font-weight="600" fill="#333">Qty: 8 pallets</text>
+            <line x1="16" y1="140" x2="100" y2="140" stroke="#ccc" stroke-width="1"/>
+            <text x="16" y="138" class="handwritten" font-size="10" fill="#999">Signature:</text>
+            <path d="M 50 148 C 55 140, 65 155, 75 145 S 90 155, 100 142" stroke="#333" stroke-width="1.5" fill="none"/>
+            <text x="16" y="170" class="handwritten" font-size="10" fill="#999">Driver: T. Nguyen</text>
+          </svg>
+          <div class="pod-thumb-footer">
+            <span class="pod-thumb-id">CN-2026-4468</span>
+            <span class="pill pill-success" id="pod1Status">Matched</span>
+          </div>
+        </div>
+
+        <!-- POD 2: CN-2026-4469, Epping Fresh Foods, Matched (with coffee stain) -->
+        <div class="pod-thumb" id="pod2" onclick="selectPod(2)">
+          <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(3deg);">
+            <rect x="0" y="0" width="280" height="180" fill="#FAF3E5" rx="4"/>
+            <rect x="0" y="0" width="280" height="28" fill="#E2D5BF" rx="4"/>
+            <rect x="0" y="24" width="280" height="4" fill="#E2D5BF"/>
+            <!-- Coffee stain -->
+            <circle cx="220" cy="110" r="28" fill="rgba(139, 90, 43, 0.12)" />
+            <circle cx="218" cy="108" r="24" fill="rgba(139, 90, 43, 0.08)" />
+            <circle cx="222" cy="112" r="20" fill="rgba(139, 90, 43, 0.05)" />
+            <text x="140" y="19" text-anchor="middle" class="handwritten" font-size="14" font-weight="700" fill="#333">DELIVERY DOCKET</text>
+            <text x="16" y="52" class="handwritten" font-size="13" fill="#2a2a6a">CN: 2026-4469</text>
+            <text x="16" y="74" class="handwritten" font-size="12" fill="#333">Date: 11/03/2026</text>
+            <text x="16" y="96" class="handwritten" font-size="12" fill="#333">Receiver: Epping Fresh Foods</text>
+            <text x="16" y="118" class="handwritten" font-size="14" font-weight="600" fill="#333">Qty: 12 pallets</text>
+            <line x1="16" y1="140" x2="100" y2="140" stroke="#ccc" stroke-width="1"/>
+            <text x="16" y="138" class="handwritten" font-size="10" fill="#999">Signed:</text>
+            <path d="M 50 150 C 60 138, 70 158, 85 143 S 95 152, 105 144" stroke="#333" stroke-width="1.5" fill="none"/>
+            <text x="16" y="170" class="handwritten" font-size="10" fill="#999">Driver: M. Petrovic</text>
+          </svg>
+          <div class="pod-thumb-footer">
+            <span class="pod-thumb-id">CN-2026-4469</span>
+            <span class="pill pill-success" id="pod2Status">Matched</span>
+          </div>
+        </div>
+
+        <!-- POD 3: CN-2026-4471, Metro Building Supplies, DISCREPANCY (sideways) -->
+        <div class="pod-thumb" id="pod3" onclick="selectPod(3)">
+          <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(90deg); margin: 50px auto; width: 65%;">
+            <rect x="0" y="0" width="280" height="180" fill="#FFF8F0" rx="4"/>
+            <rect x="0" y="0" width="280" height="28" fill="#E8D8C4" rx="4"/>
+            <rect x="0" y="24" width="280" height="4" fill="#E8D8C4"/>
+            <text x="140" y="19" text-anchor="middle" class="handwritten" font-size="14" font-weight="700" fill="#333">POD / DELIVERY NOTE</text>
+            <text x="16" y="52" class="handwritten" font-size="13" fill="#2a2a6a">CN-2026-4471</text>
+            <text x="16" y="74" class="handwritten" font-size="12" fill="#333">12/03/2026</text>
+            <text x="16" y="96" class="handwritten" font-size="12" fill="#333">Metro Building Supplies</text>
+            <text x="16" y="118" class="handwritten" font-size="15" font-weight="700" fill="#c0392b">14 pallets</text>
+            <line x1="16" y1="140" x2="100" y2="140" stroke="#ccc" stroke-width="1"/>
+            <text x="16" y="138" class="handwritten" font-size="10" fill="#999">Sig:</text>
+            <path d="M 40 150 C 48 136, 62 158, 78 140 S 88 156, 98 143 S 108 155, 118 140" stroke="#333" stroke-width="2" fill="none"/>
+            <text x="16" y="170" class="handwritten" font-size="10" fill="#999">J. Stamos</text>
+          </svg>
+          <div class="pod-thumb-footer">
+            <span class="pod-thumb-id">CN-2026-4471</span>
+            <span class="pill pill-danger" id="pod3Status">Discrepancy</span>
+          </div>
+        </div>
+
+        <!-- POD 4: CN-2026-4472, Thomastown Electrical, Matched -->
+        <div class="pod-thumb" id="pod4" onclick="selectPod(4)">
+          <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(-4deg);">
+            <rect x="0" y="0" width="280" height="180" fill="#FFFDF5" rx="4"/>
+            <rect x="0" y="0" width="280" height="28" fill="#E5DCC5" rx="4"/>
+            <rect x="0" y="24" width="280" height="4" fill="#E5DCC5"/>
+            <!-- Slight crumple lines -->
+            <line x1="40" y1="0" x2="60" y2="180" stroke="rgba(0,0,0,0.03)" stroke-width="1"/>
+            <line x1="200" y1="0" x2="180" y2="180" stroke="rgba(0,0,0,0.03)" stroke-width="1"/>
+            <text x="140" y="19" text-anchor="middle" class="handwritten" font-size="14" font-weight="700" fill="#333">PROOF OF DELIVERY</text>
+            <text x="16" y="52" class="handwritten" font-size="13" fill="#2a2a6a">CN-2026-4472</text>
+            <text x="16" y="74" class="handwritten" font-size="12" fill="#333">12/03/2026</text>
+            <text x="16" y="96" class="handwritten" font-size="12" fill="#333">Thomastown Electrical</text>
+            <text x="16" y="118" class="handwritten" font-size="14" font-weight="600" fill="#333">6 pallets</text>
+            <line x1="16" y1="140" x2="100" y2="140" stroke="#ccc" stroke-width="1"/>
+            <text x="16" y="138" class="handwritten" font-size="10" fill="#999">Signature:</text>
+            <path d="M 50 150 C 58 142, 68 156, 80 144 S 92 154, 100 146" stroke="#333" stroke-width="1.5" fill="none"/>
+            <text x="16" y="170" class="handwritten" font-size="10" fill="#999">Driver: A. Costa</text>
+          </svg>
+          <div class="pod-thumb-footer">
+            <span class="pod-thumb-id">CN-2026-4472</span>
+            <span class="pill pill-success" id="pod4Status">Matched</span>
+          </div>
+        </div>
+
+        <!-- POD 5: CN-2026-4475, Roxburgh Park Cafe, Pending -->
+        <div class="pod-thumb" id="pod5" onclick="selectPod(5)">
+          <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(2deg);">
+            <rect x="0" y="0" width="280" height="180" fill="#F8F4EA" rx="4"/>
+            <rect x="0" y="0" width="280" height="28" fill="#DDD5C3" rx="4"/>
+            <rect x="0" y="24" width="280" height="4" fill="#DDD5C3"/>
+            <text x="140" y="19" text-anchor="middle" class="handwritten" font-size="14" font-weight="700" fill="#333">DELIVERY RECEIPT</text>
+            <text x="16" y="52" class="handwritten" font-size="13" fill="#2a2a6a">CN-2026-4475</text>
+            <text x="16" y="74" class="handwritten" font-size="12" fill="#333">13/03/2026</text>
+            <text x="16" y="96" class="handwritten" font-size="12" fill="#333">Roxburgh Park Cafe</text>
+            <text x="16" y="118" class="handwritten" font-size="14" font-weight="600" fill="#333">3 pallets</text>
+            <line x1="16" y1="140" x2="100" y2="140" stroke="#ccc" stroke-width="1"/>
+            <text x="16" y="138" class="handwritten" font-size="10" fill="#999">Received by:</text>
+            <path d="M 60 148 C 65 140, 72 155, 82 143 S 92 152, 98 145" stroke="#333" stroke-width="1.5" fill="none"/>
+            <text x="16" y="170" class="handwritten" font-size="10" fill="#999">Driver: K. Huynh</text>
+          </svg>
+          <div class="pod-thumb-footer">
+            <span class="pod-thumb-id">CN-2026-4475</span>
+            <span class="pill pill-neutral" id="pod5Status">Pending</span>
+          </div>
+          <div class="processing-indicator" id="pod5Processing">
+            <div class="processing-spinner"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Center panel: AI Extraction -->
+    <div class="panel-center">
+      <div class="panel-heading"><span class="icon">&#129302;</span> AI Extraction</div>
+
+      <div id="centerContent">
+        <div class="empty-state" id="emptyCenter">
+          <div class="empty-icon">&#128196;</div>
+          <p>Click a delivery docket to view AI extraction</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: Matched Invoice -->
+    <div class="panel-right">
+      <div class="panel-heading"><span class="icon">&#128196;</span> Matched Invoice</div>
+
+      <div id="rightContent">
+        <div class="empty-state" id="emptyRight">
+          <div class="empty-icon">&#128209;</div>
+          <p>Select a docket to see invoice comparison</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── POD Data ── */
+    const pods = [
+      {
+        id: 1,
+        consignment: 'CN-2026-4468',
+        receiver: 'Craigieburn Hardware',
+        quantity: 8,
+        invoiceQuantity: 8,
+        date: '10/03/2026',
+        driver: 'T. Nguyen',
+        status: 'matched',
+        invoiceNum: 'INV-NL-88412',
+        invoiceDate: '10/03/2026'
+      },
+      {
+        id: 2,
+        consignment: 'CN-2026-4469',
+        receiver: 'Epping Fresh Foods',
+        quantity: 12,
+        invoiceQuantity: 12,
+        date: '11/03/2026',
+        driver: 'M. Petrovic',
+        status: 'matched',
+        invoiceNum: 'INV-NL-88419',
+        invoiceDate: '11/03/2026'
+      },
+      {
+        id: 3,
+        consignment: 'CN-2026-4471',
+        receiver: 'Metro Building Supplies',
+        quantity: 14,
+        invoiceQuantity: 16,
+        date: '12/03/2026',
+        driver: 'J. Stamos',
+        status: 'discrepancy',
+        invoiceNum: 'INV-NL-88427',
+        invoiceDate: '12/03/2026'
+      },
+      {
+        id: 4,
+        consignment: 'CN-2026-4472',
+        receiver: 'Thomastown Electrical',
+        quantity: 6,
+        invoiceQuantity: 6,
+        date: '12/03/2026',
+        driver: 'A. Costa',
+        status: 'matched',
+        invoiceNum: 'INV-NL-88430',
+        invoiceDate: '12/03/2026'
+      },
+      {
+        id: 5,
+        consignment: 'CN-2026-4475',
+        receiver: 'Roxburgh Park Cafe',
+        quantity: 3,
+        invoiceQuantity: 3,
+        date: '13/03/2026',
+        driver: 'K. Huynh',
+        status: 'pending',
+        invoiceNum: 'INV-NL-88441',
+        invoiceDate: '13/03/2026'
+      }
+    ];
+
+    /* ── State ── */
+    let selectedPod = null;
+    let demoRunning = false;
+    let animationTimeouts = [];
+    let statsAnimated = false;
+
+    /* ── Schedule a timeout and track it for cleanup ── */
+    function schedule(fn, delay) {
+      const tid = setTimeout(fn, delay);
+      animationTimeouts.push(tid);
+      return tid;
+    }
+
+    /* ── Animate stats bar ── */
+    async function animateStats() {
+      if (statsAnimated) return;
+      statsAnimated = true;
+      const matched = document.getElementById('statMatched');
+      const unmatched = document.getElementById('statUnmatched');
+      const discrepancies = document.getElementById('statDiscrepancies');
+      const rate = document.getElementById('statRate');
+
+      countUp(matched, 0, 847, 1200, '', '', 0);
+      countUp(unmatched, 0, 12, 800, '', '', 0);
+      countUp(discrepancies, 0, 3, 600, '', '', 0);
+      countUp(rate, 0, 98.6, 1400, '', '%', 1);
+    }
+
+    /* ── Generate enlarged POD SVG for center panel ── */
+    function getPodSvg(pod) {
+      const bgColors = {
+        1: '#FDF8EE',
+        2: '#FAF3E5',
+        3: '#FFF8F0',
+        4: '#FFFDF5',
+        5: '#F8F4EA'
+      };
+      const headerColors = {
+        1: '#E8DCC8',
+        2: '#E2D5BF',
+        3: '#E8D8C4',
+        4: '#E5DCC5',
+        5: '#DDD5C3'
+      };
+      const titles = {
+        1: 'PROOF OF DELIVERY',
+        2: 'DELIVERY DOCKET',
+        3: 'POD / DELIVERY NOTE',
+        4: 'PROOF OF DELIVERY',
+        5: 'DELIVERY RECEIPT'
+      };
+
+      const rotation = pod.id === 3 ? 'transform="rotate(90, 200, 200)"' : '';
+      const coffeStain = pod.id === 2
+        ? '<circle cx="330" cy="220" r="45" fill="rgba(139, 90, 43, 0.12)" /><circle cx="327" cy="217" r="38" fill="rgba(139, 90, 43, 0.08)" />'
+        : '';
+
+      const quantityColor = pod.status === 'discrepancy' ? '#c0392b' : '#333';
+
+      return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" ${rotation}>
+        <rect x="0" y="0" width="400" height="300" fill="${bgColors[pod.id]}" rx="6"/>
+        <rect x="0" y="0" width="400" height="40" fill="${headerColors[pod.id]}" rx="6"/>
+        <rect x="0" y="36" width="400" height="4" fill="${headerColors[pod.id]}"/>
+        ${coffeStain}
+        <text x="200" y="27" text-anchor="middle" class="handwritten" font-size="20" font-weight="700" fill="#333">${titles[pod.id]}</text>
+        <text x="24" y="75" class="handwritten" font-size="18" fill="#2a2a6a" data-field="consignment">${pod.consignment}</text>
+        <text x="24" y="110" class="handwritten" font-size="16" fill="#333" data-field="date">Date: ${pod.date}</text>
+        <text x="24" y="145" class="handwritten" font-size="16" fill="#333" data-field="receiver">To: ${pod.receiver}</text>
+        <text x="24" y="185" class="handwritten" font-size="22" font-weight="700" fill="${quantityColor}" data-field="quantity">Qty: ${pod.quantity} pallets</text>
+        <line x1="24" y1="215" x2="180" y2="215" stroke="#ccc" stroke-width="1"/>
+        <text x="24" y="212" class="handwritten" font-size="13" fill="#999">Signature:</text>
+        <path d="M 80 228 C 90 210, 110 245, 135 218 S 160 240, 180 220 S 200 238, 210 222" stroke="#333" stroke-width="2" fill="none" data-field="signature"/>
+        <text x="24" y="270" class="handwritten" font-size="13" fill="#999">Driver: ${pod.driver}</text>
+      </svg>`;
+    }
+
+    /* ── Extraction box positions (percentages of pod viewer) ── */
+    function getExtractionBoxes(pod) {
+      const isDiscrepancy = pod.status === 'discrepancy';
+      return [
+        {
+          cls: 'box-consignment',
+          label: 'Consignment #',
+          top: '20%', left: '3%', width: '55%', height: '10%'
+        },
+        {
+          cls: 'box-receiver',
+          label: 'Receiver',
+          top: '42%', left: '3%', width: '65%', height: '10%'
+        },
+        {
+          cls: 'box-date',
+          label: 'Date',
+          top: '31%', left: '3%', width: '50%', height: '10%'
+        },
+        {
+          cls: isDiscrepancy ? 'box-quantity' : 'box-quantity-ok',
+          label: isDiscrepancy ? 'Quantity (DISCREPANCY)' : 'Quantity',
+          top: '55%', left: '3%', width: '55%', height: '12%'
+        },
+        {
+          cls: 'box-signature',
+          label: 'Signature',
+          top: '70%', left: '3%', width: '52%', height: '14%'
+        }
+      ];
+    }
+
+    /* ── Select and display a POD ── */
+    function selectPod(podId) {
+      const pod = pods.find(p => p.id === podId);
+      if (!pod) return;
+      if (pod.status === 'pending') return;
+
+      selectedPod = podId;
+
+      // Update active state on thumbnails
+      document.querySelectorAll('.pod-thumb').forEach(el => el.classList.remove('active'));
+      document.getElementById('pod' + podId).classList.add('active');
+
+      // Build center panel
+      const centerContent = document.getElementById('centerContent');
+      const boxes = getExtractionBoxes(pod);
+      let boxesHtml = '';
+      boxes.forEach((box, i) => {
+        boxesHtml += `<div class="extraction-box ${box.cls}" id="extractBox${i}"
+          style="top:${box.top}; left:${box.left}; width:${box.width}; height:${box.height};">
+          <span class="box-label">${box.label}</span>
+        </div>`;
+      });
+
+      centerContent.innerHTML = `
+        <div class="pod-viewer" id="podViewer" style="position: relative;">
+          ${getPodSvg(pod)}
+          ${boxesHtml}
+        </div>
+        <div class="extracted-data">
+          <h3>Extracted Data</h3>
+          <div class="extracted-row">
+            <span class="field-name">Consignment</span>
+            <span class="field-value">${pod.consignment}</span>
+          </div>
+          <div class="extracted-row">
+            <span class="field-name">Receiver</span>
+            <span class="field-value">${pod.receiver}</span>
+          </div>
+          <div class="extracted-row">
+            <span class="field-name">Date</span>
+            <span class="field-value">${pod.date}</span>
+          </div>
+          <div class="extracted-row">
+            <span class="field-name">Quantity</span>
+            <span class="field-value" style="${pod.status === 'discrepancy' ? 'color: var(--color-danger); font-weight: 700;' : ''}">${pod.quantity} pallets</span>
+          </div>
+          <div class="extracted-row">
+            <span class="field-name">Signature</span>
+            <span class="field-value" style="color: var(--color-success);">Present</span>
+          </div>
+          <div class="extracted-row">
+            <span class="field-name">Confidence</span>
+            <span class="field-value"><span class="confidence confidence-high">96.2%</span></span>
+          </div>
+        </div>
+      `;
+
+      // Animate extraction boxes appearing one by one
+      boxes.forEach((box, i) => {
+        schedule(() => {
+          const el = document.getElementById('extractBox' + i);
+          if (el) el.classList.add('visible');
+        }, 300 * (i + 1));
+      });
+
+      // Build right panel
+      buildInvoicePanel(pod);
+    }
+
+    /* ── Build invoice comparison panel ── */
+    function buildInvoicePanel(pod) {
+      const rightContent = document.getElementById('rightContent');
+      const isDiscrepancy = pod.status === 'discrepancy';
+      const qtyMatch = pod.quantity === pod.invoiceQuantity;
+
+      let quantityRow;
+      if (isDiscrepancy) {
+        quantityRow = `
+          <div class="comparison-row discrepancy-row">
+            <span class="comp-field">Quantity</span>
+            <span class="comp-values">
+              <div>POD: <strong>${pod.quantity} pallets</strong> &nbsp; Invoice: <strong>${pod.invoiceQuantity} pallets</strong></div>
+              <div class="discrepancy-detail pulse-warning">DISCREPANCY: ${Math.abs(pod.invoiceQuantity - pod.quantity)} pallet difference</div>
+            </span>
+            <span class="comp-status">&#9888;&#65039;</span>
+          </div>
+        `;
+      } else {
+        quantityRow = `
+          <div class="comparison-row">
+            <span class="comp-field">Quantity</span>
+            <span class="comp-values">${pod.quantity} pallets</span>
+            <span class="comp-status">&#9989;</span>
+          </div>
+        `;
+      }
+
+      rightContent.innerHTML = `
+        <div class="invoice-card">
+          <h3>Invoice Match</h3>
+          <div class="invoice-num">${pod.invoiceNum} &mdash; ${pod.invoiceDate}</div>
+
+          <div class="comparison-row">
+            <span class="comp-field">Consignment</span>
+            <span class="comp-values">${pod.consignment}</span>
+            <span class="comp-status">&#9989;</span>
+          </div>
+
+          <div class="comparison-row">
+            <span class="comp-field">Receiver</span>
+            <span class="comp-values">${pod.receiver}</span>
+            <span class="comp-status">&#9989;</span>
+          </div>
+
+          <div class="comparison-row">
+            <span class="comp-field">Date</span>
+            <span class="comp-values">${pod.date}</span>
+            <span class="comp-status">&#9989;</span>
+          </div>
+
+          ${quantityRow}
+
+          <div class="comparison-row">
+            <span class="comp-field">Signature</span>
+            <span class="comp-values" style="color: var(--color-success);">Present</span>
+            <span class="comp-status">&#9989;</span>
+          </div>
+
+          ${isDiscrepancy ? `
+          <div class="invoice-actions">
+            <button class="btn btn-reject btn-sm" onclick="flagForReview('${pod.consignment}')">Flag for Review</button>
+            <button class="btn btn-edit btn-sm" onclick="overrideMatch('${pod.consignment}')">Override Match</button>
+          </div>
+          ` : `
+          <div style="margin-top: 12px;">
+            <span class="pill pill-success" style="font-size: 13px; padding: 5px 14px;">All fields verified</span>
+          </div>
+          `}
+        </div>
+      `;
+    }
+
+    /* ── Action handlers ── */
+    function flagForReview(consignment) {
+      toast('POD ' + consignment + ' flagged for manual review', 'warning');
+    }
+
+    function overrideMatch(consignment) {
+      toast('POD ' + consignment + ' override submitted for approval', 'info');
+    }
+
+    /* ── Process pending POD #5 ── */
+    async function processPod5() {
+      const pod5El = document.getElementById('pod5');
+      const processingEl = document.getElementById('pod5Processing');
+      const statusEl = document.getElementById('pod5Status');
+
+      // Show processing spinner
+      processingEl.classList.add('active');
+      pod5El.classList.add('shimmer');
+
+      await wait(2500);
+
+      // Remove processing spinner
+      processingEl.classList.remove('active');
+      pod5El.classList.remove('shimmer');
+
+      // Update status to Matched
+      pods[4].status = 'matched';
+      statusEl.className = 'pill pill-success';
+      statusEl.textContent = 'Matched';
+
+      toast('POD CN-2026-4475 auto-matched to INV-NL-88441', 'success');
+    }
+
+    /* ── Start Processing (button handler) ── */
+    async function startProcessing() {
+      if (demoRunning) return;
+      demoRunning = true;
+
+      // Animate stats
+      animateStats();
+
+      // Process pending POD
+      if (pods[4].status === 'pending') {
+        await processPod5();
+      }
+
+      // Auto-select the discrepancy POD after a beat
+      await wait(800);
+      selectPod(3);
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      // Clear pending timeouts
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+      selectedPod = null;
+      statsAnimated = false;
+
+      // Reset stats
+      document.getElementById('statMatched').textContent = '0';
+      document.getElementById('statUnmatched').textContent = '0';
+      document.getElementById('statDiscrepancies').textContent = '0';
+      document.getElementById('statRate').textContent = '0%';
+
+      // Reset POD 5 status
+      pods[4].status = 'pending';
+      const pod5Status = document.getElementById('pod5Status');
+      pod5Status.className = 'pill pill-neutral';
+      pod5Status.textContent = 'Pending';
+      document.getElementById('pod5Processing').classList.remove('active');
+      document.getElementById('pod5').classList.remove('shimmer');
+
+      // Clear active states
+      document.querySelectorAll('.pod-thumb').forEach(el => el.classList.remove('active'));
+
+      // Reset center panel
+      document.getElementById('centerContent').innerHTML = `
+        <div class="empty-state" id="emptyCenter">
+          <div class="empty-icon">&#128196;</div>
+          <p>Click a delivery docket to view AI extraction</p>
+        </div>
+      `;
+
+      // Reset right panel
+      document.getElementById('rightContent').innerHTML = `
+        <div class="empty-state" id="emptyRight">
+          <div class="empty-icon">&#128209;</div>
+          <p>Select a docket to see invoice comparison</p>
+        </div>
+      `;
+
+      // Remove toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) startProcessing();
+    }, 2000);
+  </script>
+</body>
+</html>
