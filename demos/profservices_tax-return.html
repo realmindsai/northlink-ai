@@ -1,0 +1,987 @@
+<!-- ABOUTME: Tax Return Prep from Source Documents mockup for NorthLink AI. -->
+<!-- ABOUTME: AI extracts and categorises receipts, detects duplicates, and estimates tax refund. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Return Prep from Source Documents — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Three-panel demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px);
+    }
+
+    .panel-left {
+      flex: 0 0 30%;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fafafa;
+    }
+
+    .panel-centre {
+      flex: 0 0 45%;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+    }
+
+    .panel-right {
+      flex: 0 0 25%;
+      padding: 20px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-heading .count-badge {
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--color-light-gray);
+      color: var(--color-slate-black);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* Document thumbnail grid */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .doc-card {
+      background: #fff;
+      border: 2px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 12px 10px;
+      text-align: center;
+      position: relative;
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+      cursor: default;
+    }
+
+    .doc-card .doc-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .doc-card .doc-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      line-height: 1.3;
+    }
+
+    .doc-card .doc-amount {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-purple);
+      margin-top: 2px;
+    }
+
+    .doc-card .doc-tag {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      margin-top: 3px;
+      font-style: italic;
+    }
+
+    .doc-card .doc-check {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .doc-card.processed {
+      border-color: var(--color-success);
+      box-shadow: 0 0 0 1px var(--color-success);
+    }
+
+    .doc-card.processed .doc-check {
+      opacity: 1;
+    }
+
+    .doc-card.flagged {
+      border-color: var(--color-warning);
+      box-shadow: 0 0 0 1px var(--color-warning);
+    }
+
+    .doc-card.flagged .doc-check {
+      opacity: 1;
+    }
+
+    .doc-card.flash-amber {
+      animation: flash-amber 0.6s ease 3;
+    }
+
+    @keyframes flash-amber {
+      0%, 100% { box-shadow: 0 0 0 1px var(--color-warning); }
+      50% { box-shadow: 0 0 12px 3px var(--color-warning); }
+    }
+
+    /* Centre panel table */
+    .extract-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .extract-table th {
+      text-align: left;
+      padding: 8px 6px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      border-bottom: 2px solid var(--color-light-gray);
+      background: var(--color-off-white);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .extract-table td {
+      padding: 7px 6px;
+      border-bottom: 1px solid var(--color-light-gray);
+      vertical-align: top;
+    }
+
+    .extract-table tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    .extract-table tr {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .extract-table tr.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .extract-table tr.row-duplicate td {
+      background: #fef3c7 !important;
+    }
+
+    .extract-table tr.row-depreciation td {
+      background: #fff7ed !important;
+    }
+
+    .badge-duplicate {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      background: var(--color-warning);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+
+    .badge-depreciation {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      background: var(--color-orange);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+
+    .category-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+
+    .cat-work { background: #dbeafe; color: #1e40af; }
+    .cat-motor { background: #e0e7ff; color: #3730a3; }
+    .cat-phone { background: #ede9fe; color: #5b21b6; }
+    .cat-home { background: #fce7f3; color: #9d174d; }
+    .cat-rental { background: #d1fae5; color: #065f46; }
+    .cat-income { background: #dcfce7; color: #166534; }
+    .cat-depreciation { background: #fff7ed; color: #9a3412; }
+
+    /* Right panel - tax return summary */
+    .return-section {
+      margin-bottom: 16px;
+    }
+
+    .return-section h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-slate-black);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .return-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 13px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .return-line .line-label {
+      color: var(--color-slate-black);
+    }
+
+    .return-line .line-value {
+      font-weight: 600;
+      color: var(--color-black);
+      min-width: 70px;
+      text-align: right;
+    }
+
+    .return-line.line-total {
+      border-top: 2px solid var(--color-light-gray);
+      border-bottom: none;
+      margin-top: 2px;
+      padding-top: 8px;
+      font-weight: 700;
+    }
+
+    .return-line.line-total .line-value {
+      color: var(--color-purple);
+    }
+
+    .taxable-section {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .taxable-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 13px;
+    }
+
+    .taxable-line .line-label {
+      color: var(--color-slate-black);
+    }
+
+    .taxable-line .line-value {
+      font-weight: 600;
+      color: var(--color-black);
+      text-align: right;
+    }
+
+    .refund-box {
+      background: #dcfce7;
+      border: 2px solid var(--color-success);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      margin-top: 16px;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .refund-box.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .refund-box .refund-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #166534;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .refund-box .refund-amount {
+      font-size: 32px;
+      font-weight: 700;
+      color: #166534;
+    }
+
+    @keyframes celebrate {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .refund-box.celebrate {
+      animation: celebrate 0.5s ease 2;
+    }
+
+    .confidence-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #166534;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .action-buttons .btn {
+      flex: 1;
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+
+    /* Processing progress bar */
+    .progress-bar-container {
+      background: var(--color-light-gray);
+      border-radius: var(--radius-pill);
+      height: 4px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--color-purple);
+      border-radius: var(--radius-pill);
+      transition: width 0.3s ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-centre, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-centre, .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/professional-services.html">Professional Services</a> &rarr; Tax Return Prep
+      </div>
+      <div class="demo-title">Tax Return Prep from Source Documents</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Process Documents</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Source Documents -->
+    <div class="panel-left">
+      <div class="panel-heading">Source Documents <span class="count-badge">12 files</span></div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+      <div class="doc-grid">
+        <div class="doc-card" id="doc1">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128248;</div>
+          <div class="doc-label">Officeworks</div>
+          <div class="doc-amount">$347</div>
+          <div class="doc-tag">blurry photo</div>
+        </div>
+        <div class="doc-card" id="doc2">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128248;</div>
+          <div class="doc-label">Bunnings</div>
+          <div class="doc-amount">$89</div>
+          <div class="doc-tag">receipt</div>
+        </div>
+        <div class="doc-card" id="doc3">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128248;</div>
+          <div class="doc-label">JB Hi-Fi</div>
+          <div class="doc-amount">$2,400</div>
+          <div class="doc-tag">laptop</div>
+        </div>
+        <div class="doc-card" id="doc4">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128196;</div>
+          <div class="doc-label">Bank Statement</div>
+          <div class="doc-amount">CBA</div>
+          <div class="doc-tag">Jan&ndash;Jun</div>
+        </div>
+        <div class="doc-card" id="doc5">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128196;</div>
+          <div class="doc-label">Bank Statement</div>
+          <div class="doc-amount">CBA</div>
+          <div class="doc-tag">Jul&ndash;Dec</div>
+        </div>
+        <div class="doc-card" id="doc6">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128248;</div>
+          <div class="doc-label">Telstra</div>
+          <div class="doc-amount">$1,440</div>
+          <div class="doc-tag">annual plan</div>
+        </div>
+        <div class="doc-card" id="doc7">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128248;</div>
+          <div class="doc-label">Officeworks</div>
+          <div class="doc-amount">$347</div>
+          <div class="doc-tag">DUPLICATE</div>
+        </div>
+        <div class="doc-card" id="doc8">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128196;</div>
+          <div class="doc-label">PAYG Summary</div>
+          <div class="doc-amount">Employer</div>
+          <div class="doc-tag">FY 2025-26</div>
+        </div>
+        <div class="doc-card" id="doc9">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128248;</div>
+          <div class="doc-label">RACV Insurance</div>
+          <div class="doc-amount">$1,200</div>
+          <div class="doc-tag">motor vehicle</div>
+        </div>
+        <div class="doc-card" id="doc10">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128248;</div>
+          <div class="doc-label">Accountant Fees</div>
+          <div class="doc-amount">$550</div>
+          <div class="doc-tag">professional</div>
+        </div>
+        <div class="doc-card" id="doc11">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128196;</div>
+          <div class="doc-label">Rental Statement</div>
+          <div class="doc-amount">Investment</div>
+          <div class="doc-tag">property</div>
+        </div>
+        <div class="doc-card" id="doc12">
+          <span class="doc-check">&#10003;</span>
+          <div class="doc-icon">&#128248;</div>
+          <div class="doc-label">Office Chair</div>
+          <div class="doc-amount">$890</div>
+          <div class="doc-tag">home office</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Centre panel: Extracted & Categorised -->
+    <div class="panel-centre">
+      <div class="panel-heading">Extracted &amp; Categorised <span class="count-badge" id="rowCount">0 items</span></div>
+      <table class="extract-table">
+        <thead>
+          <tr class="visible">
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th style="text-align:right;">Amount</th>
+            <th>Source</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="extractBody">
+          <!-- Row 1: Officeworks $347 (blurry) -->
+          <tr id="row1">
+            <td>14/09/25</td>
+            <td>Officeworks &mdash; stationery &amp; toner</td>
+            <td><span class="category-pill cat-work">Work expenses</span></td>
+            <td style="text-align:right;">$347</td>
+            <td>Receipt #1</td>
+            <td><span class="pill pill-success">&#10003; Extracted</span></td>
+          </tr>
+          <!-- Row 2: Bunnings $89 -->
+          <tr id="row2">
+            <td>22/10/25</td>
+            <td>Bunnings &mdash; tools &amp; hardware</td>
+            <td><span class="category-pill cat-rental">Rental deductions</span></td>
+            <td style="text-align:right;">$89</td>
+            <td>Receipt #2</td>
+            <td><span class="pill pill-success">&#10003; Extracted</span></td>
+          </tr>
+          <!-- Row 3: JB Hi-Fi laptop $2,400 -->
+          <tr id="row3" class="row-depreciation">
+            <td>03/08/25</td>
+            <td>JB Hi-Fi &mdash; laptop (Dell XPS 15)</td>
+            <td><span class="category-pill cat-depreciation">Depreciation</span></td>
+            <td style="text-align:right;">$2,400</td>
+            <td>Receipt #3</td>
+            <td><span class="badge-depreciation">Depreciation required</span></td>
+          </tr>
+          <!-- Row 4-5: Bank statement income/expenses Jan-Jun -->
+          <tr id="row4">
+            <td>30/06/26</td>
+            <td>Salary &mdash; Employer Pty Ltd (Jan&ndash;Jun)</td>
+            <td><span class="category-pill cat-income">Income</span></td>
+            <td style="text-align:right;">$43,750</td>
+            <td>Bank #1</td>
+            <td><span class="pill pill-success">&#10003; Matched</span></td>
+          </tr>
+          <tr id="row5">
+            <td>30/06/26</td>
+            <td>Motor vehicle expenses (Jan&ndash;Jun)</td>
+            <td><span class="category-pill cat-motor">Motor vehicle</span></td>
+            <td style="text-align:right;">$1,600</td>
+            <td>Bank #1</td>
+            <td><span class="pill pill-success">&#10003; Matched</span></td>
+          </tr>
+          <!-- Row 6-7: Bank statement Jul-Dec -->
+          <tr id="row6">
+            <td>31/12/25</td>
+            <td>Salary &mdash; Employer Pty Ltd (Jul&ndash;Dec)</td>
+            <td><span class="category-pill cat-income">Income</span></td>
+            <td style="text-align:right;">$43,750</td>
+            <td>Bank #2</td>
+            <td><span class="pill pill-success">&#10003; Matched</span></td>
+          </tr>
+          <tr id="row7">
+            <td>31/12/25</td>
+            <td>Motor vehicle expenses (Jul&ndash;Dec)</td>
+            <td><span class="category-pill cat-motor">Motor vehicle</span></td>
+            <td style="text-align:right;">$1,600</td>
+            <td>Bank #2</td>
+            <td><span class="pill pill-success">&#10003; Matched</span></td>
+          </tr>
+          <!-- Row 8: Telstra $1,440 -->
+          <tr id="row8">
+            <td>15/06/26</td>
+            <td>Telstra &mdash; mobile &amp; internet plan</td>
+            <td><span class="category-pill cat-phone">Telephone/internet</span></td>
+            <td style="text-align:right;">$1,440</td>
+            <td>Receipt #6</td>
+            <td><span class="pill pill-success">&#10003; Extracted</span></td>
+          </tr>
+          <!-- Row 9: DUPLICATE Officeworks -->
+          <tr id="row9" class="row-duplicate">
+            <td>14/09/25</td>
+            <td>Officeworks &mdash; stationery &amp; toner</td>
+            <td><span class="category-pill cat-work">Work expenses</span></td>
+            <td style="text-align:right;">$347</td>
+            <td>Receipt #7</td>
+            <td><span class="badge-duplicate">DUPLICATE DETECTED</span></td>
+          </tr>
+          <!-- Row 10: PAYG Summary -->
+          <tr id="row10">
+            <td>30/06/26</td>
+            <td>PAYG withholding &mdash; Employer Pty Ltd</td>
+            <td><span class="category-pill cat-income">Income</span></td>
+            <td style="text-align:right;">$22,147</td>
+            <td>PAYG #8</td>
+            <td><span class="pill pill-success">&#10003; Verified</span></td>
+          </tr>
+          <!-- Row 11: RACV Insurance $1,200 -->
+          <tr id="row11">
+            <td>01/07/25</td>
+            <td>RACV &mdash; comprehensive car insurance</td>
+            <td><span class="category-pill cat-motor">Motor vehicle</span></td>
+            <td style="text-align:right;">$1,200</td>
+            <td>Receipt #9</td>
+            <td><span class="pill pill-success">&#10003; Extracted</span></td>
+          </tr>
+          <!-- Row 12: Accountant fees $550 -->
+          <tr id="row12">
+            <td>28/02/26</td>
+            <td>Accountant fees &mdash; prior year return</td>
+            <td><span class="category-pill cat-work">Work expenses</span></td>
+            <td style="text-align:right;">$550</td>
+            <td>Receipt #10</td>
+            <td><span class="pill pill-success">&#10003; Extracted</span></td>
+          </tr>
+          <!-- Row 13-15: Rental statement entries -->
+          <tr id="row13">
+            <td>30/06/26</td>
+            <td>Rental income &mdash; 12 Acacia Ave</td>
+            <td><span class="category-pill cat-income">Income</span></td>
+            <td style="text-align:right;">$18,400</td>
+            <td>Rental #11</td>
+            <td><span class="pill pill-success">&#10003; Extracted</span></td>
+          </tr>
+          <tr id="row14">
+            <td>30/06/26</td>
+            <td>Rental expenses &mdash; management, repairs, interest</td>
+            <td><span class="category-pill cat-rental">Rental deductions</span></td>
+            <td style="text-align:right;">$12,511</td>
+            <td>Rental #11</td>
+            <td><span class="pill pill-success">&#10003; Extracted</span></td>
+          </tr>
+          <!-- Row 15: Office chair $890 -->
+          <tr id="row15">
+            <td>11/11/25</td>
+            <td>Ergonomic office chair &mdash; home office</td>
+            <td><span class="category-pill cat-home">Home office</span></td>
+            <td style="text-align:right;">$890</td>
+            <td>Receipt #12</td>
+            <td><span class="pill pill-success">&#10003; Extracted</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Right panel: Pre-filled Return -->
+    <div class="panel-right">
+      <div class="panel-heading">Pre-filled Return</div>
+
+      <div class="return-section" id="incomeSection" style="opacity:0; transition: opacity 0.4s;">
+        <h3>Income</h3>
+        <div class="return-line">
+          <span class="line-label">Salary</span>
+          <span class="line-value" id="valSalary">—</span>
+        </div>
+        <div class="return-line">
+          <span class="line-label">Rental income</span>
+          <span class="line-value" id="valRental">—</span>
+        </div>
+        <div class="return-line line-total">
+          <span class="line-label">Total income</span>
+          <span class="line-value" id="valTotalIncome">—</span>
+        </div>
+      </div>
+
+      <div class="return-section" id="deductionSection" style="opacity:0; transition: opacity 0.4s;">
+        <h3>Deductions</h3>
+        <div class="return-line">
+          <span class="line-label">Work expenses</span>
+          <span class="line-value" id="valWork">—</span>
+        </div>
+        <div class="return-line">
+          <span class="line-label">Motor vehicle</span>
+          <span class="line-value" id="valMotor">—</span>
+        </div>
+        <div class="return-line">
+          <span class="line-label">Telephone/internet</span>
+          <span class="line-value" id="valPhone">—</span>
+        </div>
+        <div class="return-line">
+          <span class="line-label">Home office</span>
+          <span class="line-value" id="valHome">—</span>
+        </div>
+        <div class="return-line">
+          <span class="line-label">Rental expenses</span>
+          <span class="line-value" id="valRentalExp">—</span>
+        </div>
+        <div class="return-line">
+          <span class="line-label">Depreciation (laptop)</span>
+          <span class="line-value" id="valDeprec">—</span>
+        </div>
+        <div class="return-line line-total">
+          <span class="line-label">Total deductions</span>
+          <span class="line-value" id="valTotalDeductions">—</span>
+        </div>
+      </div>
+
+      <div class="taxable-section" id="taxSection" style="opacity:0; transition: opacity 0.4s;">
+        <div class="taxable-line">
+          <span class="line-label">Taxable income</span>
+          <span class="line-value" id="valTaxable">—</span>
+        </div>
+        <div class="taxable-line">
+          <span class="line-label">Tax on taxable income</span>
+          <span class="line-value" id="valTaxOwed">—</span>
+        </div>
+        <div class="taxable-line">
+          <span class="line-label">Less PAYG withheld</span>
+          <span class="line-value" id="valPAYG">—</span>
+        </div>
+      </div>
+
+      <div class="refund-box" id="refundBox">
+        <div class="refund-label">Estimated Refund</div>
+        <div class="refund-amount" id="refundAmount">$0</div>
+      </div>
+
+      <div class="confidence-row" id="confidenceRow" style="opacity:0; transition: opacity 0.4s;">
+        <span class="confidence confidence-high">91% Confidence</span>
+      </div>
+
+      <div class="action-buttons" id="actionButtons" style="opacity:0; transition: opacity 0.4s;">
+        <button class="btn btn-primary" onclick="toast('Opening in Xero...', 'info')">Review in Xero</button>
+        <button class="btn btn-approve" onclick="toast('Exported to ATO portal', 'success')">Export to ATO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── State ── */
+    let demoRunning = false;
+    let animationTimeouts = [];
+
+    /* ── Document processing sequence definition ── */
+    const DOCUMENTS = [
+      { id: 'doc1', rows: ['row1'], status: 'processed', label: 'Extracting blurry receipt...' },
+      { id: 'doc2', rows: ['row2'], status: 'processed', label: 'Processing Bunnings receipt...' },
+      { id: 'doc3', rows: ['row3'], status: 'flagged', label: 'Analysing JB Hi-Fi receipt...' },
+      { id: 'doc4', rows: ['row4', 'row5'], status: 'processed', label: 'Scanning bank statement Jan-Jun...' },
+      { id: 'doc5', rows: ['row6', 'row7'], status: 'processed', label: 'Scanning bank statement Jul-Dec...' },
+      { id: 'doc6', rows: ['row8'], status: 'processed', label: 'Processing Telstra receipt...' },
+      { id: 'doc7', rows: ['row9'], status: 'flagged', label: 'Processing Officeworks receipt...', isDuplicate: true },
+      { id: 'doc8', rows: ['row10'], status: 'processed', label: 'Verifying PAYG summary...' },
+      { id: 'doc9', rows: ['row11'], status: 'processed', label: 'Processing RACV receipt...' },
+      { id: 'doc10', rows: ['row12'], status: 'processed', label: 'Processing accountant fees...' },
+      { id: 'doc11', rows: ['row13', 'row14'], status: 'processed', label: 'Analysing rental statement...' },
+      { id: 'doc12', rows: ['row15'], status: 'processed', label: 'Processing office chair receipt...' },
+    ];
+
+    /* ── Right panel data updates keyed by which document just processed ── */
+    const PANEL_UPDATES = {
+      doc1: { field: 'valWork', value: '$347' },
+      doc2: { field: 'valRentalExp', value: '$89' },
+      doc3: { field: 'valDeprec', value: '$480' },
+      doc4: { fields: [{ field: 'valSalary', value: '$43,750' }, { field: 'valMotor', value: '$1,600' }] },
+      doc5: { fields: [{ field: 'valSalary', value: '$87,500' }, { field: 'valMotor', value: '$3,200' }] },
+      doc6: { field: 'valPhone', value: '$1,440' },
+      doc8: { field: 'valPAYG', value: '$22,147' },
+      doc9: { fields: [{ field: 'valMotor', value: '$3,200' }] },
+      doc10: { field: 'valWork', value: '$3,576' },
+      doc11: { fields: [{ field: 'valRental', value: '$18,400' }, { field: 'valRentalExp', value: '$12,600' }] },
+      doc12: { field: 'valHome', value: '$890' },
+    };
+
+    /* Running totals for incremental updates */
+    let processedCount = 0;
+
+    /* ── Helpers ── */
+    function schedule(fn, delay) {
+      const tid = setTimeout(fn, delay);
+      animationTimeouts.push(tid);
+      return tid;
+    }
+
+    function updateRowCount() {
+      const visibleRows = document.querySelectorAll('#extractBody tr.visible');
+      document.getElementById('rowCount').textContent = visibleRows.length + ' items';
+    }
+
+    function updateProgress(index) {
+      const pct = Math.round(((index + 1) / DOCUMENTS.length) * 100);
+      document.getElementById('progressBar').style.width = pct + '%';
+    }
+
+    function applyPanelUpdate(docId) {
+      const update = PANEL_UPDATES[docId];
+      if (!update) return;
+
+      if (update.fields) {
+        update.fields.forEach(f => {
+          document.getElementById(f.field).textContent = f.value;
+        });
+      } else {
+        document.getElementById(update.field).textContent = update.value;
+      }
+    }
+
+    /* ── Animation sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      // Show income section immediately
+      await wait(400);
+      document.getElementById('incomeSection').style.opacity = '1';
+      document.getElementById('deductionSection').style.opacity = '1';
+
+      // Process each document sequentially
+      for (let i = 0; i < DOCUMENTS.length; i++) {
+        if (!demoRunning) return;
+        const doc = DOCUMENTS[i];
+        const cardEl = document.getElementById(doc.id);
+
+        // Shimmer the document card
+        await shimmer(cardEl, 600);
+
+        // Set card status (green or amber border)
+        cardEl.classList.add(doc.status);
+
+        // Show rows in centre table
+        doc.rows.forEach(rowId => {
+          const row = document.getElementById(rowId);
+          row.classList.add('visible');
+        });
+        updateRowCount();
+        updateProgress(i);
+
+        // Update right panel
+        applyPanelUpdate(doc.id);
+
+        // Handle duplicate detection on doc7
+        if (doc.isDuplicate) {
+          const doc1El = document.getElementById('doc1');
+          const doc7El = document.getElementById('doc7');
+          doc1El.classList.remove('processed');
+          doc1El.classList.add('flagged', 'flash-amber');
+          doc7El.classList.add('flash-amber');
+          toast('Duplicate receipt detected \u2014 $347 Officeworks appears twice', 'warning', 4000);
+        }
+
+        // Handle laptop depreciation on doc3
+        if (doc.id === 'doc3') {
+          toast('Exceeds instant asset write-off threshold \u2014 depreciation required', 'warning', 3500);
+        }
+
+        // Handle blurry receipt on doc1
+        if (doc.id === 'doc1') {
+          toast('Blurry receipt successfully extracted via OCR', 'success', 3000);
+        }
+
+        await wait(800);
+      }
+
+      // All documents processed - show tax calculation section
+      await wait(400);
+      document.getElementById('valTotalIncome').textContent = '$105,900';
+      document.getElementById('valTotalDeductions').textContent = '$22,186';
+
+      document.getElementById('taxSection').style.opacity = '1';
+      await wait(300);
+      document.getElementById('valTaxable').textContent = '$83,714';
+      await wait(200);
+      document.getElementById('valTaxOwed').textContent = '$18,967';
+      await wait(200);
+      document.getElementById('valPAYG').textContent = '$22,147';
+
+      // Show refund with count-up animation
+      await wait(500);
+      const refundBox = document.getElementById('refundBox');
+      refundBox.classList.add('visible');
+      const refundEl = document.getElementById('refundAmount');
+      await countUp(refundEl, 0, 3180, 1500, '$', '', 0);
+
+      // Add celebration animation
+      refundBox.classList.add('celebrate');
+
+      // Show confidence and action buttons
+      await wait(300);
+      document.getElementById('confidenceRow').style.opacity = '1';
+      await wait(200);
+      document.getElementById('actionButtons').style.opacity = '1';
+
+      toast('Tax return pre-filled from 12 source documents', 'success', 4000);
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      // Clear pending timeouts
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+      processedCount = 0;
+
+      // Reset progress bar
+      document.getElementById('progressBar').style.width = '0%';
+
+      // Reset document cards
+      document.querySelectorAll('.doc-card').forEach(card => {
+        card.classList.remove('processed', 'flagged', 'flash-amber', 'shimmer');
+      });
+
+      // Reset extract table rows
+      document.querySelectorAll('#extractBody tr').forEach(row => {
+        row.classList.remove('visible');
+      });
+      document.getElementById('rowCount').textContent = '0 items';
+
+      // Reset right panel
+      document.getElementById('incomeSection').style.opacity = '0';
+      document.getElementById('deductionSection').style.opacity = '0';
+      document.getElementById('taxSection').style.opacity = '0';
+      document.getElementById('confidenceRow').style.opacity = '0';
+      document.getElementById('actionButtons').style.opacity = '0';
+
+      // Reset all value fields
+      const valueIds = ['valSalary', 'valRental', 'valTotalIncome', 'valWork', 'valMotor',
+        'valPhone', 'valHome', 'valRentalExp', 'valDeprec', 'valTotalDeductions',
+        'valTaxable', 'valTaxOwed', 'valPAYG'];
+      valueIds.forEach(id => {
+        document.getElementById(id).textContent = '\u2014';
+      });
+
+      // Reset refund box
+      const refundBox = document.getElementById('refundBox');
+      refundBox.classList.remove('visible', 'celebrate');
+      document.getElementById('refundAmount').textContent = '$0';
+
+      // Remove toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
