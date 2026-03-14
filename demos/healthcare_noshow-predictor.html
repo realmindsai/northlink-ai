@@ -1,0 +1,999 @@
+<!-- ABOUTME: Appointment No-Show Predictor mockup for NorthLink AI. -->
+<!-- ABOUTME: AI scores tomorrow's appointments by no-show risk with proactive interventions. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>No-Show Predictor — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout: two-panel 75/25 */
+    .demo-main {
+      display: flex;
+      height: calc(100vh - 64px - 49px - 44px);
+      overflow: hidden;
+    }
+
+    .panel-left {
+      flex: 0 0 75%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-right {
+      flex: 0 0 25%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Panel headings */
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+    }
+
+    .panel-subheading {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      margin-top: -12px;
+      margin-bottom: 16px;
+    }
+
+    /* Appointment table */
+    .appt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .appt-table th {
+      text-align: left;
+      padding: 10px 10px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-slate-black);
+      border-bottom: 2px solid var(--color-light-gray);
+      background: var(--color-off-white);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .appt-table th:hover {
+      color: var(--color-purple);
+    }
+
+    .appt-table th .sort-arrow {
+      font-size: 10px;
+      margin-left: 4px;
+      opacity: 0.4;
+    }
+
+    .appt-table th.sorted .sort-arrow {
+      opacity: 1;
+      color: var(--color-purple);
+    }
+
+    .appt-table td {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--color-light-gray);
+      vertical-align: middle;
+    }
+
+    .appt-table tbody tr {
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+
+    .appt-table tbody tr:hover {
+      background: rgba(167, 122, 205, 0.04);
+    }
+
+    .appt-table tbody tr.high-risk {
+      background: rgba(239, 68, 68, 0.06);
+      border-left: 3px solid var(--color-danger);
+    }
+
+    .appt-table tbody tr.high-risk:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .appt-table tbody tr.lunch-row {
+      background: var(--color-off-white);
+      cursor: default;
+    }
+
+    .appt-table tbody tr.lunch-row td {
+      color: var(--color-slate-gray);
+      font-style: italic;
+      text-align: center;
+    }
+
+    /* Patient name styling */
+    .patient-name {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .patient-name.high-risk-name {
+      color: var(--color-danger);
+      font-weight: 700;
+    }
+
+    /* Risk pill */
+    .risk-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .risk-pill.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .risk-pill.risk-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .risk-pill.risk-amber {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .risk-pill.risk-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    @keyframes riskPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+      100% { transform: scale(1); }
+    }
+
+    .risk-pill.risk-pulse {
+      animation: riskPulse 0.6s ease;
+    }
+
+    /* Risk factor tags */
+    .risk-factors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .risk-factors.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .risk-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--color-light-gray);
+      color: var(--color-slate-black);
+      white-space: nowrap;
+    }
+
+    .risk-tag.risk-tag-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* Action column */
+    .action-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-slate-gray);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .action-text.visible {
+      opacity: 1;
+    }
+
+    .action-text.action-call {
+      color: var(--color-danger);
+      font-weight: 700;
+    }
+
+    /* Expanded patient history card */
+    .history-row {
+      display: none;
+    }
+
+    .history-row.expanded {
+      display: table-row;
+    }
+
+    .history-card {
+      background: var(--color-off-white);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin: 4px 0;
+      border: 1px solid var(--color-light-gray);
+    }
+
+    .history-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin: 0 0 8px;
+    }
+
+    .history-card .history-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .history-card .history-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .history-card .history-label {
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .history-card .history-value {
+      color: var(--color-black);
+    }
+
+    /* Shimmer overlay for table */
+    .table-shimmer {
+      position: relative;
+    }
+
+    .table-shimmer::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(167, 122, 205, 0.12), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Calculating overlay label */
+    .calculating-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--color-purple);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: var(--radius-pill);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .calculating-label.visible {
+      opacity: 1;
+    }
+
+    /* Table wrapper for shimmer positioning */
+    .table-wrapper {
+      position: relative;
+      flex: 1;
+    }
+
+    /* Sidebar sections */
+    .sidebar-section {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 20px;
+    }
+
+    .sidebar-section h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin: 0 0 12px;
+    }
+
+    /* Waitlist */
+    .waitlist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-light-gray);
+      gap: 8px;
+    }
+
+    .waitlist-item:last-child {
+      border-bottom: none;
+    }
+
+    .waitlist-info {
+      flex: 1;
+    }
+
+    .waitlist-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .waitlist-avail {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+    }
+
+    .btn-fill {
+      background: var(--color-success);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-stack);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-fill:hover {
+      background: #1aad4f;
+    }
+
+    .btn-fill:active {
+      transform: scale(0.95);
+    }
+
+    /* Weekly stats */
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--color-light-gray);
+      font-size: 13px;
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: var(--color-slate-black);
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .stat-improvement {
+      color: var(--color-success);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .stat-arrow {
+      color: var(--color-success);
+      margin: 0 4px;
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      background: var(--color-black);
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 14px;
+    }
+
+    .bottom-bar .bottom-stat {
+      color: var(--color-slate-gray);
+    }
+
+    .bottom-bar .bottom-value {
+      color: var(--color-purple);
+      font-weight: 700;
+    }
+
+    .bottom-bar .bottom-sep {
+      color: var(--color-slate-gray);
+      margin: 0 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+
+    @media (max-width: 767px) {
+      .appt-table {
+        font-size: 12px;
+      }
+      .appt-table th, .appt-table td {
+        padding: 8px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/healthcare.html">Healthcare</a> &rarr; No-Show Predictor
+      </div>
+      <div class="demo-title">Appointment No-Show Predictor</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" id="btnCalculate" onclick="calculateRisk()">Calculate Risk</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Appointment Table (75%) -->
+    <div class="panel-left">
+      <div class="panel-heading">Tomorrow's Appointments &mdash; Tuesday 15 March 2026</div>
+
+      <div class="table-wrapper" id="tableWrapper">
+        <div class="calculating-label" id="calculatingLabel">Calculating Risk...</div>
+        <table class="appt-table" id="apptTable">
+          <thead>
+            <tr>
+              <th onclick="sortTable('time')" id="thTime" class="sorted">Time <span class="sort-arrow">&#9660;</span></th>
+              <th onclick="sortTable('patient')">Patient <span class="sort-arrow">&#9660;</span></th>
+              <th>Type</th>
+              <th>Clinician</th>
+              <th onclick="sortTable('risk')">Risk <span class="sort-arrow">&#9660;</span></th>
+              <th>Risk Factors</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="apptBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right panel: Sidebar (25%) -->
+    <div class="panel-right">
+
+      <!-- Waitlist -->
+      <div class="sidebar-section">
+        <h3>Waitlist &mdash; Ready to Fill</h3>
+        <div class="waitlist-item">
+          <div class="waitlist-info">
+            <div class="waitlist-name">Anna Mitchell</div>
+            <div class="waitlist-avail">Any time</div>
+          </div>
+          <button class="btn-fill" onclick="fillSlot('Anna Mitchell', '9:30am')">One-click fill</button>
+        </div>
+        <div class="waitlist-item">
+          <div class="waitlist-info">
+            <div class="waitlist-name">Greg O'Brien</div>
+            <div class="waitlist-avail">AM only</div>
+          </div>
+          <button class="btn-fill" onclick="fillSlot('Greg O\'Brien', '9:30am')">One-click fill</button>
+        </div>
+        <div class="waitlist-item">
+          <div class="waitlist-info">
+            <div class="waitlist-name">Priya Sharma</div>
+            <div class="waitlist-avail">After 1pm</div>
+          </div>
+          <button class="btn-fill" onclick="fillSlot('Priya Sharma', '2:00pm')">One-click fill</button>
+        </div>
+        <div class="waitlist-item">
+          <div class="waitlist-info">
+            <div class="waitlist-name">Tom Edwards</div>
+            <div class="waitlist-avail">Any time</div>
+          </div>
+          <button class="btn-fill" onclick="fillSlot('Tom Edwards', '9:30am')">One-click fill</button>
+        </div>
+      </div>
+
+      <!-- Weekly Stats -->
+      <div class="sidebar-section">
+        <h3>Weekly Stats</h3>
+        <div class="stat-row">
+          <span class="stat-label">No-show rate</span>
+          <span class="stat-value">
+            <span id="statNoShowFrom">15%</span>
+            <span class="stat-arrow" id="statArrow" style="opacity: 0;">&rarr;</span>
+            <span id="statNoShowTo" style="opacity: 0;">8%</span>
+            <span class="stat-improvement" id="statImprovement" style="opacity: 0;">&darr;</span>
+          </span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Recovery rate</span>
+          <span class="stat-value" id="statRecovery">&mdash;</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Revenue protected</span>
+          <span class="stat-value" id="statRevenue">&mdash;</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <span class="bottom-stat">Predicted revenue at risk today: <span class="bottom-value" id="bottomRevenue">$0</span></span>
+    <span class="bottom-sep">|</span>
+    <span class="bottom-stat">Recovery actions: <span class="bottom-value" id="bottomActions">0</span></span>
+    <span class="bottom-sep">|</span>
+    <span class="bottom-stat">Historical accuracy: <span class="bottom-value" id="bottomAccuracy">0%</span></span>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your practice?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Appointment data ── */
+    const appointments = [
+      { time: '7:00',  sortTime: 700,  patient: 'Emily Watson',    type: 'Follow-up',           clinician: 'Dr Park', risk: 8,  riskLevel: 'green',  factors: [],                                                              action: '',                          isHighRisk: false, history: { visits: 12, noShows: 0, lastVisit: '1 Mar 2026', notes: 'Regular patient, always attends' } },
+      { time: '7:30',  sortTime: 730,  patient: 'Robert Kim',      type: 'Initial',              clinician: 'Dr Park', risk: 12, riskLevel: 'green',  factors: ['New patient'],                                                 action: 'SMS sent',                  isHighRisk: false, history: { visits: 0, noShows: 0, lastVisit: 'N/A', notes: 'New patient referral from Dr Lee' } },
+      { time: '8:00',  sortTime: 800,  patient: 'Maria Santos',    type: 'Review',               clinician: 'Dr Chen', risk: 15, riskLevel: 'green',  factors: [],                                                              action: '',                          isHighRisk: false, history: { visits: 8, noShows: 1, lastVisit: '15 Feb 2026', notes: 'Reliable attendance record' } },
+      { time: '8:30',  sortTime: 830,  patient: 'David Li',        type: 'Treatment',            clinician: 'Dr Park', risk: 10, riskLevel: 'green',  factors: [],                                                              action: '',                          isHighRisk: false, history: { visits: 5, noShows: 0, lastVisit: '22 Feb 2026', notes: 'Ongoing treatment plan' } },
+      { time: '9:00',  sortTime: 900,  patient: 'Sarah Brown',     type: 'Follow-up',            clinician: 'Dr Chen', risk: 22, riskLevel: 'amber',  factors: ['1 prior cancel'],                                              action: 'SMS sent',                  isHighRisk: false, history: { visits: 6, noShows: 1, lastVisit: '10 Feb 2026', notes: 'Cancelled once due to illness' } },
+      { time: '9:30',  sortTime: 930,  patient: 'James Chen',      type: 'Initial Assessment',   clinician: 'Dr Park', risk: 72, riskLevel: 'red',    factors: ['Missed last 2', 'No confirmation response', 'Monday morning'], action: 'Personal call recommended', isHighRisk: true,  history: { visits: 4, noShows: 2, lastVisit: '15 Jan 2026', notes: 'Missed last 2 appointments without notice. No response to SMS reminders.' } },
+      { time: '10:00', sortTime: 1000, patient: 'Lisa Nguyen',     type: 'Review',               clinician: 'Dr Chen', risk: 6,  riskLevel: 'green',  factors: [],                                                              action: '',                          isHighRisk: false, history: { visits: 15, noShows: 0, lastVisit: '1 Mar 2026', notes: 'Excellent attendance record' } },
+      { time: '10:30', sortTime: 1030, patient: 'Mark Thompson',   type: 'Treatment',            clinician: 'Dr Park', risk: 18, riskLevel: 'amber',  factors: ['Rescheduled twice'],                                           action: 'SMS sent',                  isHighRisk: false, history: { visits: 3, noShows: 0, lastVisit: '20 Feb 2026', notes: 'Has rescheduled twice but always attended' } },
+      { time: '11:00', sortTime: 1100, patient: 'Amanda Clark',    type: 'Follow-up',            clinician: 'Dr Chen', risk: 9,  riskLevel: 'green',  factors: [],                                                              action: '',                          isHighRisk: false, history: { visits: 7, noShows: 0, lastVisit: '25 Feb 2026', notes: 'Reliable patient' } },
+      { time: '11:30', sortTime: 1130, patient: null,              type: null,                   clinician: null,      risk: -1, riskLevel: null,     factors: [],                                                              action: '',                          isHighRisk: false, isLunch: true },
+      { time: '12:30', sortTime: 1230, patient: 'Peter Walsh',     type: 'Initial',              clinician: 'Dr Park', risk: 14, riskLevel: 'green',  factors: [],                                                              action: '',                          isHighRisk: false, history: { visits: 1, noShows: 0, lastVisit: '5 Mar 2026', notes: 'Second visit' } },
+      { time: '1:00',  sortTime: 1300, patient: 'Susan Park',      type: 'Review',               clinician: 'Dr Chen', risk: 25, riskLevel: 'amber',  factors: ['Long commute', 'Rain forecast'],                               action: 'SMS sent',                  isHighRisk: false, history: { visits: 4, noShows: 1, lastVisit: '10 Feb 2026', notes: 'Lives 45min away. Has missed during bad weather before.' } },
+      { time: '2:00',  sortTime: 1400, patient: 'Rebecca Torres',  type: 'Review',               clinician: 'Dr Park', risk: 58, riskLevel: 'red',    factors: ['3 cancellations in 6 months', 'Referral from 4 months ago'],    action: 'Personal call + waitlist fill', isHighRisk: true, history: { visits: 6, noShows: 3, lastVisit: '15 Dec 2025', notes: '3 cancellations in last 6 months. Original referral now 4 months old. Risk of referral expiry.' } },
+      { time: '3:00',  sortTime: 1500, patient: 'Kevin Murray',    type: 'Treatment',            clinician: 'Dr Chen', risk: 11, riskLevel: 'green',  factors: [],                                                              action: '',                          isHighRisk: false, history: { visits: 9, noShows: 0, lastVisit: '28 Feb 2026', notes: 'Regular treatment patient' } }
+    ];
+
+    /* ── State ── */
+    let demoRunning = false;
+    let riskCalculated = false;
+    let currentSort = 'time';
+    let sortDirection = 'asc';
+    let expandedRow = null;
+
+    /* ── Render the appointment table ── */
+    function renderTable(data) {
+      const tbody = document.getElementById('apptBody');
+      tbody.innerHTML = '';
+
+      data.forEach((appt, index) => {
+        /* Main row */
+        const tr = document.createElement('tr');
+        tr.dataset.index = index;
+
+        if (appt.isLunch) {
+          tr.className = 'lunch-row';
+          tr.innerHTML = `
+            <td>${appt.time}</td>
+            <td colspan="6">LUNCH</td>
+          `;
+          tbody.appendChild(tr);
+          return;
+        }
+
+        if (appt.isHighRisk && riskCalculated) {
+          tr.classList.add('high-risk');
+        }
+
+        tr.onclick = () => toggleHistory(appt, tr);
+
+        const riskEmoji = appt.riskLevel === 'green' ? '&#x1F7E2;' : appt.riskLevel === 'amber' ? '&#x1F7E1;' : '&#x1F534;';
+        const riskPillClass = 'risk-' + appt.riskLevel;
+        const pillVisible = riskCalculated ? 'visible' : '';
+        const factorsVisible = riskCalculated ? 'visible' : '';
+        const actionVisible = riskCalculated ? 'visible' : '';
+        const nameClass = (appt.isHighRisk && riskCalculated) ? 'patient-name high-risk-name' : 'patient-name';
+        const actionClass = (appt.action.includes('Personal call') && riskCalculated) ? 'action-text action-call' : 'action-text';
+
+        /* Build risk factor tags */
+        let factorTags = '';
+        if (appt.factors.length > 0) {
+          const tagClass = appt.isHighRisk ? 'risk-tag risk-tag-red' : 'risk-tag';
+          factorTags = appt.factors.map(f => `<span class="${tagClass}">${f}</span>`).join('');
+        } else {
+          factorTags = '<span style="color: var(--color-slate-gray);">&mdash;</span>';
+        }
+
+        tr.innerHTML = `
+          <td>${appt.time}</td>
+          <td><span class="${nameClass}">${appt.patient}</span></td>
+          <td>${appt.type}</td>
+          <td>${appt.clinician}</td>
+          <td><span class="risk-pill ${riskPillClass} ${pillVisible}" data-risk="${appt.risk}">${appt.risk}% ${riskEmoji}</span></td>
+          <td><span class="risk-factors ${factorsVisible}">${factorTags}</span></td>
+          <td><span class="${actionClass} ${actionVisible}">${appt.action || '&mdash;'}</span></td>
+        `;
+
+        tbody.appendChild(tr);
+
+        /* History expansion row */
+        if (appt.history) {
+          const historyTr = document.createElement('tr');
+          historyTr.className = 'history-row';
+          historyTr.dataset.historyFor = index;
+          historyTr.innerHTML = `
+            <td colspan="7">
+              <div class="history-card">
+                <h4>Patient History &mdash; ${appt.patient}</h4>
+                <div class="history-grid">
+                  <div class="history-item">
+                    <span class="history-label">Total Visits</span>
+                    <span class="history-value">${appt.history.visits}</span>
+                  </div>
+                  <div class="history-item">
+                    <span class="history-label">No-Shows</span>
+                    <span class="history-value">${appt.history.noShows}</span>
+                  </div>
+                  <div class="history-item">
+                    <span class="history-label">Last Visit</span>
+                    <span class="history-value">${appt.history.lastVisit}</span>
+                  </div>
+                  <div class="history-item">
+                    <span class="history-label">Notes</span>
+                    <span class="history-value">${appt.history.notes}</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(historyTr);
+        }
+      });
+    }
+
+    /* ── Toggle history card for a patient row ── */
+    function toggleHistory(appt, clickedTr) {
+      if (appt.isLunch) return;
+
+      const index = clickedTr.dataset.index;
+      const historyRow = document.querySelector(`tr[data-history-for="${index}"]`);
+      if (!historyRow) return;
+
+      if (expandedRow === historyRow) {
+        historyRow.classList.remove('expanded');
+        expandedRow = null;
+      } else {
+        /* Collapse any existing expanded row */
+        if (expandedRow) {
+          expandedRow.classList.remove('expanded');
+        }
+        historyRow.classList.add('expanded');
+        expandedRow = historyRow;
+      }
+    }
+
+    /* ── Sort the table ── */
+    function sortTable(column) {
+      if (!riskCalculated && column === 'risk') return;
+
+      /* Toggle direction if clicking same column */
+      if (currentSort === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort = column;
+        sortDirection = column === 'risk' ? 'desc' : 'asc';
+      }
+
+      /* Update header styling */
+      document.querySelectorAll('.appt-table th').forEach(th => th.classList.remove('sorted'));
+      const headerMap = { time: 0, patient: 1, risk: 4 };
+      const thIndex = headerMap[column];
+      if (thIndex !== undefined) {
+        document.querySelectorAll('.appt-table th')[thIndex].classList.add('sorted');
+      }
+
+      /* Sort appointments (keep lunch in place by separating it) */
+      const sortable = appointments.filter(a => !a.isLunch);
+      const lunch = appointments.find(a => a.isLunch);
+
+      sortable.sort((a, b) => {
+        let valA, valB;
+        if (column === 'time') {
+          valA = a.sortTime;
+          valB = b.sortTime;
+        } else if (column === 'patient') {
+          valA = a.patient.toLowerCase();
+          valB = b.patient.toLowerCase();
+        } else if (column === 'risk') {
+          valA = a.risk;
+          valB = b.risk;
+        }
+
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      /* Reinsert lunch at its natural position for time sort, or at end for other sorts */
+      let sorted;
+      if (column === 'time') {
+        sorted = [];
+        let lunchInserted = false;
+        for (const appt of sortable) {
+          if (!lunchInserted && ((sortDirection === 'asc' && appt.sortTime > lunch.sortTime) || (sortDirection === 'desc' && appt.sortTime < lunch.sortTime))) {
+            sorted.push(lunch);
+            lunchInserted = true;
+          }
+          sorted.push(appt);
+        }
+        if (!lunchInserted) sorted.push(lunch);
+      } else {
+        sorted = [...sortable, lunch];
+      }
+
+      renderTable(sorted);
+    }
+
+    /* ── Calculate Risk animation ── */
+    async function calculateRisk() {
+      if (demoRunning) return;
+      demoRunning = true;
+
+      /* Reset first */
+      riskCalculated = false;
+      expandedRow = null;
+      renderTable(appointments);
+
+      const wrapper = document.getElementById('tableWrapper');
+      const label = document.getElementById('calculatingLabel');
+
+      /* Show shimmer + calculating label */
+      wrapper.classList.add('table-shimmer');
+      label.classList.add('visible');
+
+      await wait(1500);
+
+      wrapper.classList.remove('table-shimmer');
+      label.classList.remove('visible');
+
+      riskCalculated = true;
+
+      /* Animate risk pills row by row */
+      const rows = document.querySelectorAll('#apptBody tr:not(.history-row):not(.lunch-row)');
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const pill = row.querySelector('.risk-pill');
+        const factors = row.querySelector('.risk-factors');
+        const actionEl = row.querySelector('.action-text');
+        const riskVal = pill ? parseInt(pill.dataset.risk) : 0;
+
+        /* Determine delay based on risk level */
+        let delay;
+        if (riskVal >= 41) {
+          delay = 400;
+        } else if (riskVal >= 21) {
+          delay = 200;
+        } else {
+          delay = 100;
+        }
+
+        await wait(delay);
+
+        /* Show pill */
+        if (pill) {
+          pill.classList.add('visible');
+          if (riskVal >= 41) {
+            pill.classList.add('risk-pulse');
+          }
+        }
+
+        /* Slide out risk factors */
+        if (factors) {
+          factors.classList.add('visible');
+        }
+
+        /* Show action */
+        if (actionEl) {
+          actionEl.classList.add('visible');
+        }
+
+        /* Highlight high-risk rows */
+        if (riskVal >= 41) {
+          row.classList.add('high-risk');
+          const nameSpan = row.querySelector('.patient-name');
+          if (nameSpan) nameSpan.classList.add('high-risk-name');
+          const action = row.querySelector('.action-text');
+          if (action && action.textContent.includes('Personal call')) {
+            action.classList.add('action-call');
+          }
+        }
+      }
+
+      /* Animate bottom stats */
+      await wait(300);
+      await animateBottomStats();
+
+      /* Animate sidebar stats */
+      await animateSidebarStats();
+
+      demoRunning = false;
+    }
+
+    /* ── Animate bottom bar stats ── */
+    async function animateBottomStats() {
+      const revenueEl = document.getElementById('bottomRevenue');
+      const actionsEl = document.getElementById('bottomActions');
+      const accuracyEl = document.getElementById('bottomAccuracy');
+
+      countUp(revenueEl, 0, 1240, 800, '$', '', 0);
+      countUp(actionsEl, 0, 5, 600, '', '', 0);
+      countUp(accuracyEl, 0, 89, 800, '', '%', 0);
+    }
+
+    /* ── Animate sidebar stats ── */
+    async function animateSidebarStats() {
+      const arrow = document.getElementById('statArrow');
+      const toEl = document.getElementById('statNoShowTo');
+      const improvement = document.getElementById('statImprovement');
+      const recoveryEl = document.getElementById('statRecovery');
+      const revenueEl = document.getElementById('statRevenue');
+
+      await wait(200);
+      arrow.style.opacity = '1';
+      arrow.style.transition = 'opacity 0.3s ease';
+
+      await wait(200);
+      toEl.style.opacity = '1';
+      toEl.style.transition = 'opacity 0.3s ease';
+      improvement.style.opacity = '1';
+      improvement.style.transition = 'opacity 0.3s ease';
+
+      await wait(200);
+      recoveryEl.textContent = '85%';
+      recoveryEl.style.color = 'var(--color-success)';
+
+      await wait(200);
+      revenueEl.textContent = '$4,200/week';
+      revenueEl.style.color = 'var(--color-purple)';
+    }
+
+    /* ── Fill slot from waitlist ── */
+    function fillSlot(patientName, timeSlot) {
+      toast(`SMS sent to ${patientName}: "A ${timeSlot} appointment has become available tomorrow..."`, 'success', 4000);
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      demoRunning = false;
+      riskCalculated = false;
+      expandedRow = null;
+      currentSort = 'time';
+      sortDirection = 'asc';
+
+      /* Re-render neutral table */
+      renderTable(appointments);
+
+      /* Reset calculating overlay */
+      document.getElementById('tableWrapper').classList.remove('table-shimmer');
+      document.getElementById('calculatingLabel').classList.remove('visible');
+
+      /* Reset bottom bar */
+      document.getElementById('bottomRevenue').textContent = '$0';
+      document.getElementById('bottomActions').textContent = '0';
+      document.getElementById('bottomAccuracy').textContent = '0%';
+
+      /* Reset sidebar stats */
+      document.getElementById('statArrow').style.opacity = '0';
+      document.getElementById('statNoShowTo').style.opacity = '0';
+      document.getElementById('statImprovement').style.opacity = '0';
+      document.getElementById('statRecovery').textContent = '\u2014';
+      document.getElementById('statRecovery').style.color = '';
+      document.getElementById('statRevenue').textContent = '\u2014';
+      document.getElementById('statRevenue').style.color = '';
+
+      /* Reset header sort styling */
+      document.querySelectorAll('.appt-table th').forEach(th => th.classList.remove('sorted'));
+      document.querySelectorAll('.appt-table th')[0].classList.add('sorted');
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Initialize ── */
+    renderTable(appointments);
+
+    /* Auto-start after 2 seconds */
+    setTimeout(() => {
+      if (!demoRunning && !riskCalculated) calculateRisk();
+    }, 2000);
+  </script>
+</body>
+</html>
