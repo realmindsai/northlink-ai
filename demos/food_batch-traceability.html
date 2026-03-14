@@ -1,0 +1,852 @@
+<!-- ABOUTME: Batch Traceability and Recall Simulator mockup for NorthLink AI. -->
+<!-- ABOUTME: Forward-trace a batch through the supply chain from supplier to customer. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch Traceability &amp; Recall Simulator — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 32px;
+      background: #fff;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .search-bar input {
+      flex: 1;
+      max-width: 360px;
+      padding: 10px 16px;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-stack);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-black);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar input:focus {
+      border-color: var(--color-purple);
+    }
+
+    .search-bar input::placeholder {
+      font-weight: 400;
+      color: var(--color-slate-gray);
+    }
+
+    /* Flow diagram container */
+    .flow-container {
+      position: relative;
+      padding: 40px 32px 32px;
+      overflow-x: auto;
+      min-height: 520px;
+    }
+
+    .flow-diagram {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      min-width: 1100px;
+      position: relative;
+    }
+
+    /* Column for each stage */
+    .flow-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+
+    .flow-column.col-suppliers { flex: 0 0 220px; }
+    .flow-column.col-production { flex: 0 0 240px; }
+    .flow-column.col-finished { flex: 0 0 220px; }
+    .flow-column.col-distribution { flex: 0 0 240px; }
+
+    /* Arrow spacer between columns */
+    .flow-arrow-spacer {
+      flex: 0 0 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      position: relative;
+    }
+
+    /* Column header label */
+    .column-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--color-slate-gray);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    /* Supply chain nodes */
+    .sc-node {
+      background: #fff;
+      border: 2px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      width: 200px;
+      text-align: center;
+      transition: border-color 0.4s, background 0.4s, box-shadow 0.4s, transform 0.3s;
+      position: relative;
+      opacity: 0.5;
+    }
+
+    .sc-node .node-icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .sc-node .node-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 2px;
+    }
+
+    .sc-node .node-detail {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      line-height: 1.4;
+    }
+
+    .sc-node .node-detail strong {
+      color: var(--color-slate-black);
+      font-weight: 600;
+    }
+
+    /* Traced (green) state */
+    .sc-node.traced {
+      opacity: 1;
+      border-color: var(--color-success);
+      background: #f0fdf4;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.2);
+      transform: scale(1.02);
+    }
+
+    .sc-node.traced .node-icon {
+      animation: pop-in 0.4s ease;
+    }
+
+    @keyframes pop-in {
+      0%   { transform: scale(0.6); }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    /* Recalled (red) state */
+    .sc-node.recalled {
+      opacity: 1;
+      border-color: var(--color-danger);
+      background: #fef2f2;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+      animation: pulse-red 1s ease 2;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 0 28px rgba(239, 68, 68, 0.6); }
+    }
+
+    /* SVG line overlay */
+    .lines-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .lines-svg line {
+      stroke-width: 2.5;
+      stroke-linecap: round;
+    }
+
+    .lines-svg line.traced {
+      stroke: var(--color-success);
+    }
+
+    .lines-svg line.recalled {
+      stroke: var(--color-danger);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      padding: 16px 32px;
+      background: #f0fdf4;
+      border-top: 1px solid #bbf7d0;
+      border-bottom: 1px solid #bbf7d0;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: #166534;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    .stats-bar.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .stats-bar.recalled {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+
+    /* Recall button area */
+    .recall-area {
+      text-align: center;
+      padding: 24px 32px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    .recall-area.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .btn-recall {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: var(--color-danger);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-stack);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      animation: pulse-btn 2s ease infinite;
+    }
+
+    .btn-recall:hover {
+      background: #d63939;
+    }
+
+    .btn-recall:active {
+      transform: scale(0.97);
+    }
+
+    @keyframes pulse-btn {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+    }
+
+    /* Recall scope panel */
+    .recall-panel {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease, padding 0.5s ease;
+      background: #fef2f2;
+      border-top: 2px solid var(--color-danger);
+    }
+
+    .recall-panel.visible {
+      max-height: 600px;
+      padding: 32px;
+    }
+
+    .recall-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .recall-header .recall-icon {
+      font-size: 32px;
+    }
+
+    .recall-header .recall-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #991b1b;
+    }
+
+    .recall-stats {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .recall-stat {
+      text-align: center;
+    }
+
+    .recall-stat .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #991b1b;
+    }
+
+    .recall-stat .stat-label {
+      font-size: 13px;
+      color: #7f1d1d;
+      margin-top: 2px;
+    }
+
+    .recall-stat .stat-compare {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* Affected customers table */
+    .affected-table {
+      width: 100%;
+      max-width: 800px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .affected-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 600;
+      color: #7f1d1d;
+      border-bottom: 2px solid #fecaca;
+      background: #fef2f2;
+    }
+
+    .affected-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #fecaca;
+      color: var(--color-black);
+    }
+
+    .affected-table tr:nth-child(even) td {
+      background: #fff5f5;
+    }
+
+    .btn-notify {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      background: var(--color-danger);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-stack);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-notify:hover {
+      background: #d63939;
+    }
+
+    .btn-notify.sent {
+      background: var(--color-slate-gray);
+      cursor: default;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .flow-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/food-bev.html">Food &amp; Beverage</a> &rarr; Batch Traceability
+      </div>
+      <div class="demo-title">Batch Traceability &amp; Recall Simulator</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="traceBatch()">Trace Batch</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Search bar -->
+  <div class="search-bar">
+    <label for="batchInput" style="font-size: 14px; font-weight: 600; color: var(--color-slate-black); white-space: nowrap;">Batch Number:</label>
+    <input type="text" id="batchInput" value="B-2026-0341" placeholder="Enter batch number...">
+    <button class="btn btn-primary btn-sm" onclick="traceBatch()">Search</button>
+  </div>
+
+  <!-- Flow diagram -->
+  <div class="flow-container" id="flowContainer">
+    <div class="flow-diagram" id="flowDiagram">
+
+      <!-- SVG lines overlay -->
+      <svg class="lines-svg" id="linesSvg"></svg>
+
+      <!-- Suppliers column -->
+      <div class="flow-column col-suppliers">
+        <div class="column-label">Suppliers</div>
+        <div class="sc-node" id="node-s1" data-stage="supplier">
+          <div class="node-icon">🌾</div>
+          <div class="node-name">Murray Valley Farms</div>
+          <div class="node-detail">Organic Oats<br><strong>Lot MV-2847</strong></div>
+        </div>
+        <div class="sc-node" id="node-s2" data-stage="supplier">
+          <div class="node-icon">🍯</div>
+          <div class="node-name">Berri Honey Co</div>
+          <div class="node-detail">Raw Honey<br><strong>Lot BH-1122</strong></div>
+        </div>
+        <div class="sc-node" id="node-s3" data-stage="supplier">
+          <div class="node-icon">🥜</div>
+          <div class="node-name">Almond Grove</div>
+          <div class="node-detail">Whole Almonds<br><strong>Lot AG-0556</strong></div>
+        </div>
+      </div>
+
+      <!-- Arrow spacer -->
+      <div class="flow-arrow-spacer" id="spacer1"></div>
+
+      <!-- Production column -->
+      <div class="flow-column col-production">
+        <div class="column-label">Production</div>
+        <div class="sc-node" id="node-p1" data-stage="production" style="width: 220px;">
+          <div class="node-icon">🏭</div>
+          <div class="node-name">Batch B-2026-0341</div>
+          <div class="node-detail">
+            Production Date: <strong>10 Feb 2026</strong><br>
+            Line 2 &mdash; Shift A
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrow spacer -->
+      <div class="flow-arrow-spacer" id="spacer2"></div>
+
+      <!-- Finished Goods column -->
+      <div class="flow-column col-finished">
+        <div class="column-label">Finished Goods</div>
+        <div class="sc-node" id="node-f1" data-stage="finished">
+          <div class="node-icon">📦</div>
+          <div class="node-name">Granola Bar 6pk</div>
+          <div class="node-detail">SKU: <strong>WV-GB-006</strong><br>2,400 units</div>
+        </div>
+        <div class="sc-node" id="node-f2" data-stage="finished">
+          <div class="node-icon">📦</div>
+          <div class="node-name">Granola Bar 12pk</div>
+          <div class="node-detail">SKU: <strong>WV-GB-012</strong><br>800 units</div>
+        </div>
+        <div class="sc-node" id="node-f3" data-stage="finished">
+          <div class="node-icon">📦</div>
+          <div class="node-name">Bulk Granola 1kg</div>
+          <div class="node-detail">SKU: <strong>WV-BG-001</strong><br>400 bags</div>
+        </div>
+      </div>
+
+      <!-- Arrow spacer -->
+      <div class="flow-arrow-spacer" id="spacer3"></div>
+
+      <!-- Distribution column -->
+      <div class="flow-column col-distribution">
+        <div class="column-label">Distribution</div>
+        <div class="sc-node" id="node-d1" data-stage="distribution">
+          <div class="node-icon">🛒</div>
+          <div class="node-name">Woolworths Epping</div>
+          <div class="node-detail">800 units<br><strong>Delivered 14 Feb</strong></div>
+        </div>
+        <div class="sc-node" id="node-d2" data-stage="distribution">
+          <div class="node-icon">🛒</div>
+          <div class="node-name">Coles Craigieburn</div>
+          <div class="node-detail">600 units<br><strong>Delivered 15 Feb</strong></div>
+        </div>
+        <div class="sc-node" id="node-d3" data-stage="distribution">
+          <div class="node-icon">🏪</div>
+          <div class="node-name">IGA Thomastown</div>
+          <div class="node-detail">200 units<br><strong>Delivered 16 Feb</strong></div>
+        </div>
+        <div class="sc-node" id="node-d4" data-stage="distribution">
+          <div class="node-icon">📱</div>
+          <div class="node-name">Direct Online</div>
+          <div class="node-detail">150 orders<br><strong>Shipped 12-20 Feb</strong></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar" id="statsBar"></div>
+
+  <!-- Recall button area -->
+  <div class="recall-area" id="recallArea">
+    <button class="btn-recall" onclick="simulateRecall()">
+      &#9888; Simulate Recall
+    </button>
+  </div>
+
+  <!-- Recall scope panel -->
+  <div class="recall-panel" id="recallPanel">
+    <div class="recall-header">
+      <span class="recall-icon">&#9888;&#65039;</span>
+      <span class="recall-title">RECALL SCOPE</span>
+    </div>
+    <div class="recall-stats">
+      <div class="recall-stat">
+        <div class="stat-value">1,750</div>
+        <div class="stat-label">Units Affected</div>
+      </div>
+      <div class="recall-stat">
+        <div class="stat-value">4</div>
+        <div class="stat-label">Customers Impacted</div>
+      </div>
+      <div class="recall-stat">
+        <div class="stat-value">2.8s</div>
+        <div class="stat-label">Time to Trace</div>
+        <div class="stat-compare">Manual process: 3-5 days</div>
+      </div>
+    </div>
+
+    <table class="affected-table" id="affectedTable">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Units</th>
+          <th>Delivery</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Woolworths Epping</td>
+          <td>800</td>
+          <td>14 Feb 2026</td>
+          <td><button class="btn-notify" onclick="sendNotification(this, 'Woolworths Epping')">Generate Notification</button></td>
+        </tr>
+        <tr>
+          <td>Coles Craigieburn</td>
+          <td>600</td>
+          <td>15 Feb 2026</td>
+          <td><button class="btn-notify" onclick="sendNotification(this, 'Coles Craigieburn')">Generate Notification</button></td>
+        </tr>
+        <tr>
+          <td>IGA Thomastown</td>
+          <td>200</td>
+          <td>16 Feb 2026</td>
+          <td><button class="btn-notify" onclick="sendNotification(this, 'IGA Thomastown')">Generate Notification</button></td>
+        </tr>
+        <tr>
+          <td>Direct Online</td>
+          <td>150 orders</td>
+          <td>12-20 Feb 2026</td>
+          <td><button class="btn-notify" onclick="sendNotification(this, 'Direct Online')">Generate Notification</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Connection definitions ── */
+    /* Each connection pair: [fromId, toId] */
+    const supplierToProduction = [
+      ['node-s1', 'node-p1'],
+      ['node-s2', 'node-p1'],
+      ['node-s3', 'node-p1']
+    ];
+
+    const productionToFinished = [
+      ['node-p1', 'node-f1'],
+      ['node-p1', 'node-f2'],
+      ['node-p1', 'node-f3']
+    ];
+
+    const finishedToDistribution = [
+      ['node-f1', 'node-d1'],
+      ['node-f1', 'node-d2'],
+      ['node-f2', 'node-d3'],
+      ['node-f3', 'node-d4']
+    ];
+
+    let traceRunning = false;
+    let traceComplete = false;
+    let recallActive = false;
+    let drawnLines = [];
+
+    /* ── Draw an SVG line between two nodes ── */
+    function drawConnection(fromId, toId, duration = 500, color = '#22C55E') {
+      return new Promise(resolve => {
+        const svg = document.getElementById('linesSvg');
+        const container = document.getElementById('flowDiagram');
+        const fromEl = document.getElementById(fromId);
+        const toEl = document.getElementById(toId);
+
+        const containerRect = container.getBoundingClientRect();
+        const fromRect = fromEl.getBoundingClientRect();
+        const toRect = toEl.getBoundingClientRect();
+
+        /* Connect from right edge of source to left edge of target */
+        const x1 = fromRect.right - containerRect.left;
+        const y1 = fromRect.top + fromRect.height / 2 - containerRect.top;
+        const x2 = toRect.left - containerRect.left;
+        const y2 = toRect.top + toRect.height / 2 - containerRect.top;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', '2.5');
+        line.setAttribute('stroke-linecap', 'round');
+
+        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        line.setAttribute('stroke-dasharray', length);
+        line.setAttribute('stroke-dashoffset', length);
+        line.style.transition = `stroke-dashoffset ${duration}ms ease, stroke 0.4s ease`;
+
+        svg.appendChild(line);
+        drawnLines.push(line);
+
+        requestAnimationFrame(() => {
+          line.setAttribute('stroke-dashoffset', '0');
+          setTimeout(resolve, duration);
+        });
+      });
+    }
+
+    /* ── Trace batch sequence ── */
+    async function traceBatch() {
+      if (traceRunning) return;
+      traceRunning = true;
+      resetAll();
+
+      /* Wait a tick for reset to settle */
+      await wait(100);
+
+      /* Stage 1: Light up supplier nodes one by one */
+      const suppliers = ['node-s1', 'node-s2', 'node-s3'];
+      for (const id of suppliers) {
+        await wait(500);
+        document.getElementById(id).classList.add('traced');
+      }
+
+      /* Stage 2: Draw lines from suppliers to production */
+      for (const [from, to] of supplierToProduction) {
+        await drawConnection(from, to, 500);
+      }
+
+      /* Stage 3: Light up production node */
+      await wait(300);
+      document.getElementById('node-p1').classList.add('traced');
+
+      /* Stage 4: Draw lines from production to finished goods */
+      for (const [from, to] of productionToFinished) {
+        await drawConnection(from, to, 500);
+      }
+
+      /* Stage 5: Light up finished goods nodes (staggered) */
+      const finished = ['node-f1', 'node-f2', 'node-f3'];
+      for (const id of finished) {
+        await wait(300);
+        document.getElementById(id).classList.add('traced');
+      }
+
+      /* Stage 6: Draw lines from finished goods to distribution */
+      for (const [from, to] of finishedToDistribution) {
+        await drawConnection(from, to, 500);
+      }
+
+      /* Stage 7: Light up distribution nodes (staggered) */
+      const distro = ['node-d1', 'node-d2', 'node-d3', 'node-d4'];
+      for (const id of distro) {
+        await wait(300);
+        document.getElementById(id).classList.add('traced');
+      }
+
+      /* Stage 8: Show stats */
+      await wait(400);
+      const statsBar = document.getElementById('statsBar');
+      statsBar.textContent = 'Trace complete: 3 suppliers, 1 batch, 3 SKUs, 4 customers, 3,400 total units';
+      statsBar.classList.add('visible');
+
+      /* Stage 9: Show recall button */
+      await wait(500);
+      document.getElementById('recallArea').classList.add('visible');
+
+      traceComplete = true;
+      traceRunning = false;
+    }
+
+    /* ── Simulate recall ── */
+    async function simulateRecall() {
+      if (!traceComplete || recallActive) return;
+      recallActive = true;
+
+      /* Turn all nodes red */
+      document.querySelectorAll('.sc-node.traced').forEach(node => {
+        node.classList.remove('traced');
+        node.classList.add('recalled');
+      });
+
+      /* Turn all lines red */
+      drawnLines.forEach(line => {
+        line.setAttribute('stroke', '#EF4444');
+      });
+
+      /* Update stats bar */
+      const statsBar = document.getElementById('statsBar');
+      statsBar.classList.add('recalled');
+      statsBar.textContent = 'RECALL ACTIVE: 1,750 units across 4 customers. Time to trace: 2.8 seconds. Manual process: 3-5 days.';
+
+      /* Hide recall button */
+      document.getElementById('recallArea').classList.remove('visible');
+
+      /* Slide up recall panel */
+      await wait(300);
+      document.getElementById('recallPanel').classList.add('visible');
+
+      toast('Recall simulation activated', 'danger', 4000);
+    }
+
+    /* ── Send notification for a customer ── */
+    function sendNotification(btn, customerName) {
+      if (btn.classList.contains('sent')) return;
+      btn.classList.add('sent');
+      btn.textContent = 'Notification Sent';
+      toast('Recall notification generated for ' + customerName, 'warning', 3000);
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      traceRunning = false;
+      traceComplete = false;
+      recallActive = false;
+
+      /* Reset all nodes */
+      document.querySelectorAll('.sc-node').forEach(node => {
+        node.classList.remove('traced', 'recalled');
+      });
+
+      /* Remove all drawn lines */
+      const svg = document.getElementById('linesSvg');
+      svg.innerHTML = '';
+      drawnLines = [];
+
+      /* Hide stats bar */
+      const statsBar = document.getElementById('statsBar');
+      statsBar.classList.remove('visible', 'recalled');
+      statsBar.textContent = '';
+
+      /* Hide recall area */
+      document.getElementById('recallArea').classList.remove('visible');
+
+      /* Hide recall panel */
+      document.getElementById('recallPanel').classList.remove('visible');
+
+      /* Reset notification buttons */
+      document.querySelectorAll('.btn-notify').forEach(btn => {
+        btn.classList.remove('sent');
+        btn.textContent = 'Generate Notification';
+      });
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Recalculate line positions on resize ── */
+    function redrawLines() {
+      if (drawnLines.length === 0) return;
+
+      const allConnections = [
+        ...supplierToProduction,
+        ...productionToFinished,
+        ...finishedToDistribution
+      ];
+
+      const svg = document.getElementById('linesSvg');
+      const container = document.getElementById('flowDiagram');
+      const containerRect = container.getBoundingClientRect();
+
+      drawnLines.forEach((line, i) => {
+        if (i >= allConnections.length) return;
+        const [fromId, toId] = allConnections[i];
+        const fromEl = document.getElementById(fromId);
+        const toEl = document.getElementById(toId);
+        const fromRect = fromEl.getBoundingClientRect();
+        const toRect = toEl.getBoundingClientRect();
+
+        const x1 = fromRect.right - containerRect.left;
+        const y1 = fromRect.top + fromRect.height / 2 - containerRect.top;
+        const x2 = toRect.left - containerRect.left;
+        const y2 = toRect.top + toRect.height / 2 - containerRect.top;
+
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+      });
+    }
+
+    window.addEventListener('resize', redrawLines);
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!traceRunning && !traceComplete) traceBatch();
+    }, 2000);
+  </script>
+</body>
+</html>
