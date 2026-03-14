@@ -1,0 +1,827 @@
+<!-- ABOUTME: Clinical Note Generator mockup for NorthLink AI. -->
+<!-- ABOUTME: Simulates real-time SOAP note generation from consultation audio transcript. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Note Generator — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 44px - 52px);
+    }
+
+    .panel-left {
+      flex: 0 0 45%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-right {
+      flex: 0 0 55%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    /* Patient info bar */
+    .patient-bar {
+      display: flex;
+      align-items: center;
+      padding: 8px 24px;
+      background: var(--color-oat);
+      font-size: 13px;
+      color: var(--color-slate-black);
+      border-bottom: 1px solid var(--color-light-gray);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .patient-bar .patient-label {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .patient-bar .sep {
+      color: var(--color-slate-gray);
+    }
+
+    /* Panel heading */
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+    }
+
+    /* Waveform */
+    .waveform-container {
+      background: var(--color-black);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      position: relative;
+      min-height: 80px;
+    }
+
+    .waveform-bars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      height: 48px;
+    }
+
+    .waveform-bar {
+      width: 4px;
+      border-radius: 2px;
+      background: var(--color-purple);
+      height: 8px;
+      transition: height 0.15s ease;
+    }
+
+    .waveform-bars.active .waveform-bar {
+      animation: waveOscillate 0.8s ease-in-out infinite alternate;
+    }
+
+    .waveform-bars.active.boosted .waveform-bar {
+      animation: waveOscillateBoosted 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes waveOscillate {
+      0% { height: var(--bar-min); opacity: 0.5; }
+      100% { height: var(--bar-max); opacity: 1; }
+    }
+
+    @keyframes waveOscillateBoosted {
+      0% { height: var(--bar-min); opacity: 0.7; }
+      100% { height: calc(var(--bar-max) + 6px); opacity: 1; }
+    }
+
+    .waveform-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--color-slate-gray);
+    }
+
+    .waveform-status .playing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .waveform-status .playing-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-danger);
+      display: none;
+    }
+
+    .waveform-status .playing-dot.active {
+      display: block;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+
+    /* Transcript area */
+    .transcript-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .transcript-line {
+      padding: 6px 0;
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .transcript-line.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .transcript-line.dimmed {
+      color: var(--color-slate-gray);
+      font-style: italic;
+    }
+
+    .transcript-line .speaker {
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .transcript-line .speaker-dr {
+      color: var(--color-purple);
+    }
+
+    .transcript-line .speaker-patient {
+      color: var(--color-black);
+    }
+
+    /* SOAP note sections */
+    .soap-section {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 20px;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .soap-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .soap-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .soap-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .soap-title.title-s { color: var(--color-blue); }
+    .soap-title.title-o { color: var(--color-green); }
+    .soap-title.title-a { color: var(--color-orange); }
+    .soap-title.title-p { color: var(--color-purple); }
+
+    .soap-body {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--color-slate-black);
+      min-height: 20px;
+    }
+
+    .soap-body ul {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+    }
+
+    .soap-body ul li {
+      margin-bottom: 4px;
+    }
+
+    /* Clinical term highlighting */
+    .clinical-term {
+      border-bottom: 2px solid var(--color-green);
+      cursor: help;
+      position: relative;
+      font-weight: 500;
+    }
+
+    .clinical-term.term-diagnosis {
+      border-bottom-color: var(--color-orange);
+    }
+
+    .clinical-term.term-medication {
+      border-bottom-color: var(--color-blue);
+    }
+
+    .clinical-term.term-measurement {
+      border-bottom-color: var(--color-green);
+    }
+
+    .clinical-term.term-icd {
+      border-bottom-color: var(--color-purple);
+      background: rgba(167, 122, 205, 0.1);
+      padding: 0 4px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    /* Tooltip for clinical terms */
+    .term-tooltip {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-black);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 20;
+    }
+
+    .clinical-term:hover .term-tooltip {
+      opacity: 1;
+    }
+
+    /* Confidence badge */
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .confidence-badge.visible {
+      opacity: 1;
+      transform: scale(1);
+      animation: badgePulse 0.6s ease;
+    }
+
+    @keyframes badgePulse {
+      0% { transform: scale(0.8); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .confidence-high {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--color-black);
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .bottom-bar .time-info {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+    }
+
+    .bottom-bar .time-info .time-value {
+      color: var(--color-purple);
+      font-weight: 600;
+    }
+
+    .bottom-bar .bottom-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ICD-10 link styling */
+    .icd-link {
+      color: var(--color-purple);
+      font-weight: 700;
+      text-decoration: none;
+      cursor: help;
+    }
+
+    .icd-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Typewriter cursor */
+    .typing-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--color-purple);
+      margin-left: 2px;
+      animation: cursorBlink 0.6s infinite;
+      vertical-align: text-bottom;
+    }
+
+    @keyframes cursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-left {
+        min-height: 300px;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/healthcare.html">Healthcare</a> &rarr; Clinical Note Generator
+      </div>
+      <div class="demo-title">Clinical Note Generator</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" id="btnPlay" onclick="startDemo()">Play Consultation</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Patient info bar -->
+  <div class="patient-bar">
+    <span class="patient-label">Patient:</span> Sarah Mitchell
+    <span class="sep">|</span>
+    <span class="patient-label">DOB:</span> 15/08/1988
+    <span class="sep">|</span>
+    <span class="patient-label">Age:</span> 37
+    <span class="sep">|</span>
+    <span class="patient-label">Appointment:</span> Follow-up Consultation
+    <span class="sep">|</span>
+    <span class="patient-label">Clinician:</span> Dr James Park
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Consultation Audio -->
+    <div class="panel-left">
+      <div class="panel-heading">Consultation Audio</div>
+
+      <!-- Waveform visualization -->
+      <div class="waveform-container">
+        <div class="waveform-bars" id="waveformBars"></div>
+        <div class="waveform-status">
+          <div class="playing-indicator">
+            <div class="playing-dot" id="playingDot"></div>
+            <span id="playingLabel">Ready</span>
+          </div>
+          <span id="elapsedTime">0:00</span>
+        </div>
+      </div>
+
+      <!-- Transcript area -->
+      <div class="transcript-area" id="transcriptArea"></div>
+    </div>
+
+    <!-- Right panel: Clinical Note (SOAP) -->
+    <div class="panel-right">
+      <div class="panel-heading">Clinical Note (SOAP)</div>
+
+      <!-- Subjective -->
+      <div class="soap-section" id="soapS">
+        <div class="soap-header">
+          <span class="soap-title title-s">Subjective</span>
+          <span class="confidence-badge confidence-high" id="confS">96%</span>
+        </div>
+        <div class="soap-body" id="soapSBody"></div>
+      </div>
+
+      <!-- Objective -->
+      <div class="soap-section" id="soapO">
+        <div class="soap-header">
+          <span class="soap-title title-o">Objective</span>
+          <span class="confidence-badge confidence-high" id="confO">94%</span>
+        </div>
+        <div class="soap-body" id="soapOBody"></div>
+      </div>
+
+      <!-- Assessment -->
+      <div class="soap-section" id="soapA">
+        <div class="soap-header">
+          <span class="soap-title title-a">Assessment</span>
+          <span class="confidence-badge confidence-high" id="confA">91%</span>
+        </div>
+        <div class="soap-body" id="soapABody"></div>
+      </div>
+
+      <!-- Plan -->
+      <div class="soap-section" id="soapP">
+        <div class="soap-header">
+          <span class="soap-title title-p">Plan</span>
+          <span class="confidence-badge confidence-high" id="confP">97%</span>
+        </div>
+        <div class="soap-body" id="soapPBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <div class="time-info">
+      Consultation: <span class="time-value" id="consultTime">12 min</span>
+      &nbsp;|&nbsp; Note generation: <span class="time-value" id="noteGenTime">0 sec</span>
+      &nbsp;|&nbsp; Time saved: <span class="time-value" id="timeSaved">~0 min</span>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn btn-approve btn-sm" id="btnApprove" onclick="approveSave()">Approve &amp; Save to PMS</button>
+      <button class="btn btn-edit btn-sm" onclick="toast('Opening note editor...', 'info')">Edit Note</button>
+      <button class="btn btn-primary btn-sm" onclick="toast('Generating referral letter...', 'info')">Generate Referral Letter</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your practice?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Transcript data ── */
+    const transcriptLines = [
+      { speaker: 'Dr', text: 'Good morning, Sarah. How have you been since our last appointment?', dimmed: true },
+      { speaker: 'Patient', text: 'Hi Dr Park. Yeah, not too bad. The shoulder\'s been a bit better actually.', dimmed: true },
+      { speaker: 'Dr', text: 'That\'s good to hear. You mentioned last time it was quite stiff in the mornings?' },
+      { speaker: 'Patient', text: 'Still a bit stiff when I wake up, but the exercises have helped. The pain is maybe a 4 out of 10 now instead of 7.' },
+      { speaker: 'Dr', text: 'Excellent improvement. Let me have a look at your range of motion. Can you raise your right arm above your head for me?' },
+      { speaker: 'Patient', text: '(demonstrates) It gets to about here before it catches.' },
+      { speaker: 'Dr', text: 'OK, that\'s about 140 degrees of flexion. Last time we measured 110. Good progress. Any clicking or grinding?' },
+      { speaker: 'Patient', text: 'A little clicking but no grinding. It doesn\'t hurt to click though.' },
+      { speaker: 'Dr', text: 'Right. And how\'s the ibuprofen going? Any stomach issues?' },
+      { speaker: 'Patient', text: 'No, fine with that. I\'ve been taking it after meals like you said.' },
+      { speaker: 'Dr', text: 'Good. I think we can start reducing the ibuprofen. Let\'s go from twice daily to once daily for the next two weeks, then stop if the pain stays manageable. Continue the physiotherapy exercises. I\'d like to see you back in four weeks.' },
+      { speaker: 'Patient', text: 'Sounds good. Do I need another referral for the physio?' },
+      { speaker: 'Dr', text: 'No, your current referral covers five sessions and you\'ve used three. Two more to go.' }
+    ];
+
+    /* ── SOAP note content with clinical term markup ── */
+    const soapContent = {
+      s: {
+        text: 'Patient reports improvement in <span class="clinical-term term-diagnosis">right shoulder<span class="term-tooltip">Anatomical site</span></span> pain since last visit. Morning stiffness persisting but improved. Pain level reduced from <span class="clinical-term term-measurement">7/10 to 4/10<span class="term-tooltip">NRS Pain Scale</span></span>. Physiotherapy exercises reported as helpful. No adverse effects from <span class="clinical-term term-medication">ibuprofen<span class="term-tooltip">NSAID - Anti-inflammatory</span></span>.',
+        plainText: 'Patient reports improvement in right shoulder pain since last visit. Morning stiffness persisting but improved. Pain level reduced from 7/10 to 4/10. Physiotherapy exercises reported as helpful. No adverse effects from ibuprofen.',
+        triggerAfterLine: 3
+      },
+      o: {
+        text: '<span class="clinical-term term-diagnosis">Right shoulder<span class="term-tooltip">Anatomical site</span></span> examination &mdash; active <span class="clinical-term term-measurement">flexion 140&deg;<span class="term-tooltip">Goniometry measurement</span></span> (improved from <span class="clinical-term term-measurement">110&deg;<span class="term-tooltip">Previous measurement</span></span> at previous visit). Clicking present on movement, non-painful. No <span class="clinical-term term-diagnosis">crepitus<span class="term-tooltip">Grinding/grating sensation</span></span>. No signs of instability.',
+        plainText: 'Right shoulder examination - active flexion 140 degrees (improved from 110 degrees at previous visit). Clicking present on movement, non-painful. No crepitus. No signs of instability.',
+        triggerAfterLine: 7
+      },
+      a: {
+        text: '<span class="clinical-term term-diagnosis">Right shoulder impingement<span class="term-tooltip">M75.4 - Impingement syndrome</span></span> &mdash; improving. Good response to conservative management (physiotherapy + <span class="clinical-term term-medication">NSAIDs<span class="term-tooltip">Non-Steroidal Anti-Inflammatory Drugs</span></span>). Range of motion improving. Pain reducing.<br><span class="clinical-term term-icd">ICD-10: M75.1<span class="term-tooltip">Rotator cuff syndrome</span></span> (Rotator cuff syndrome)',
+        plainText: 'Right shoulder impingement - improving. Good response to conservative management (physiotherapy + NSAIDs). Range of motion improving. Pain reducing. ICD-10: M75.1 (Rotator cuff syndrome)',
+        triggerAfterLine: 9
+      },
+      p: {
+        text: '<ul><li>Reduce <span class="clinical-term term-medication">ibuprofen<span class="term-tooltip">NSAID - Anti-inflammatory</span></span> from BD to daily x 2 weeks, then cease if pain manageable</li><li>Continue <span class="clinical-term term-diagnosis">physiotherapy<span class="term-tooltip">Allied health intervention</span></span> (2 sessions remaining on current referral)</li><li>Review in 4 weeks</li><li>No new referral required</li></ul>',
+        plainText: 'Reduce ibuprofen from BD to daily x 2 weeks, then cease if pain manageable. Continue physiotherapy (2 sessions remaining on current referral). Review in 4 weeks. No new referral required.',
+        triggerAfterLine: 12
+      }
+    };
+
+    /* ── State ── */
+    let demoRunning = false;
+    let animationTimeouts = [];
+    let elapsedInterval = null;
+    let elapsedSeconds = 0;
+
+    /* ── Initialize waveform bars ── */
+    function initWaveform() {
+      const container = document.getElementById('waveformBars');
+      container.innerHTML = '';
+      const barCount = 36;
+      for (let i = 0; i < barCount; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'waveform-bar';
+        const minH = 4 + Math.random() * 8;
+        const maxH = 12 + Math.random() * 28;
+        bar.style.setProperty('--bar-min', minH + 'px');
+        bar.style.setProperty('--bar-max', maxH + 'px');
+        bar.style.animationDelay = (Math.random() * 0.8) + 's';
+        bar.style.height = minH + 'px';
+        const hue = 270 + Math.random() * 30 - 15;
+        const sat = 45 + Math.random() * 20;
+        const light = 55 + Math.random() * 20;
+        bar.style.background = `hsl(${hue}, ${sat}%, ${light}%)`;
+        container.appendChild(bar);
+      }
+    }
+
+    /* ── Start waveform animation ── */
+    function startWaveform() {
+      const bars = document.getElementById('waveformBars');
+      bars.classList.add('active');
+      document.getElementById('playingDot').classList.add('active');
+      document.getElementById('playingLabel').textContent = 'Playing...';
+    }
+
+    /* ── Stop waveform animation ── */
+    function stopWaveform() {
+      const bars = document.getElementById('waveformBars');
+      bars.classList.remove('active', 'boosted');
+      document.getElementById('playingDot').classList.remove('active');
+      document.getElementById('playingLabel').textContent = 'Complete';
+    }
+
+    /* ── Boost waveform when new line appears ── */
+    function boostWaveform() {
+      const bars = document.getElementById('waveformBars');
+      bars.classList.add('boosted');
+      setTimeout(() => bars.classList.remove('boosted'), 600);
+    }
+
+    /* ── Update elapsed time display ── */
+    function startElapsedTimer() {
+      elapsedSeconds = 0;
+      document.getElementById('elapsedTime').textContent = '0:00';
+      elapsedInterval = setInterval(() => {
+        elapsedSeconds++;
+        const mins = Math.floor(elapsedSeconds / 60);
+        const secs = elapsedSeconds % 60;
+        document.getElementById('elapsedTime').textContent = mins + ':' + String(secs).padStart(2, '0');
+      }, 1000);
+    }
+
+    function stopElapsedTimer() {
+      if (elapsedInterval) {
+        clearInterval(elapsedInterval);
+        elapsedInterval = null;
+      }
+    }
+
+    /* ── Add a transcript line ── */
+    function addTranscriptLine(lineData) {
+      const area = document.getElementById('transcriptArea');
+      const div = document.createElement('div');
+      div.className = 'transcript-line' + (lineData.dimmed ? ' dimmed' : '');
+
+      const speakerSpan = document.createElement('span');
+      speakerSpan.className = 'speaker ' + (lineData.speaker === 'Dr' ? 'speaker-dr' : 'speaker-patient');
+      speakerSpan.textContent = lineData.speaker + ':';
+
+      div.appendChild(speakerSpan);
+      div.appendChild(document.createTextNode(' ' + lineData.text));
+      area.appendChild(div);
+
+      requestAnimationFrame(() => {
+        div.classList.add('visible');
+        area.scrollTop = area.scrollHeight;
+      });
+    }
+
+    /* ── Typewriter for SOAP sections using innerHTML (for clinical term markup) ── */
+    function typeWriterHTML(element, htmlContent, speed = 15) {
+      return new Promise(resolve => {
+        /* Build the text character by character, handling HTML tags atomically */
+        element.innerHTML = '';
+        let i = 0;
+        const cursor = document.createElement('span');
+        cursor.className = 'typing-cursor';
+
+        const interval = setInterval(() => {
+          if (i >= htmlContent.length) {
+            clearInterval(interval);
+            cursor.remove();
+            element.innerHTML = htmlContent;
+            resolve();
+            return;
+          }
+
+          /* If we hit an HTML tag, insert the entire tag at once */
+          if (htmlContent[i] === '<') {
+            const closingIndex = htmlContent.indexOf('>', i);
+            if (closingIndex !== -1) {
+              i = closingIndex + 1;
+              element.innerHTML = htmlContent.substring(0, i);
+              element.appendChild(cursor);
+
+              /* Scroll parent panel */
+              const panel = element.closest('.panel-right');
+              if (panel) panel.scrollTop = panel.scrollHeight;
+
+              return;
+            }
+          }
+
+          i++;
+          element.innerHTML = htmlContent.substring(0, i);
+          element.appendChild(cursor);
+
+          /* Scroll parent panel */
+          const panel = element.closest('.panel-right');
+          if (panel) panel.scrollTop = panel.scrollHeight;
+        }, speed);
+      });
+    }
+
+    /* ── Show a SOAP section with typewriter effect ── */
+    async function showSOAPSection(key) {
+      const sectionId = 'soap' + key.toUpperCase();
+      const bodyId = sectionId + 'Body';
+      const confId = 'conf' + key.toUpperCase();
+
+      const section = document.getElementById(sectionId);
+      const body = document.getElementById(bodyId);
+      const conf = document.getElementById(confId);
+
+      /* Reveal section container */
+      section.classList.add('visible');
+      await wait(200);
+
+      /* Typewrite the content */
+      await typeWriterHTML(body, soapContent[key].text, 12);
+
+      /* Show confidence badge with pulse */
+      await wait(200);
+      conf.classList.add('visible');
+    }
+
+    /* ── Main demo sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      initWaveform();
+      await wait(500);
+      startWaveform();
+      startElapsedTimer();
+
+      /* Track which SOAP sections have been triggered */
+      const soapTriggered = { s: false, o: false, a: false, p: false };
+
+      /* Play transcript lines one by one */
+      for (let i = 0; i < transcriptLines.length; i++) {
+        if (!demoRunning) return;
+
+        await wait(i === 0 ? 1500 : 1500);
+        if (!demoRunning) return;
+
+        boostWaveform();
+        addTranscriptLine(transcriptLines[i]);
+
+        /* Check if any SOAP section should be triggered */
+        for (const key of Object.keys(soapContent)) {
+          if (!soapTriggered[key] && i >= soapContent[key].triggerAfterLine) {
+            soapTriggered[key] = true;
+            /* Run SOAP section in background (don't await, let transcript continue) */
+            showSOAPSection(key);
+          }
+        }
+      }
+
+      /* Wait for remaining SOAP sections to finish */
+      await wait(2000);
+
+      /* Stop waveform and timer */
+      stopWaveform();
+      stopElapsedTimer();
+
+      /* Update bottom bar time stats */
+      document.getElementById('noteGenTime').textContent = '0 sec';
+      document.getElementById('timeSaved').textContent = '~15 min';
+
+      demoRunning = false;
+    }
+
+    /* ── Approve & Save ── */
+    function approveSave() {
+      toast('Clinical note saved to Practice Management System', 'success');
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      demoRunning = false;
+
+      /* Clear pending timeouts */
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+
+      /* Stop timer */
+      stopElapsedTimer();
+      elapsedSeconds = 0;
+
+      /* Reset waveform */
+      stopWaveform();
+      initWaveform();
+      document.getElementById('playingLabel').textContent = 'Ready';
+      document.getElementById('elapsedTime').textContent = '0:00';
+
+      /* Clear transcript */
+      document.getElementById('transcriptArea').innerHTML = '';
+
+      /* Hide and clear SOAP sections */
+      ['S', 'O', 'A', 'P'].forEach(key => {
+        document.getElementById('soap' + key).classList.remove('visible');
+        document.getElementById('soap' + key + 'Body').innerHTML = '';
+        document.getElementById('conf' + key).classList.remove('visible');
+      });
+
+      /* Reset bottom bar times */
+      document.getElementById('noteGenTime').textContent = '0 sec';
+      document.getElementById('timeSaved').textContent = '~0 min';
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Initialize ── */
+    initWaveform();
+
+    /* Auto-start after 2 seconds */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
