@@ -1,0 +1,934 @@
+<!-- ABOUTME: Review Response Generator mockup for NorthLink AI. -->
+<!-- ABOUTME: AI drafts platform-appropriate responses for reviews with sentiment analysis and tone control. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Response Generator — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 42px);
+    }
+
+    .panel-left {
+      flex: 0 0 70%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+    }
+
+    .panel-right {
+      flex: 0 0 30%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    /* Platform tabs */
+    .platform-tabs {
+      display: flex;
+      background: #fff;
+      border-bottom: 1px solid var(--color-light-gray);
+      padding: 0 24px;
+    }
+
+    .platform-tab {
+      padding: 10px 20px;
+      font-family: var(--font-stack);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .platform-tab:hover {
+      color: var(--color-black);
+    }
+
+    .platform-tab.active {
+      color: var(--color-purple);
+      border-bottom-color: var(--color-purple);
+    }
+
+    .platform-tab .tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-danger);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 20px;
+      height: 20px;
+      border-radius: var(--radius-pill);
+      padding: 0 6px;
+      margin-left: 6px;
+    }
+
+    .platform-tab.active .tab-badge {
+      background: var(--color-purple);
+    }
+
+    /* Review cards */
+    .review-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .review-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      border-left: 4px solid;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .review-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .review-card.posted {
+      opacity: 0.6;
+    }
+
+    .review-card.posted .review-body {
+      position: relative;
+    }
+
+    .review-card.posted .review-body::after {
+      content: '✅ Posted';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-success);
+    }
+
+    .review-card.border-green { border-left-color: var(--color-success); }
+    .review-card.border-amber { border-left-color: var(--color-warning); }
+    .review-card.border-red   { border-left-color: var(--color-danger); }
+
+    .review-body {
+      padding: 20px 24px;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .review-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .review-stars {
+      font-size: 16px;
+      letter-spacing: 1px;
+    }
+
+    .review-author {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--color-black);
+    }
+
+    .review-time {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+    }
+
+    .review-text {
+      font-size: 14px;
+      color: var(--color-slate-black);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .flagged-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-danger);
+      background: #fee2e2;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      animation: pulse-badge 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.7; transform: scale(1.05); }
+    }
+
+    /* AI Response area */
+    .ai-response {
+      background: #f5f5f7;
+      padding: 16px 24px;
+      border-top: 1px solid var(--color-light-gray);
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity 0.5s ease, max-height 0.5s ease, padding 0.5s ease;
+    }
+
+    .ai-response.visible {
+      opacity: 1;
+      max-height: 400px;
+      padding: 16px 24px;
+    }
+
+    .ai-response-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-purple);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .ai-response-text {
+      font-size: 14px;
+      color: var(--color-slate-black);
+      line-height: 1.6;
+      margin: 0 0 12px;
+      transition: opacity 0.3s ease;
+    }
+
+    .ai-response-text.crossfade-out {
+      opacity: 0;
+    }
+
+    .ai-response-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .auto-approve-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #166534;
+      background: #dcfce7;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+    }
+
+    .pending-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #92400e;
+      background: #fef3c7;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+    }
+
+    .flagged-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #991b1b;
+      background: #fee2e2;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+    }
+
+    .response-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* Tone selector */
+    .tone-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tone-selector label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+    }
+
+    .tone-selector select {
+      font-family: var(--font-stack);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      color: var(--color-black);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .tone-selector select:focus {
+      outline: none;
+      border-color: var(--color-purple);
+    }
+
+    /* Sidebar sections */
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
+
+    .sidebar-heading {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sentiment-summary {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 16px;
+    }
+
+    .sentiment-overall {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .sentiment-overall .label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+    }
+
+    .sentiment-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 13px;
+      color: var(--color-slate-black);
+    }
+
+    .sentiment-row .star-label {
+      font-weight: 600;
+    }
+
+    .sentiment-row .count {
+      color: var(--color-slate-gray);
+    }
+
+    .sentiment-row .warning-text {
+      color: var(--color-danger);
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .stat-box {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 16px;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 13px;
+      color: var(--color-slate-black);
+    }
+
+    .stat-row .stat-val {
+      font-weight: 700;
+      color: var(--color-purple);
+    }
+
+    /* Top mentions */
+    .mention-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .mention-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      color: var(--color-slate-black);
+    }
+
+    .mention-tag .mention-count {
+      color: var(--color-purple);
+      font-weight: 700;
+    }
+
+    /* Weekly trend mini chart */
+    .trend-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 60px;
+      padding: 8px 0;
+    }
+
+    .trend-bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      height: 100%;
+    }
+
+    .trend-bar {
+      width: 100%;
+      border-radius: 3px 3px 0 0;
+      background: var(--color-purple);
+      transition: height 1s ease;
+      height: 0;
+      margin-top: auto;
+    }
+
+    .trend-bar.visible {
+      /* height set via inline style */
+    }
+
+    .trend-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/retail-hospo.html">Retail &amp; Hospitality</a> &rarr; Review Response Generator
+      </div>
+      <div class="demo-title">Review Response Generator</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="generateResponses()">Generate Responses</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Platform tabs -->
+  <div class="platform-tabs">
+    <button class="platform-tab active" onclick="switchTab(this)">Google <span class="tab-badge">7 new</span></button>
+    <button class="platform-tab" onclick="switchTab(this)">TripAdvisor <span class="tab-badge">3 new</span></button>
+    <button class="platform-tab" onclick="switchTab(this)">Uber Eats <span class="tab-badge">4 new</span></button>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Review feed -->
+    <div class="panel-left">
+      <div class="review-feed" id="reviewFeed">
+
+        <!-- Review 1 — 5 stars -->
+        <div class="review-card border-green" id="review1">
+          <div class="review-body">
+            <div class="review-header">
+              <div class="review-meta">
+                <span class="review-stars">&#11088;&#11088;&#11088;&#11088;&#11088;</span>
+                <span class="review-author">Sarah M.</span>
+              </div>
+              <span class="review-time">2 hours ago</span>
+            </div>
+            <p class="review-text">Absolutely loved the mushroom risotto! Creamy, perfectly seasoned, and the portion was generous. Our waiter Jake was fantastic — attentive without being intrusive. Will definitely be back!</p>
+          </div>
+          <div class="ai-response" id="response1">
+            <div class="ai-response-label">&#129302; AI-Generated Response</div>
+            <p class="ai-response-text">Thank you so much for your wonderful review, Sarah! We're thrilled you enjoyed the mushroom risotto — it's one of our chef's favourites too. We'll be sure to pass on your kind words to Jake. We look forward to welcoming you back soon! &#128591;</p>
+            <div class="ai-response-footer">
+              <span class="auto-approve-badge">&#9989; Auto-approved (5-star, positive sentiment)</span>
+              <div class="response-actions">
+                <button class="btn btn-approve btn-sm" onclick="approvePost(this, 'review1')">Approve &amp; Post</button>
+                <button class="btn btn-edit btn-sm" onclick="toast('Opening editor...', 'info')">Edit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 2 — 4 stars -->
+        <div class="review-card border-amber" id="review2">
+          <div class="review-body">
+            <div class="review-header">
+              <div class="review-meta">
+                <span class="review-stars">&#11088;&#11088;&#11088;&#11088;</span>
+                <span class="review-author">Mike T.</span>
+              </div>
+              <span class="review-time">5 hours ago</span>
+            </div>
+            <p class="review-text">Great food as always but had to wait 25 minutes for a table even though we had a booking. Bit frustrating on a Friday night. The lamb cutlets were worth the wait though.</p>
+          </div>
+          <div class="ai-response" id="response2">
+            <div class="ai-response-label">&#129302; AI-Generated Response</div>
+            <p class="ai-response-text">Hi Mike, thank you for your feedback and for your patience on Friday night. You're right — a 25-minute wait with a booking isn't acceptable, and we apologise. We've spoken with our front-of-house team about managing Friday reservations better. Really glad the lamb cutlets hit the mark — they're a favourite here. Hope to see you again soon.</p>
+            <div class="ai-response-footer">
+              <span class="pending-badge">&#9203; Pending review</span>
+              <div class="response-actions">
+                <button class="btn btn-approve btn-sm" onclick="approvePost(this, 'review2')">Approve &amp; Post</button>
+                <button class="btn btn-edit btn-sm" onclick="toast('Opening editor...', 'info')">Edit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 3 — 1 star (FLAGGED) -->
+        <div class="review-card border-red" id="review3">
+          <div class="review-body">
+            <div class="review-header">
+              <div class="review-meta">
+                <span class="review-stars">&#11088;</span>
+                <span class="review-author">Karen L.</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="flagged-badge" id="flaggedBadge">&#128681; FLAGGED</span>
+                <span class="review-time">8 hours ago</span>
+              </div>
+            </div>
+            <p class="review-text">Worst experience ever. Cold food, rude staff, and they got our order wrong TWICE. The manager didn't even apologise. Never coming back.</p>
+          </div>
+          <div class="ai-response" id="response3">
+            <div class="ai-response-label">&#129302; AI-Generated Response</div>
+            <div class="tone-selector">
+              <label for="toneSelect">Tone:</label>
+              <select id="toneSelect" onchange="changeTone(this.value)">
+                <option value="professional" selected>Professional</option>
+                <option value="empathetic">Empathetic</option>
+                <option value="brief">Brief</option>
+                <option value="firm">Firm</option>
+              </select>
+            </div>
+            <p class="ai-response-text" id="flaggedResponseText">Dear Karen, we're very sorry to hear about your experience. Cold food and incorrect orders are not the standard we hold ourselves to, and we take your feedback about our staff's attitude seriously. Our manager would like to reach out to you personally to discuss this and make it right. Could we ask you to contact us at hello@restaurant.com.au or (03) 9555 0123? We'd genuinely like the opportunity to turn this around.</p>
+            <div class="ai-response-footer">
+              <span class="flagged-status">&#128681; FLAGGED — 1-star review requires human approval</span>
+              <div class="response-actions">
+                <button class="btn btn-approve btn-sm" onclick="approvePost(this, 'review3')">Approve</button>
+                <button class="btn btn-edit btn-sm" onclick="toast('Opening editor...', 'info')">Edit</button>
+                <button class="btn btn-reject btn-sm" onclick="toast('Response rejected — review archived', 'danger')">Reject</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 4 — 5 stars -->
+        <div class="review-card border-green" id="review4">
+          <div class="review-body">
+            <div class="review-header">
+              <div class="review-meta">
+                <span class="review-stars">&#11088;&#11088;&#11088;&#11088;&#11088;</span>
+                <span class="review-author">David &amp; Jess</span>
+              </div>
+              <span class="review-time">12 hours ago</span>
+            </div>
+            <p class="review-text">Anniversary dinner was perfect. The chef's tasting menu was incredible — every course was a surprise. Thank you for the complimentary dessert! Special place.</p>
+          </div>
+          <div class="ai-response" id="response4">
+            <div class="ai-response-label">&#129302; AI-Generated Response</div>
+            <p class="ai-response-text">Happy anniversary, David and Jess! What a lovely way to celebrate. We're so glad the tasting menu delivered the surprise factor — our chef puts a lot of love into each course. The complimentary dessert was our little way of saying congratulations. Thank you for choosing us for such a special occasion. Wishing you many more happy years together! &#127881;</p>
+            <div class="ai-response-footer">
+              <span class="auto-approve-badge">&#9989; Auto-approved (5-star, positive sentiment)</span>
+              <div class="response-actions">
+                <button class="btn btn-approve btn-sm" onclick="approvePost(this, 'review4')">Approve &amp; Post</button>
+                <button class="btn btn-edit btn-sm" onclick="toast('Opening editor...', 'info')">Edit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 5 — 3 stars -->
+        <div class="review-card border-amber" id="review5">
+          <div class="review-body">
+            <div class="review-header">
+              <div class="review-meta">
+                <span class="review-stars">&#11088;&#11088;&#11088;</span>
+                <span class="review-author">Tom R.</span>
+              </div>
+              <span class="review-time">1 day ago</span>
+            </div>
+            <p class="review-text">Decent pub grub. Parma was good, chips were soggy. Nothing special but nothing terrible. Mid.</p>
+          </div>
+          <div class="ai-response" id="response5">
+            <div class="ai-response-label">&#129302; AI-Generated Response</div>
+            <p class="ai-response-text">Thanks for the honest feedback, Tom. Glad the parma hit the spot — it's one of our most popular dishes. You're right about the chips, and we've flagged this with our kitchen team to make sure they're coming out crispy every time. We'd love the chance to win you over from "mid" to "must-visit" next time you're in!</p>
+            <div class="ai-response-footer">
+              <span class="pending-badge">&#9203; Pending review</span>
+              <div class="response-actions">
+                <button class="btn btn-approve btn-sm" onclick="approvePost(this, 'review5')">Approve &amp; Post</button>
+                <button class="btn btn-edit btn-sm" onclick="toast('Opening editor...', 'info')">Edit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right sidebar -->
+    <div class="panel-right">
+
+      <!-- Sentiment Summary -->
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Sentiment Summary</div>
+        <div class="sentiment-summary">
+          <div class="sentiment-overall">
+            <span class="label">Overall Rating</span>
+            <span class="pill pill-warning" id="overallRating">--</span>
+          </div>
+          <div class="sentiment-row">
+            <span class="star-label">&#11088;&#11088;&#11088;&#11088;&#11088;</span>
+            <span class="count" id="count5star">--</span>
+          </div>
+          <div class="sentiment-row">
+            <span class="star-label">&#11088;&#11088;&#11088;&#11088;</span>
+            <span class="count" id="count4star">--</span>
+          </div>
+          <div class="sentiment-row">
+            <span class="star-label">&#11088;&#11088;&#11088;</span>
+            <span class="count" id="count3star">--</span>
+          </div>
+          <div class="sentiment-row">
+            <span class="star-label">&#11088;</span>
+            <span class="count" id="count1star">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Response Rate -->
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Response Rate</div>
+        <div class="stat-box">
+          <div class="stat-row">
+            <span>Drafted</span>
+            <span class="stat-val" id="statDrafted">--</span>
+          </div>
+          <div class="stat-row">
+            <span>Auto-approved</span>
+            <span class="stat-val" id="statAutoApproved">--</span>
+          </div>
+          <div class="stat-row">
+            <span>Flagged</span>
+            <span class="stat-val" id="statFlagged" style="color: var(--color-danger);">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Mentions -->
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Top Mentions</div>
+        <div class="mention-tags" id="mentionTags">
+          <span class="mention-tag" style="opacity: 0;">Food quality <span class="mention-count">(4)</span></span>
+          <span class="mention-tag" style="opacity: 0;">Staff <span class="mention-count">(3)</span></span>
+          <span class="mention-tag" style="opacity: 0;">Wait times <span class="mention-count">(2)</span></span>
+          <span class="mention-tag" style="opacity: 0;">Atmosphere <span class="mention-count">(1)</span></span>
+        </div>
+      </div>
+
+      <!-- Weekly Trend -->
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Weekly Trend</div>
+        <div class="trend-chart" id="trendChart">
+          <div class="trend-bar-wrap"><div class="trend-bar" data-height="30%"></div><span class="trend-label">Mon</span></div>
+          <div class="trend-bar-wrap"><div class="trend-bar" data-height="50%"></div><span class="trend-label">Tue</span></div>
+          <div class="trend-bar-wrap"><div class="trend-bar" data-height="20%"></div><span class="trend-label">Wed</span></div>
+          <div class="trend-bar-wrap"><div class="trend-bar" data-height="65%"></div><span class="trend-label">Thu</span></div>
+          <div class="trend-bar-wrap"><div class="trend-bar" data-height="90%"></div><span class="trend-label">Fri</span></div>
+          <div class="trend-bar-wrap"><div class="trend-bar" data-height="100%"></div><span class="trend-label">Sat</span></div>
+          <div class="trend-bar-wrap"><div class="trend-bar" data-height="45%"></div><span class="trend-label">Sun</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Tone variations for the flagged review (Review 3) ── */
+    const toneResponses = {
+      professional: "Dear Karen, we're very sorry to hear about your experience. Cold food and incorrect orders are not the standard we hold ourselves to, and we take your feedback about our staff's attitude seriously. Our manager would like to reach out to you personally to discuss this and make it right. Could we ask you to contact us at hello@restaurant.com.au or (03) 9555 0123? We'd genuinely like the opportunity to turn this around.",
+      empathetic: "Karen, reading your review genuinely upset us — this is not the experience we want anyone to have. You came to enjoy a meal and instead dealt with cold food, wrong orders, and felt dismissed by our team. That's unacceptable and we're truly sorry. We've already spoken with our manager and the staff involved. We understand if you're hesitant, but we'd really love the chance to make this right — a meal on us, with our manager personally ensuring everything is perfect. Please reach out at hello@restaurant.com.au whenever you're ready. We care about getting this right.",
+      brief: "Hi Karen, we're sorry about your experience — cold food and order mistakes are not our standard. We'd like to make this right. Please contact us at hello@restaurant.com.au or (03) 9555 0123 and we'll take care of it.",
+      firm: "Karen, thank you for your feedback. We've reviewed the evening's service records and identified where the issues occurred with your order. We've addressed these with the relevant staff members. We hold our team to high standards and your experience did not meet them. We're available at hello@restaurant.com.au if you'd like to discuss further."
+    };
+
+    let demoRunning = false;
+    let animationTimeouts = [];
+
+    /* ── Generate responses (main animation sequence) ── */
+    async function generateResponses() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+      await wait(300);
+
+      const reviewIds = ['review1', 'review2', 'review3', 'review4', 'review5'];
+      const responseIds = ['response1', 'response2', 'response3', 'response4', 'response5'];
+
+      // Load reviews one by one with slide-in animation
+      for (let i = 0; i < reviewIds.length; i++) {
+        const tid = setTimeout(() => {
+          const reviewCard = document.getElementById(reviewIds[i]);
+          reviewCard.classList.add('visible');
+
+          // After each review loads, fade in its AI response
+          const respTid = setTimeout(() => {
+            const responseEl = document.getElementById(responseIds[i]);
+            responseEl.classList.add('visible');
+
+            // Update sidebar stats incrementally
+            updateSidebarStats(i + 1);
+          }, 500);
+          animationTimeouts.push(respTid);
+        }, i * 800);
+        animationTimeouts.push(tid);
+      }
+
+      // After all reviews and responses load, animate trend bars and mentions
+      const finalTid = setTimeout(() => {
+        animateTrendBars();
+        animateMentionTags();
+        demoRunning = false;
+      }, reviewIds.length * 800 + 800);
+      animationTimeouts.push(finalTid);
+    }
+
+    /* ── Update sidebar stats as reviews load ── */
+    function updateSidebarStats(loadedCount) {
+      // Rating data: review1=5, review2=4, review3=1, review4=5, review5=3
+      const ratings = [5, 4, 1, 5, 3];
+      const loaded = ratings.slice(0, loadedCount);
+
+      const avg = (loaded.reduce((a, b) => a + b, 0) / loaded.length).toFixed(1);
+      const count5 = loaded.filter(r => r === 5).length;
+      const count4 = loaded.filter(r => r === 4).length;
+      const count3 = loaded.filter(r => r === 3).length;
+      const count1 = loaded.filter(r => r === 1).length;
+
+      document.getElementById('overallRating').textContent = avg + ' avg';
+      document.getElementById('count5star').textContent = count5 + (count5 === 1 ? ' review' : ' reviews');
+      document.getElementById('count4star').textContent = count4 + (count4 === 1 ? ' review' : ' reviews');
+      document.getElementById('count3star').textContent = count3 + (count3 === 1 ? ' review' : ' reviews');
+
+      const count1El = document.getElementById('count1star');
+      if (count1 > 0) {
+        count1El.innerHTML = count1 + (count1 === 1 ? ' review' : ' reviews') + ' — <span class="warning-text">&#9888;&#65039; Requires attention</span>';
+      } else {
+        count1El.textContent = count1 + ' reviews';
+      }
+
+      // Response rate: auto-approved = 5-star reviews, flagged = 1-star reviews
+      const autoApproved = count5;
+      const flagged = count1;
+      document.getElementById('statDrafted').textContent = loadedCount + '/5 drafted';
+      document.getElementById('statAutoApproved').textContent = autoApproved + ' auto-approved';
+      document.getElementById('statFlagged').textContent = flagged + ' flagged';
+    }
+
+    /* ── Animate trend bars ── */
+    function animateTrendBars() {
+      const bars = document.querySelectorAll('.trend-bar');
+      bars.forEach((bar, i) => {
+        const tid = setTimeout(() => {
+          bar.style.height = bar.dataset.height;
+        }, i * 100);
+        animationTimeouts.push(tid);
+      });
+    }
+
+    /* ── Animate mention tags ── */
+    function animateMentionTags() {
+      const tags = document.querySelectorAll('.mention-tag');
+      tags.forEach((tag, i) => {
+        tag.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        tag.style.transform = 'translateY(8px)';
+        const tid = setTimeout(() => {
+          tag.style.opacity = '1';
+          tag.style.transform = 'translateY(0)';
+        }, i * 150);
+        animationTimeouts.push(tid);
+      });
+    }
+
+    /* ── Tone selector — crossfade animation ── */
+    function changeTone(tone) {
+      const textEl = document.getElementById('flaggedResponseText');
+      // Crossfade out
+      textEl.classList.add('crossfade-out');
+      setTimeout(() => {
+        textEl.textContent = toneResponses[tone] || toneResponses.professional;
+        // Crossfade in
+        textEl.classList.remove('crossfade-out');
+      }, 300);
+      toast('Tone changed to ' + tone.charAt(0).toUpperCase() + tone.slice(1), 'info');
+    }
+
+    /* ── Approve & Post — slide to "Posted" state ── */
+    function approvePost(btn, reviewId) {
+      const card = document.getElementById(reviewId);
+      card.classList.add('posted');
+      toast('Response posted to Google', 'success');
+    }
+
+    /* ── Platform tab switching ── */
+    function switchTab(tab) {
+      document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      // Keep showing the Google reviews for simplicity
+      toast('Showing Google reviews (demo)', 'info');
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+
+      // Hide all review cards
+      document.querySelectorAll('.review-card').forEach(c => {
+        c.classList.remove('visible', 'posted');
+      });
+
+      // Hide all AI responses
+      document.querySelectorAll('.ai-response').forEach(r => {
+        r.classList.remove('visible');
+      });
+
+      // Reset sidebar stats
+      document.getElementById('overallRating').textContent = '--';
+      document.getElementById('count5star').textContent = '--';
+      document.getElementById('count4star').textContent = '--';
+      document.getElementById('count3star').textContent = '--';
+      document.getElementById('count1star').textContent = '--';
+      document.getElementById('statDrafted').textContent = '--';
+      document.getElementById('statAutoApproved').textContent = '--';
+      document.getElementById('statFlagged').textContent = '--';
+
+      // Reset mention tags
+      document.querySelectorAll('.mention-tag').forEach(tag => {
+        tag.style.opacity = '0';
+        tag.style.transform = 'translateY(8px)';
+      });
+
+      // Reset trend bars
+      document.querySelectorAll('.trend-bar').forEach(bar => {
+        bar.style.height = '0';
+      });
+
+      // Reset tone selector
+      document.getElementById('toneSelect').value = 'professional';
+      document.getElementById('flaggedResponseText').textContent = toneResponses.professional;
+      document.getElementById('flaggedResponseText').classList.remove('crossfade-out');
+
+      // Remove toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) generateResponses();
+    }, 2000);
+  </script>
+</body>
+</html>
