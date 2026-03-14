@@ -1,0 +1,937 @@
+<!-- ABOUTME: Work Order Scheduling Optimiser mockup for NorthLink AI. -->
+<!-- ABOUTME: Gantt chart with machine swimlanes and AI-powered rush job rescheduling. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Order Scheduling Optimiser — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 52px);
+    }
+
+    .panel-gantt {
+      flex: 0 0 80%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+    }
+
+    .panel-sidebar {
+      flex: 0 0 20%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+    }
+
+    /* Gantt chart grid */
+    .gantt-wrapper {
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .gantt-chart {
+      display: grid;
+      grid-template-columns: 140px repeat(10, 1fr);
+      grid-template-rows: auto;
+      min-width: 900px;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    /* Header row */
+    .gantt-day-header {
+      grid-column: span 2;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-black);
+      background: var(--color-off-white);
+      padding: 8px 4px;
+      border-bottom: 2px solid var(--color-light-gray);
+      border-left: 1px solid var(--color-light-gray);
+    }
+
+    .gantt-day-header:first-of-type {
+      border-left: none;
+    }
+
+    .gantt-corner {
+      background: var(--color-off-white);
+      border-bottom: 2px solid var(--color-light-gray);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      display: flex;
+      align-items: center;
+    }
+
+    /* AM/PM sub-headers */
+    .gantt-period-header {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-slate-gray);
+      background: var(--color-off-white);
+      padding: 4px;
+      border-bottom: 1px solid var(--color-light-gray);
+      border-left: 1px solid #eee;
+    }
+
+    .gantt-period-corner {
+      background: var(--color-off-white);
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    /* Machine swimlane row */
+    .gantt-machine-label {
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--color-light-gray);
+      border-right: 1px solid var(--color-light-gray);
+      min-height: 60px;
+    }
+
+    .gantt-row-area {
+      position: relative;
+      grid-column: 2 / -1;
+      min-height: 60px;
+      border-bottom: 1px solid var(--color-light-gray);
+      background: #fff;
+    }
+
+    /* Individual time cells for click-to-place */
+    .gantt-cell {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      border-left: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .gantt-cell:hover {
+      background: rgba(167, 122, 205, 0.06);
+    }
+
+    .gantt-cell.cell-highlight {
+      background: rgba(167, 122, 205, 0.12);
+    }
+
+    /* Alternating day shading */
+    .gantt-cell:nth-child(even) {
+      /* AM cells already light, no extra shade needed */
+    }
+
+    /* Job blocks */
+    .job-block {
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      padding: 2px 6px;
+      cursor: default;
+      z-index: 5;
+      transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  width 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.4s ease,
+                  transform 0.4s ease,
+                  box-shadow 0.3s ease;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    .job-block .job-id {
+      font-size: 10px;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+
+    .job-block .job-customer {
+      font-size: 10px;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    .job-block .job-hours {
+      font-size: 9px;
+      opacity: 0.7;
+    }
+
+    .job-block:hover {
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      transform: scaleY(1.05);
+    }
+
+    /* Green flash for settled rush job */
+    @keyframes green-flash {
+      0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
+      50%  { box-shadow: 0 0 20px 6px rgba(34, 197, 94, 0.5); }
+      100% { box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    }
+
+    .job-block.green-flash {
+      animation: green-flash 1s ease-out;
+    }
+
+    /* Capacity utilisation bars */
+    .capacity-row-label {
+      padding: 0 12px;
+      font-size: 11px;
+      color: var(--color-slate-gray);
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--color-light-gray);
+      border-right: 1px solid var(--color-light-gray);
+      min-height: 24px;
+    }
+
+    .capacity-row-area {
+      grid-column: 2 / -1;
+      min-height: 24px;
+      background: #fafafa;
+      border-bottom: 1px solid var(--color-light-gray);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+    }
+
+    .capacity-bar-track {
+      flex: 1;
+      height: 10px;
+      background: var(--color-light-gray);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .capacity-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease;
+    }
+
+    .capacity-pct {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      margin-left: 8px;
+      min-width: 36px;
+      transition: color 0.5s ease;
+    }
+
+    /* Sidebar unscheduled jobs */
+    .unscheduled-job {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: transform 0.3s ease, opacity 0.5s ease, box-shadow 0.2s ease, border-color 0.3s ease;
+    }
+
+    .unscheduled-job:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
+    }
+
+    .unscheduled-job.selected {
+      border-color: var(--color-purple);
+      box-shadow: 0 0 0 2px rgba(167, 122, 205, 0.3);
+    }
+
+    .unscheduled-job.rush-job {
+      border: 2px solid var(--color-danger);
+    }
+
+    @keyframes pulse-rush {
+      0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70%  { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .unscheduled-job.rush-job.pulsing {
+      animation: pulse-rush 1.5s ease-out infinite;
+    }
+
+    .unscheduled-job .job-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rush-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--color-danger);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    .unscheduled-job .job-detail {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      line-height: 1.5;
+    }
+
+    .unscheduled-job.animating-out {
+      opacity: 0;
+      transform: translateX(-100px) scale(0.8);
+    }
+
+    .unscheduled-job.hidden {
+      display: none;
+    }
+
+    /* Optimising overlay */
+    .gantt-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(167, 122, 205, 0.12), transparent);
+      background-size: 200% 100%;
+      animation: gantt-shimmer 1.5s ease-in-out;
+      pointer-events: none;
+      z-index: 20;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes gantt-shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .gantt-overlay .overlay-text {
+      background: var(--color-purple);
+      color: #fff;
+      padding: 8px 24px;
+      border-radius: var(--radius-pill);
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(167, 122, 205, 0.4);
+    }
+
+    /* Impact banner */
+    .impact-banner {
+      background: linear-gradient(135deg, var(--color-purple), var(--color-blue));
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: var(--radius-sm);
+      margin-top: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .impact-banner.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .impact-banner .impact-icon {
+      font-size: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-gantt, .panel-sidebar {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-sidebar {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/manufacturing.html">Manufacturing</a> &rarr; Scheduling Optimiser
+      </div>
+      <div class="demo-title">Work Order Scheduling Optimiser</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="startDemo()">Start Demo</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Gantt chart -->
+    <div class="panel-gantt">
+      <div class="panel-heading">Production Schedule — Week of 10 March 2026</div>
+
+      <div class="gantt-wrapper" id="ganttWrapper">
+        <div class="gantt-chart" id="ganttChart">
+          <!-- Built dynamically by JS -->
+        </div>
+        <div class="impact-banner" id="impactBanner">
+          <span class="impact-icon">&#9889;</span>
+          <span>AI Optimisation Complete: <strong>3 jobs rescheduled, 0 deadlines missed, utilisation improved 4%</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right sidebar: Unscheduled Jobs -->
+    <div class="panel-sidebar">
+      <div class="panel-heading">Unscheduled Jobs</div>
+
+      <div id="unscheduledList">
+        <div class="unscheduled-job rush-job" id="unsched-0892" onclick="selectUnscheduled('0892')">
+          <div class="job-title">
+            JOB-0892 — AusTech brackets
+            <span class="rush-badge">&#128680; RUSH</span>
+          </div>
+          <div class="job-detail">
+            16 hours &bull; CNC Mill &bull; Due: Wed PM
+          </div>
+        </div>
+
+        <div class="unscheduled-job" id="unsched-0893" onclick="selectUnscheduled('0893')">
+          <div class="job-title">JOB-0893 — Metro bearings</div>
+          <div class="job-detail">
+            8 hours &bull; Surface Grinder &bull; Due: Fri
+          </div>
+        </div>
+
+        <div class="unscheduled-job" id="unsched-0894" onclick="selectUnscheduled('0894')">
+          <div class="job-title">JOB-0894 — FastFab pins</div>
+          <div class="job-detail">
+            4 hours &bull; CNC Lathe &bull; Due: Thu
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Machine definitions ── */
+    const machines = [
+      { id: 'cnc-lathe-1',      name: 'CNC Lathe 1' },
+      { id: 'cnc-mill-2',       name: 'CNC Mill 2' },
+      { id: 'wire-edm',         name: 'Wire EDM' },
+      { id: 'surface-grinder',  name: 'Surface Grinder' },
+      { id: 'assembly-bay',     name: 'Assembly Bay' }
+    ];
+
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const periods = ['AM', 'PM'];
+    const totalSlots = 10; // 5 days x 2 periods
+
+    /* Column index mapping: Mon AM=0, Mon PM=1, Tue AM=2, ... Fri PM=9 */
+    function slotIndex(day, period) {
+      return days.indexOf(day) * 2 + periods.indexOf(period);
+    }
+
+    /* ── Job definitions (initial positions) ── */
+    const initialJobs = [
+      { id: '0881', customer: 'Precision Metals', machine: 'cnc-lathe-1',     startSlot: 0, spanSlots: 3, hours: 12, color: '#A77ACD' },
+      { id: '0883', customer: 'BuildRight',       machine: 'cnc-mill-2',      startSlot: 0, spanSlots: 2, hours: 8,  color: '#5791C7' },
+      { id: '0884', customer: 'AusTech',          machine: 'wire-edm',        startSlot: 1, spanSlots: 4, hours: 24, color: '#349990' },
+      { id: '0885', customer: 'TechParts',        machine: 'cnc-lathe-1',     startSlot: 3, spanSlots: 1, hours: 4,  color: '#FFDA47' },
+      { id: '0886', customer: 'Metro Eng',        machine: 'surface-grinder', startSlot: 2, spanSlots: 2, hours: 8,  color: '#F26541' },
+      { id: '0887', customer: 'FastFab',          machine: 'cnc-lathe-1',     startSlot: 4, spanSlots: 3, hours: 16, color: '#8D8D92' },
+      { id: '0888', customer: 'SteelCo',          machine: 'assembly-bay',    startSlot: 0, spanSlots: 5, hours: 32, color: '#A77ACD' },
+      { id: '0889', customer: 'QualityParts',     machine: 'cnc-mill-2',      startSlot: 2, spanSlots: 5, hours: 32, color: '#349990' },
+      { id: '0890', customer: 'NorthFab',         machine: 'wire-edm',        startSlot: 5, spanSlots: 4, hours: 24, color: '#5791C7' },
+      { id: '0891', customer: 'CoreMfg',          machine: 'surface-grinder', startSlot: 4, spanSlots: 4, hours: 24, color: '#F26541' },
+      { id: '0895', customer: 'AlphaSteel',       machine: 'assembly-bay',    startSlot: 5, spanSlots: 3, hours: 20, color: '#FFDA47' },
+      { id: '0896', customer: 'ProCast',          machine: 'surface-grinder', startSlot: 0, spanSlots: 2, hours: 8,  color: '#8D8D92' },
+      { id: '0897', customer: 'IronWorks',        machine: 'cnc-lathe-1',     startSlot: 7, spanSlots: 3, hours: 12, color: '#349990' },
+      { id: '0898', customer: 'BoltCo',           machine: 'wire-edm',        startSlot: 9, spanSlots: 1, hours: 4,  color: '#FFDA47' },
+      { id: '0899', customer: 'PeakMfg',          machine: 'assembly-bay',    startSlot: 8, spanSlots: 2, hours: 12, color: '#8D8D92' }
+    ];
+
+    /* Jobs after AI optimisation (rush job 0892 inserted into CNC Mill) */
+    const optimisedJobs = [
+      { id: '0881', customer: 'Precision Metals', machine: 'cnc-lathe-1',     startSlot: 0, spanSlots: 3, hours: 12, color: '#A77ACD' },
+      { id: '0883', customer: 'BuildRight',       machine: 'cnc-mill-2',      startSlot: 2, spanSlots: 2, hours: 8,  color: '#5791C7' },  // shifted Mon->Tue
+      { id: '0884', customer: 'AusTech',          machine: 'wire-edm',        startSlot: 1, spanSlots: 4, hours: 24, color: '#349990' },
+      { id: '0885', customer: 'TechParts',        machine: 'cnc-lathe-1',     startSlot: 3, spanSlots: 1, hours: 4,  color: '#FFDA47' },
+      { id: '0886', customer: 'Metro Eng',        machine: 'surface-grinder', startSlot: 2, spanSlots: 2, hours: 8,  color: '#F26541' },
+      { id: '0887', customer: 'FastFab',          machine: 'cnc-lathe-1',     startSlot: 4, spanSlots: 3, hours: 16, color: '#8D8D92' },
+      { id: '0888', customer: 'SteelCo',          machine: 'assembly-bay',    startSlot: 0, spanSlots: 5, hours: 32, color: '#A77ACD' },
+      { id: '0889', customer: 'QualityParts',     machine: 'cnc-mill-2',      startSlot: 4, spanSlots: 5, hours: 32, color: '#349990' },  // shifted later
+      { id: '0890', customer: 'NorthFab',         machine: 'wire-edm',        startSlot: 5, spanSlots: 4, hours: 24, color: '#5791C7' },
+      { id: '0891', customer: 'CoreMfg',          machine: 'surface-grinder', startSlot: 4, spanSlots: 5, hours: 24, color: '#F26541' },  // extends into Fri
+      { id: '0895', customer: 'AlphaSteel',       machine: 'assembly-bay',    startSlot: 5, spanSlots: 3, hours: 20, color: '#FFDA47' },
+      { id: '0896', customer: 'ProCast',          machine: 'surface-grinder', startSlot: 0, spanSlots: 2, hours: 8,  color: '#8D8D92' },
+      { id: '0897', customer: 'IronWorks',        machine: 'cnc-lathe-1',     startSlot: 7, spanSlots: 3, hours: 12, color: '#349990' },
+      { id: '0898', customer: 'BoltCo',           machine: 'wire-edm',        startSlot: 9, spanSlots: 1, hours: 4,  color: '#FFDA47' },
+      { id: '0899', customer: 'PeakMfg',          machine: 'assembly-bay',    startSlot: 8, spanSlots: 2, hours: 12, color: '#8D8D92' },
+      { id: '0892', customer: 'AusTech',          machine: 'cnc-mill-2',      startSlot: 0, spanSlots: 2, hours: 16, color: '#F26541', isRush: true }  // RUSH job placed
+    ];
+
+    /* ── Capacity calculations ── */
+    function calcCapacity(jobSet, machineId) {
+      let usedSlots = 0;
+      jobSet.forEach(j => {
+        if (j.machine === machineId) usedSlots += j.spanSlots;
+      });
+      return Math.min(100, Math.round((usedSlots / totalSlots) * 100));
+    }
+
+    const initialCapacity = {};
+    const optimisedCapacity = {};
+    machines.forEach(m => {
+      initialCapacity[m.id] = calcCapacity(initialJobs, m.id);
+      optimisedCapacity[m.id] = calcCapacity(optimisedJobs, m.id);
+    });
+
+    /* ── State ── */
+    let demoRunning = false;
+    let animationTimeouts = [];
+    let selectedUnscheduled = null;
+    let isOptimised = false;
+
+    /* ── Build Gantt grid ── */
+    function buildGantt() {
+      const chart = document.getElementById('ganttChart');
+      chart.innerHTML = '';
+
+      // Row 1: Day headers
+      const corner = document.createElement('div');
+      corner.className = 'gantt-corner';
+      corner.textContent = 'Machine';
+      chart.appendChild(corner);
+
+      days.forEach(day => {
+        const hdr = document.createElement('div');
+        hdr.className = 'gantt-day-header';
+        hdr.textContent = day;
+        chart.appendChild(hdr);
+      });
+
+      // Row 2: AM/PM sub-headers
+      const periodCorner = document.createElement('div');
+      periodCorner.className = 'gantt-period-corner';
+      chart.appendChild(periodCorner);
+
+      days.forEach(() => {
+        periods.forEach(p => {
+          const ph = document.createElement('div');
+          ph.className = 'gantt-period-header';
+          ph.textContent = p;
+          chart.appendChild(ph);
+        });
+      });
+
+      // Machine rows + capacity bars
+      machines.forEach(machine => {
+        // Machine label
+        const label = document.createElement('div');
+        label.className = 'gantt-machine-label';
+        label.textContent = machine.name;
+        chart.appendChild(label);
+
+        // Row area for jobs
+        const rowArea = document.createElement('div');
+        rowArea.className = 'gantt-row-area';
+        rowArea.id = 'row-' + machine.id;
+        rowArea.dataset.machine = machine.id;
+
+        // Clickable cells for click-to-place
+        for (let s = 0; s < totalSlots; s++) {
+          const cell = document.createElement('div');
+          cell.className = 'gantt-cell';
+          cell.style.left = (s / totalSlots * 100) + '%';
+          cell.style.width = (1 / totalSlots * 100) + '%';
+          cell.dataset.slot = s;
+          cell.dataset.machine = machine.id;
+          cell.addEventListener('click', () => onCellClick(machine.id, s));
+          rowArea.appendChild(cell);
+        }
+
+        chart.appendChild(rowArea);
+
+        // Capacity bar row
+        const capLabel = document.createElement('div');
+        capLabel.className = 'capacity-row-label';
+        capLabel.textContent = 'Utilisation';
+        chart.appendChild(capLabel);
+
+        const capArea = document.createElement('div');
+        capArea.className = 'capacity-row-area';
+        capArea.id = 'cap-' + machine.id;
+
+        const track = document.createElement('div');
+        track.className = 'capacity-bar-track';
+        const fill = document.createElement('div');
+        fill.className = 'capacity-bar-fill';
+        fill.id = 'capfill-' + machine.id;
+        fill.style.width = '0%';
+        fill.style.backgroundColor = 'var(--color-purple)';
+        track.appendChild(fill);
+        capArea.appendChild(track);
+
+        const pct = document.createElement('span');
+        pct.className = 'capacity-pct';
+        pct.id = 'cappct-' + machine.id;
+        pct.textContent = '0%';
+        capArea.appendChild(pct);
+
+        chart.appendChild(capArea);
+      });
+    }
+
+    /* ── Render job blocks for a given job set ── */
+    function renderJobs(jobSet) {
+      // Remove existing job blocks
+      document.querySelectorAll('.job-block').forEach(b => b.remove());
+
+      jobSet.forEach(job => {
+        const row = document.getElementById('row-' + job.machine);
+        if (!row) return;
+
+        const block = document.createElement('div');
+        block.className = 'job-block';
+        block.id = 'job-' + job.id;
+        block.style.backgroundColor = job.color;
+        block.style.left = (job.startSlot / totalSlots * 100) + '%';
+        block.style.width = (job.spanSlots / totalSlots * 100) + '%';
+
+        block.innerHTML = `
+          <span class="job-id">JOB-${job.id}</span>
+          <span class="job-customer">${job.customer}</span>
+          <span class="job-hours">${job.hours}h</span>
+        `;
+
+        row.appendChild(block);
+      });
+    }
+
+    /* ── Update capacity bars ── */
+    function updateCapacity(capMap) {
+      machines.forEach(m => {
+        const pct = capMap[m.id];
+        const fill = document.getElementById('capfill-' + m.id);
+        const label = document.getElementById('cappct-' + m.id);
+        if (fill && label) {
+          fill.style.width = pct + '%';
+          fill.style.backgroundColor = pct > 85 ? 'var(--color-danger)' : pct > 65 ? 'var(--color-warning)' : 'var(--color-purple)';
+          label.textContent = pct + '%';
+          label.style.color = pct > 85 ? 'var(--color-danger)' : 'var(--color-slate-black)';
+        }
+      });
+    }
+
+    /* ── Transition jobs from current to optimised positions ── */
+    function transitionJobs(newJobSet) {
+      newJobSet.forEach(job => {
+        const block = document.getElementById('job-' + job.id);
+        if (block) {
+          // Move to new position (CSS transition handles animation)
+          block.style.left = (job.startSlot / totalSlots * 100) + '%';
+          block.style.width = (job.spanSlots / totalSlots * 100) + '%';
+
+          // If this block is in a different machine row, move it
+          const targetRow = document.getElementById('row-' + job.machine);
+          if (block.parentElement !== targetRow) {
+            targetRow.appendChild(block);
+          }
+        }
+      });
+    }
+
+    /* ── Insert the rush job as a new block ── */
+    function insertRushJob() {
+      const rushJob = optimisedJobs.find(j => j.id === '0892');
+      if (!rushJob) return;
+
+      const row = document.getElementById('row-' + rushJob.machine);
+      if (!row) return;
+
+      const block = document.createElement('div');
+      block.className = 'job-block';
+      block.id = 'job-0892';
+      block.style.backgroundColor = rushJob.color;
+      block.style.left = (rushJob.startSlot / totalSlots * 100) + '%';
+      block.style.width = (rushJob.spanSlots / totalSlots * 100) + '%';
+      block.style.opacity = '0';
+      block.style.transform = 'scale(0.5)';
+
+      block.innerHTML = `
+        <span class="job-id">JOB-0892</span>
+        <span class="job-customer">AusTech</span>
+        <span class="job-hours">16h</span>
+      `;
+
+      row.appendChild(block);
+
+      // Animate in
+      requestAnimationFrame(() => {
+        block.style.opacity = '1';
+        block.style.transform = 'scale(1)';
+      });
+
+      return block;
+    }
+
+    /* ── Click-to-place: select an unscheduled job ── */
+    function selectUnscheduled(jobId) {
+      if (isOptimised || demoRunning) return;
+
+      const el = document.getElementById('unsched-' + jobId);
+      if (!el) return;
+
+      // If it's the rush job and it's already selected, deselect
+      if (selectedUnscheduled === jobId) {
+        el.classList.remove('selected');
+        selectedUnscheduled = null;
+        clearCellHighlights();
+        return;
+      }
+
+      // Deselect previous
+      document.querySelectorAll('.unscheduled-job.selected').forEach(e => e.classList.remove('selected'));
+      clearCellHighlights();
+
+      selectedUnscheduled = jobId;
+      el.classList.add('selected');
+
+      // Highlight target machine cells
+      if (jobId === '0892') highlightMachineCells('cnc-mill-2');
+      if (jobId === '0893') highlightMachineCells('surface-grinder');
+      if (jobId === '0894') highlightMachineCells('cnc-lathe-1');
+    }
+
+    function highlightMachineCells(machineId) {
+      const row = document.getElementById('row-' + machineId);
+      if (!row) return;
+      row.querySelectorAll('.gantt-cell').forEach(c => c.classList.add('cell-highlight'));
+    }
+
+    function clearCellHighlights() {
+      document.querySelectorAll('.gantt-cell.cell-highlight').forEach(c => c.classList.remove('cell-highlight'));
+    }
+
+    /* ── Click on a cell to place the selected job ── */
+    function onCellClick(machineId, slot) {
+      if (!selectedUnscheduled || isOptimised || demoRunning) return;
+
+      // Only allow rush job interaction for the demo animation
+      if (selectedUnscheduled === '0892') {
+        triggerOptimisation();
+      }
+    }
+
+    /* ── Main optimisation animation ── */
+    async function triggerOptimisation() {
+      if (demoRunning || isOptimised) return;
+      demoRunning = true;
+      selectedUnscheduled = null;
+      clearCellHighlights();
+      document.querySelectorAll('.unscheduled-job.selected').forEach(e => e.classList.remove('selected'));
+
+      // Animate rush job out of sidebar
+      const rushEl = document.getElementById('unsched-0892');
+      if (rushEl) {
+        rushEl.classList.remove('pulsing');
+        rushEl.classList.add('animating-out');
+        await wait(500);
+        rushEl.classList.add('hidden');
+      }
+
+      // Show "Optimising..." overlay on the gantt chart
+      const wrapper = document.getElementById('ganttWrapper');
+      const overlay = document.createElement('div');
+      overlay.className = 'gantt-overlay';
+      overlay.innerHTML = '<span class="overlay-text">&#9889; Optimising schedule...</span>';
+      wrapper.style.position = 'relative';
+      wrapper.appendChild(overlay);
+
+      await wait(1500);
+      overlay.remove();
+
+      // Transition all existing jobs to new positions
+      transitionJobs(optimisedJobs);
+
+      await wait(400);
+
+      // Insert the rush job block
+      const rushBlock = insertRushJob();
+
+      await wait(800);
+
+      // Green flash on the rush job
+      if (rushBlock) rushBlock.classList.add('green-flash');
+
+      // Update capacity bars
+      updateCapacity(optimisedCapacity);
+
+      // Show impact banner
+      await wait(300);
+      document.getElementById('impactBanner').classList.add('visible');
+
+      // Toast notification
+      toast('3 jobs rescheduled, 0 deadlines missed, utilisation improved 4%', 'success', 5000);
+
+      isOptimised = true;
+      demoRunning = false;
+    }
+
+    /* ── Start Demo (auto or button) ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll();
+
+      // Build and render initial state
+      buildGantt();
+      renderJobs(initialJobs);
+
+      // Animate capacity bars in
+      await wait(500);
+      updateCapacity(initialCapacity);
+
+      // Wait, then highlight the rush job
+      await wait(1500);
+      const rushEl = document.getElementById('unsched-0892');
+      if (rushEl) rushEl.classList.add('pulsing');
+
+      // After another moment, auto-trigger the optimisation
+      await wait(1000);
+      demoRunning = false;
+      await triggerOptimisation();
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+      isOptimised = false;
+      selectedUnscheduled = null;
+
+      // Rebuild gantt with initial jobs
+      buildGantt();
+      renderJobs(initialJobs);
+      updateCapacity(initialCapacity);
+
+      // Reset sidebar
+      const rushEl = document.getElementById('unsched-0892');
+      if (rushEl) {
+        rushEl.classList.remove('pulsing', 'animating-out', 'hidden', 'selected');
+      }
+      document.querySelectorAll('.unscheduled-job').forEach(el => {
+        el.classList.remove('animating-out', 'hidden', 'selected');
+      });
+
+      // Hide impact banner
+      document.getElementById('impactBanner').classList.remove('visible');
+
+      // Remove overlays
+      document.querySelectorAll('.gantt-overlay').forEach(o => o.remove());
+
+      // Clear highlights
+      clearCellHighlights();
+
+      // Remove toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Initialise ── */
+    buildGantt();
+    renderJobs(initialJobs);
+    updateCapacity(initialCapacity);
+
+    /* Auto-start after 2 seconds */
+    setTimeout(() => {
+      if (!demoRunning && !isOptimised) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>
