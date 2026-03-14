@@ -1,0 +1,1158 @@
+<!-- ABOUTME: Carrier Invoice Reconciliation mockup for NorthLink AI. -->
+<!-- ABOUTME: AI extracts line items from scanned invoices and compares to contracted rates. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Reconciliation — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Three-panel layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px);
+    }
+
+    .panel-left {
+      flex: 0 0 35%;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fafafa;
+    }
+
+    .panel-center {
+      flex: 0 0 40%;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+    }
+
+    .panel-right {
+      flex: 0 0 25%;
+      padding: 20px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .panel-heading {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-heading .icon {
+      font-size: 20px;
+    }
+
+    /* Invoice queue cards */
+    .invoice-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .inv-card {
+      background: #fff;
+      border: 2px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      position: relative;
+    }
+
+    .inv-card:hover {
+      border-color: var(--color-purple);
+      box-shadow: 0 2px 12px rgba(167, 122, 205, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .inv-card.active {
+      border-color: var(--color-purple);
+      box-shadow: 0 2px 16px rgba(167, 122, 205, 0.25);
+    }
+
+    .inv-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .inv-card-id {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-slate-black);
+    }
+
+    .inv-card-amount {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .inv-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .inv-card-carrier {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      font-weight: 500;
+    }
+
+    .inv-card-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .badge-format {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    .badge-format.scanned {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    /* Processing indicator on invoice card */
+    .inv-card .processing-indicator {
+      position: absolute;
+      inset: 0;
+      background: rgba(167, 122, 205, 0.1);
+      border-radius: var(--radius-sm);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .inv-card .processing-indicator.active {
+      display: flex;
+    }
+
+    .processing-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--color-light-gray);
+      border-top-color: var(--color-purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Center panel: Invoice image viewer */
+    .invoice-viewer {
+      position: relative;
+      background: #e8e8e8;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .invoice-viewer svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .extraction-box {
+      position: absolute;
+      border: 2px solid;
+      border-radius: 4px;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .extraction-box.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .extraction-box .box-label {
+      position: absolute;
+      top: -18px;
+      left: 0;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .extraction-box.box-invoice-num {
+      border-color: var(--color-blue);
+    }
+    .extraction-box.box-invoice-num .box-label {
+      background: var(--color-blue);
+    }
+
+    .extraction-box.box-carrier {
+      border-color: var(--color-green);
+    }
+    .extraction-box.box-carrier .box-label {
+      background: var(--color-green);
+    }
+
+    .extraction-box.box-line-items {
+      border-color: var(--color-purple);
+    }
+    .extraction-box.box-line-items .box-label {
+      background: var(--color-purple);
+    }
+
+    .extraction-box.box-total {
+      border-color: var(--color-orange);
+    }
+    .extraction-box.box-total .box-label {
+      background: var(--color-orange);
+    }
+
+    .extraction-box.box-surcharge {
+      border-color: var(--color-danger);
+    }
+    .extraction-box.box-surcharge .box-label {
+      background: var(--color-danger);
+    }
+
+    /* Line items table */
+    .line-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .line-items-table th {
+      text-align: left;
+      padding: 8px 10px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      border-bottom: 2px solid var(--color-light-gray);
+      background: var(--color-off-white);
+      font-size: 12px;
+    }
+
+    .line-items-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .line-items-table tr.overcharge td {
+      background: #fef2f2;
+      color: var(--color-danger);
+      font-weight: 600;
+    }
+
+    .line-items-table tr.row-hidden {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+
+    .line-items-table tr {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    @keyframes flash-red {
+      0%, 100% { background: #fef2f2; }
+      50% { background: #fecaca; }
+    }
+
+    .flash-overcharge {
+      animation: flash-red 0.6s ease 3;
+    }
+
+    /* Extracting shimmer overlay */
+    .extracting-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(167,122,205,0.2), transparent);
+      background-size: 200% 100%;
+      animation: shimmer-scan 1.5s ease-in-out;
+      pointer-events: none;
+      display: none;
+    }
+
+    @keyframes shimmer-scan {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .extracting-overlay.active {
+      display: block;
+    }
+
+    /* Right panel: Resolution */
+    .resolution-card {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .resolution-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 12px;
+    }
+
+    .totals-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .totals-row:last-child {
+      border-bottom: none;
+    }
+
+    .totals-row .label {
+      color: var(--color-slate-gray);
+      font-weight: 500;
+    }
+
+    .totals-row .value {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .overcharge-total {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--color-danger);
+      text-align: center;
+      padding: 16px 0;
+    }
+
+    @keyframes pulse-overcharge {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+
+    .pulse-overcharge {
+      animation: pulse-overcharge 1.5s ease-in-out infinite;
+    }
+
+    .breakdown-item {
+      background: #fef2f2;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--color-slate-black);
+    }
+
+    .breakdown-item .breakdown-title {
+      font-weight: 700;
+      color: var(--color-danger);
+      margin-bottom: 4px;
+    }
+
+    .breakdown-item .breakdown-detail {
+      color: var(--color-slate-gray);
+    }
+
+    .gps-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: #dbeafe;
+      color: #1d4ed8;
+      margin-left: 6px;
+    }
+
+    /* Dispute email area */
+    .dispute-email {
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--color-slate-black);
+      min-height: 100px;
+      margin-bottom: 12px;
+      font-family: var(--font-stack);
+      white-space: pre-wrap;
+    }
+
+    .dispute-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--color-slate-gray);
+      font-size: 14px;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    /* Handwritten font for scanned invoice SVGs */
+    .handwritten {
+      font-family: 'Caveat', cursive;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-center, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-center, .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/logistics-transport.html">Logistics &amp; Transport</a> &rarr; Invoice Reconciliation
+      </div>
+      <div class="demo-title">Invoice Reconciliation</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="processInvoice()">Process Invoice</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Invoice Queue -->
+    <div class="panel-left">
+      <div class="panel-heading"><span class="icon">&#128203;</span> Invoice Queue</div>
+      <div class="invoice-list" id="invoiceList">
+
+        <!-- INV-4401 — TransQuick -->
+        <div class="inv-card" id="inv1" onclick="selectInvoice(1)">
+          <div class="inv-card-top">
+            <span class="inv-card-id">INV-4401</span>
+            <span class="inv-card-amount">$1,248.00</span>
+          </div>
+          <div class="inv-card-bottom">
+            <span class="inv-card-carrier">TransQuick</span>
+            <div class="inv-card-badges">
+              <span class="badge-format">Digital PDF</span>
+              <span class="pill pill-success" id="inv1Status">Verified</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INV-4402 — FastFreight (DISCREPANCY) -->
+        <div class="inv-card" id="inv2" onclick="selectInvoice(2)">
+          <div class="inv-card-top">
+            <span class="inv-card-id">INV-4402</span>
+            <span class="inv-card-amount">$2,847.50</span>
+          </div>
+          <div class="inv-card-bottom">
+            <span class="inv-card-carrier">FastFreight</span>
+            <div class="inv-card-badges">
+              <span class="badge-format scanned">Scanned Paper</span>
+              <span class="pill pill-danger" id="inv2Status">Discrepancy</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INV-4403 — MelRoutes -->
+        <div class="inv-card" id="inv3" onclick="selectInvoice(3)">
+          <div class="inv-card-top">
+            <span class="inv-card-id">INV-4403</span>
+            <span class="inv-card-amount">$956.00</span>
+          </div>
+          <div class="inv-card-bottom">
+            <span class="inv-card-carrier">MelRoutes</span>
+            <div class="inv-card-badges">
+              <span class="badge-format">Digital PDF</span>
+              <span class="pill pill-success" id="inv3Status">Verified</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INV-4404 — NorthHaul -->
+        <div class="inv-card" id="inv4" onclick="selectInvoice(4)">
+          <div class="inv-card-top">
+            <span class="inv-card-id">INV-4404</span>
+            <span class="inv-card-amount">$3,210.00</span>
+          </div>
+          <div class="inv-card-bottom">
+            <span class="inv-card-carrier">NorthHaul</span>
+            <div class="inv-card-badges">
+              <span class="badge-format">Digital PDF</span>
+              <span class="pill pill-success" id="inv4Status">Verified</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INV-4405 — CityLink Logistics (Pending) -->
+        <div class="inv-card" id="inv5" onclick="selectInvoice(5)">
+          <div class="inv-card-top">
+            <span class="inv-card-id">INV-4405</span>
+            <span class="inv-card-amount">$1,580.00</span>
+          </div>
+          <div class="inv-card-bottom">
+            <span class="inv-card-carrier">CityLink Logistics</span>
+            <div class="inv-card-badges">
+              <span class="badge-format scanned">Scanned Paper</span>
+              <span class="pill pill-neutral" id="inv5Status">Pending</span>
+            </div>
+          </div>
+          <div class="processing-indicator" id="inv5Processing">
+            <div class="processing-spinner"></div>
+          </div>
+        </div>
+
+        <!-- INV-4406 — AusFreight (Pending) -->
+        <div class="inv-card" id="inv6" onclick="selectInvoice(6)">
+          <div class="inv-card-top">
+            <span class="inv-card-id">INV-4406</span>
+            <span class="inv-card-amount">$2,100.00</span>
+          </div>
+          <div class="inv-card-bottom">
+            <span class="inv-card-carrier">AusFreight</span>
+            <div class="inv-card-badges">
+              <span class="badge-format">Digital PDF</span>
+              <span class="pill pill-neutral" id="inv6Status">Pending</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INV-4407 — QuickDel (Pending) -->
+        <div class="inv-card" id="inv7" onclick="selectInvoice(7)">
+          <div class="inv-card-top">
+            <span class="inv-card-id">INV-4407</span>
+            <span class="inv-card-amount">$780.00</span>
+          </div>
+          <div class="inv-card-bottom">
+            <span class="inv-card-carrier">QuickDel</span>
+            <div class="inv-card-badges">
+              <span class="badge-format scanned">Scanned Paper</span>
+              <span class="pill pill-neutral" id="inv7Status">Pending</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INV-4408 — MetroTransport (Pending) -->
+        <div class="inv-card" id="inv8" onclick="selectInvoice(8)">
+          <div class="inv-card-top">
+            <span class="inv-card-id">INV-4408</span>
+            <span class="inv-card-amount">$1,920.00</span>
+          </div>
+          <div class="inv-card-bottom">
+            <span class="inv-card-carrier">MetroTransport</span>
+            <div class="inv-card-badges">
+              <span class="badge-format">Digital PDF</span>
+              <span class="pill pill-neutral" id="inv8Status">Pending</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Center panel: Invoice Analysis -->
+    <div class="panel-center">
+      <div class="panel-heading"><span class="icon">&#129302;</span> Invoice Analysis</div>
+      <div id="centerContent">
+        <div class="empty-state" id="emptyCenter">
+          <div class="empty-icon">&#128196;</div>
+          <p>Click an invoice to view AI analysis</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: Resolution -->
+    <div class="panel-right">
+      <div class="panel-heading"><span class="icon">&#128176;</span> Resolution</div>
+      <div id="rightContent">
+        <div class="empty-state" id="emptyRight">
+          <div class="empty-icon">&#128209;</div>
+          <p>Select an invoice to see reconciliation details</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Invoice Data ── */
+    const invoices = [
+      {
+        id: 1, invNum: 'INV-4401', carrier: 'TransQuick', amount: 1248.00,
+        format: 'digital', status: 'verified'
+      },
+      {
+        id: 2, invNum: 'INV-4402', carrier: 'FastFreight', amount: 2847.50,
+        format: 'scanned', status: 'discrepancy'
+      },
+      {
+        id: 3, invNum: 'INV-4403', carrier: 'MelRoutes', amount: 956.00,
+        format: 'digital', status: 'verified'
+      },
+      {
+        id: 4, invNum: 'INV-4404', carrier: 'NorthHaul', amount: 3210.00,
+        format: 'digital', status: 'verified'
+      },
+      {
+        id: 5, invNum: 'INV-4405', carrier: 'CityLink Logistics', amount: 1580.00,
+        format: 'scanned', status: 'pending'
+      },
+      {
+        id: 6, invNum: 'INV-4406', carrier: 'AusFreight', amount: 2100.00,
+        format: 'digital', status: 'pending'
+      },
+      {
+        id: 7, invNum: 'INV-4407', carrier: 'QuickDel', amount: 780.00,
+        format: 'scanned', status: 'pending'
+      },
+      {
+        id: 8, invNum: 'INV-4408', carrier: 'MetroTransport', amount: 1920.00,
+        format: 'digital', status: 'pending'
+      }
+    ];
+
+    /* ── Line items for INV-4402 (FastFreight) ── */
+    const fastFreightLineItems = [
+      { service: 'Standard delivery (metro)', qty: '18', invoicedRate: '$45.00', contractedRate: '$45.00', difference: '—', overcharge: false },
+      { service: 'Standard delivery (regional)', qty: '6', invoicedRate: '$78.00', contractedRate: '$78.00', difference: '—', overcharge: false },
+      { service: 'Express delivery', qty: '3', invoicedRate: '$95.00', contractedRate: '$95.00', difference: '—', overcharge: false },
+      { service: 'Fuel surcharge', qty: '—', invoicedRate: '18.0%', contractedRate: '15.5%', difference: '+$87.50', overcharge: true },
+      { service: 'Wait time', qty: '2 hrs', invoicedRate: '$65/hr', contractedRate: '—', difference: '—', overcharge: false },
+      { service: 'GPS-verified wait time', qty: '1h 12m', invoicedRate: '$65/hr', contractedRate: '—', difference: '-$62.50', overcharge: true },
+      { service: 'Toll charges', qty: '8', invoicedRate: '$4.50', contractedRate: '$4.50', difference: '—', overcharge: false }
+    ];
+
+    /* ── State ── */
+    let selectedInvoice = null;
+    let demoRunning = false;
+    let animationTimeouts = [];
+
+    /* ── Schedule a timeout and track it for cleanup ── */
+    function schedule(fn, delay) {
+      const tid = setTimeout(fn, delay);
+      animationTimeouts.push(tid);
+      return tid;
+    }
+
+    /* ── Generate the scanned invoice SVG for FastFreight INV-4402 ── */
+    function getScannedInvoiceSvg() {
+      return `<svg viewBox="0 0 420 520" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(-1.5deg);">
+        <!-- Paper background with age/scan artifacts -->
+        <rect x="0" y="0" width="420" height="520" fill="#f5f0e6" rx="2"/>
+        <!-- Scan edge shadow -->
+        <rect x="0" y="0" width="8" height="520" fill="rgba(0,0,0,0.06)"/>
+        <rect x="0" y="512" width="420" height="8" fill="rgba(0,0,0,0.04)"/>
+
+        <!-- Coffee stain -->
+        <circle cx="340" cy="120" r="35" fill="rgba(139, 90, 43, 0.10)" />
+        <circle cx="337" cy="117" r="28" fill="rgba(139, 90, 43, 0.07)" />
+        <circle cx="343" cy="123" r="20" fill="rgba(139, 90, 43, 0.04)" />
+
+        <!-- Slight fade/noise patches -->
+        <rect x="50" y="280" width="120" height="40" fill="rgba(255,255,255,0.3)" rx="4"/>
+
+        <!-- Header -->
+        <rect x="20" y="15" width="380" height="45" fill="#2c3e50" rx="4"/>
+        <text x="210" y="44" text-anchor="middle" font-size="18" font-weight="700" fill="#fff" font-family="Arial, sans-serif">FASTFREIGHT PTY LTD</text>
+
+        <!-- Invoice number and date -->
+        <text x="30" y="85" font-size="14" font-weight="700" fill="#2a2a6a" font-family="Arial, sans-serif">INVOICE</text>
+        <text x="30" y="105" font-size="12" fill="#555" font-family="Arial, sans-serif">INV-4402</text>
+        <text x="300" y="85" font-size="11" fill="#888" font-family="Arial, sans-serif">Date: 08/03/2026</text>
+        <text x="300" y="100" font-size="11" fill="#888" font-family="Arial, sans-serif">Due: 07/04/2026</text>
+
+        <!-- Bill To -->
+        <text x="30" y="135" font-size="11" font-weight="600" fill="#333" font-family="Arial, sans-serif">Bill To:</text>
+        <text x="30" y="150" font-size="11" fill="#555" font-family="Arial, sans-serif">NorthLink Distribution Pty Ltd</text>
+        <text x="30" y="164" font-size="11" fill="#555" font-family="Arial, sans-serif">45 Industrial Dr, Epping VIC 3076</text>
+
+        <!-- Line items table header -->
+        <rect x="20" y="185" width="380" height="22" fill="#e8e4d8" rx="2"/>
+        <text x="30" y="200" font-size="10" font-weight="700" fill="#444" font-family="Arial, sans-serif">Service</text>
+        <text x="200" y="200" font-size="10" font-weight="700" fill="#444" font-family="Arial, sans-serif">Qty</text>
+        <text x="260" y="200" font-size="10" font-weight="700" fill="#444" font-family="Arial, sans-serif">Rate</text>
+        <text x="340" y="200" font-size="10" font-weight="700" fill="#444" font-family="Arial, sans-serif">Amount</text>
+
+        <!-- Line items (slightly wonky text for scanned look) -->
+        <line x1="20" y1="210" x2="400" y2="210" stroke="#ccc" stroke-width="0.5"/>
+        <text x="30" y="226" font-size="10" fill="#333" font-family="Arial, sans-serif">Std delivery (metro)</text>
+        <text x="205" y="226" font-size="10" fill="#333" font-family="Arial, sans-serif">18</text>
+        <text x="260" y="226" font-size="10" fill="#333" font-family="Arial, sans-serif">$45.00</text>
+        <text x="340" y="226" font-size="10" fill="#333" font-family="Arial, sans-serif">$810.00</text>
+
+        <line x1="20" y1="234" x2="400" y2="234" stroke="#eee" stroke-width="0.5"/>
+        <text x="30" y="250" font-size="10" fill="#333" font-family="Arial, sans-serif">Std delivery (regional)</text>
+        <text x="205" y="250" font-size="10" fill="#333" font-family="Arial, sans-serif">6</text>
+        <text x="260" y="250" font-size="10" fill="#333" font-family="Arial, sans-serif">$78.00</text>
+        <text x="340" y="250" font-size="10" fill="#333" font-family="Arial, sans-serif">$468.00</text>
+
+        <line x1="20" y1="258" x2="400" y2="258" stroke="#eee" stroke-width="0.5"/>
+        <text x="30" y="274" font-size="10" fill="#333" font-family="Arial, sans-serif">Express delivery</text>
+        <text x="205" y="274" font-size="10" fill="#333" font-family="Arial, sans-serif">3</text>
+        <text x="260" y="274" font-size="10" fill="#333" font-family="Arial, sans-serif">$95.00</text>
+        <text x="340" y="274" font-size="10" fill="#333" font-family="Arial, sans-serif">$285.00</text>
+
+        <line x1="20" y1="282" x2="400" y2="282" stroke="#eee" stroke-width="0.5"/>
+        <!-- Fuel surcharge - the dodgy one -->
+        <text x="30" y="300" font-size="10" fill="#333" font-family="Arial, sans-serif" style="opacity: 0.85">Fuel surcharge</text>
+        <text x="260" y="300" font-size="10" fill="#333" font-family="Arial, sans-serif" style="opacity: 0.85">18.0%</text>
+        <text x="340" y="300" font-size="10" fill="#333" font-family="Arial, sans-serif" style="opacity: 0.85">$281.34</text>
+
+        <line x1="20" y1="308" x2="400" y2="308" stroke="#eee" stroke-width="0.5"/>
+        <text x="30" y="326" font-size="10" fill="#333" font-family="Arial, sans-serif">Wait time</text>
+        <text x="205" y="326" font-size="10" fill="#333" font-family="Arial, sans-serif">2 hrs</text>
+        <text x="260" y="326" font-size="10" fill="#333" font-family="Arial, sans-serif">$65/hr</text>
+        <text x="340" y="326" font-size="10" fill="#333" font-family="Arial, sans-serif">$130.00</text>
+
+        <line x1="20" y1="334" x2="400" y2="334" stroke="#eee" stroke-width="0.5"/>
+        <text x="30" y="352" font-size="10" fill="#333" font-family="Arial, sans-serif">Toll charges</text>
+        <text x="205" y="352" font-size="10" fill="#333" font-family="Arial, sans-serif">8</text>
+        <text x="260" y="352" font-size="10" fill="#333" font-family="Arial, sans-serif">$4.50</text>
+        <text x="340" y="352" font-size="10" fill="#333" font-family="Arial, sans-serif">$36.00</text>
+
+        <!-- Subtotal / Total -->
+        <line x1="20" y1="370" x2="400" y2="370" stroke="#999" stroke-width="1"/>
+        <text x="260" y="390" font-size="11" fill="#555" font-family="Arial, sans-serif">Subtotal:</text>
+        <text x="340" y="390" font-size="11" fill="#333" font-weight="600" font-family="Arial, sans-serif">$2,010.34</text>
+        <text x="260" y="410" font-size="11" fill="#555" font-family="Arial, sans-serif">GST (10%):</text>
+        <text x="340" y="410" font-size="11" fill="#333" font-family="Arial, sans-serif">$201.03</text>
+
+        <rect x="250" y="420" width="150" height="25" fill="#2c3e50" rx="3"/>
+        <text x="265" y="438" font-size="12" font-weight="700" fill="#fff" font-family="Arial, sans-serif">TOTAL:</text>
+        <text x="340" y="438" font-size="12" font-weight="700" fill="#fff" font-family="Arial, sans-serif">$2,847.50</text>
+
+        <!-- Bank details (faded) -->
+        <text x="30" y="475" font-size="9" fill="#999" font-family="Arial, sans-serif">Payment: BSB 063-111 Acc 1029 3847</text>
+        <text x="30" y="490" font-size="9" fill="#999" font-family="Arial, sans-serif">FastFreight Pty Ltd ABN 44 123 456 789</text>
+
+        <!-- Scan artifact: slight line across page -->
+        <line x1="0" y1="360" x2="420" y2="362" stroke="rgba(0,0,0,0.03)" stroke-width="2"/>
+      </svg>`;
+    }
+
+    /* ── Extraction box positions for the scanned invoice ── */
+    function getExtractionBoxes() {
+      return [
+        { cls: 'box-invoice-num', label: 'Invoice Number', top: '15%', left: '4%', width: '25%', height: '5%' },
+        { cls: 'box-carrier', label: 'Carrier', top: '3%', left: '4%', width: '91%', height: '9%' },
+        { cls: 'box-line-items', label: 'Line Items', top: '36%', left: '4%', width: '91%', height: '33%' },
+        { cls: 'box-surcharge', label: 'Fuel Surcharge (FLAGGED)', top: '54%', left: '4%', width: '91%', height: '5%' },
+        { cls: 'box-total', label: 'Total', top: '80%', left: '57%', width: '38%', height: '6%' }
+      ];
+    }
+
+    /* ── Select and display an invoice ── */
+    function selectInvoice(invId) {
+      const inv = invoices.find(i => i.id === invId);
+      if (!inv) return;
+      if (inv.status === 'pending') return;
+
+      selectedInvoice = invId;
+
+      // Update active state on cards
+      document.querySelectorAll('.inv-card').forEach(el => el.classList.remove('active'));
+      document.getElementById('inv' + invId).classList.add('active');
+
+      if (invId === 2) {
+        showFastFreightAnalysis();
+      } else {
+        showVerifiedInvoice(inv);
+      }
+    }
+
+    /* ── Show verified invoice (simple view) ── */
+    function showVerifiedInvoice(inv) {
+      const centerContent = document.getElementById('centerContent');
+      centerContent.innerHTML = `
+        <div style="background: #fff; border: 1px solid var(--color-light-gray); border-radius: var(--radius); padding: 24px; text-align: center;">
+          <div style="font-size: 40px; margin-bottom: 12px;">&#9989;</div>
+          <h3 style="margin-bottom: 8px;">${inv.invNum} — ${inv.carrier}</h3>
+          <p style="color: var(--color-slate-gray); font-size: 14px; margin: 0 0 12px;">All line items match contracted rates</p>
+          <span class="pill pill-success" style="font-size: 13px; padding: 5px 14px;">Verified — No discrepancies</span>
+        </div>
+      `;
+
+      const rightContent = document.getElementById('rightContent');
+      rightContent.innerHTML = `
+        <div class="resolution-card">
+          <h3>Reconciliation Summary</h3>
+          <div class="totals-row">
+            <span class="label">Total invoiced</span>
+            <span class="value">$${inv.amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
+          </div>
+          <div class="totals-row">
+            <span class="label">Contracted total</span>
+            <span class="value">$${inv.amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
+          </div>
+          <div class="totals-row">
+            <span class="label">Discrepancy</span>
+            <span class="value" style="color: var(--color-success);">$0.00</span>
+          </div>
+          <div style="margin-top: 16px; text-align: center;">
+            <span class="pill pill-success" style="font-size: 13px; padding: 5px 14px;">Approved for payment</span>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ── Show FastFreight analysis with animation ── */
+    async function showFastFreightAnalysis() {
+      const centerContent = document.getElementById('centerContent');
+      const rightContent = document.getElementById('rightContent');
+
+      // Build the scanned invoice view with extraction boxes
+      const boxes = getExtractionBoxes();
+      let boxesHtml = '';
+      boxes.forEach((box, i) => {
+        boxesHtml += `<div class="extraction-box ${box.cls}" id="extractBox${i}"
+          style="top:${box.top}; left:${box.left}; width:${box.width}; height:${box.height};">
+          <span class="box-label">${box.label}</span>
+        </div>`;
+      });
+
+      // Build line items table with hidden rows
+      let rowsHtml = '';
+      fastFreightLineItems.forEach((item, i) => {
+        const cls = item.overcharge ? 'overcharge row-hidden' : 'row-hidden';
+        rowsHtml += `<tr class="${cls}" id="lineRow${i}">
+          <td>${item.service}</td>
+          <td>${item.qty}</td>
+          <td>${item.invoicedRate}</td>
+          <td id="contractCell${i}">—</td>
+          <td id="diffCell${i}">—</td>
+        </tr>`;
+      });
+
+      centerContent.innerHTML = `
+        <div class="invoice-viewer" id="invoiceViewer" style="position: relative;">
+          ${getScannedInvoiceSvg()}
+          <div class="extracting-overlay" id="extractingOverlay"></div>
+          ${boxesHtml}
+        </div>
+        <div style="background: #fff; border: 1px solid var(--color-light-gray); border-radius: var(--radius-sm); padding: 16px; margin-top: 16px;">
+          <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Extracted Line Items</h3>
+          <table class="line-items-table" id="lineItemsTable">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Qty</th>
+                <th>Invoiced Rate</th>
+                <th>Contracted Rate</th>
+                <th>Difference</th>
+              </tr>
+            </thead>
+            <tbody id="lineItemsBody">
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // Clear right panel initially
+      rightContent.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">&#8987;</div>
+          <p>Analyzing invoice...</p>
+        </div>
+      `;
+
+      // Step 1: Extracting shimmer
+      const overlay = document.getElementById('extractingOverlay');
+      overlay.classList.add('active');
+      await wait(1500);
+      overlay.classList.remove('active');
+
+      // Step 2: Extraction boxes appear one by one
+      for (let i = 0; i < boxes.length; i++) {
+        await wait(300);
+        const el = document.getElementById('extractBox' + i);
+        if (el) el.classList.add('visible');
+      }
+
+      // Step 3: Table rows slide in
+      for (let i = 0; i < fastFreightLineItems.length; i++) {
+        await wait(200);
+        const row = document.getElementById('lineRow' + i);
+        if (row) row.classList.remove('row-hidden');
+      }
+
+      // Step 4: Contracted rates appear
+      await wait(400);
+      const contractedRates = ['$45.00', '$78.00', '$95.00', '15.5%', '—', '—', '$4.50'];
+      for (let i = 0; i < contractedRates.length; i++) {
+        const cell = document.getElementById('contractCell' + i);
+        if (cell) cell.textContent = contractedRates[i];
+      }
+
+      // Step 5: Difference column populates
+      await wait(300);
+      const diffs = ['—', '—', '—', '+$87.50', '—', '-$62.50', '—'];
+      for (let i = 0; i < diffs.length; i++) {
+        const cell = document.getElementById('diffCell' + i);
+        if (cell) cell.textContent = diffs[i];
+      }
+
+      // Step 6: Flash overcharge rows
+      await wait(200);
+      document.querySelectorAll('.overcharge').forEach(row => {
+        row.classList.add('flash-overcharge');
+      });
+
+      // Step 7: Build right panel with resolution
+      await wait(400);
+      buildResolutionPanel();
+    }
+
+    /* ── Build the resolution panel for FastFreight ── */
+    function buildResolutionPanel() {
+      const rightContent = document.getElementById('rightContent');
+
+      rightContent.innerHTML = `
+        <div class="resolution-card">
+          <h3>Reconciliation Totals</h3>
+          <div class="totals-row">
+            <span class="label">Total invoiced</span>
+            <span class="value" id="totalInvoiced">$0.00</span>
+          </div>
+          <div class="totals-row">
+            <span class="label">Contracted total</span>
+            <span class="value" id="totalContracted">$0.00</span>
+          </div>
+          <div class="overcharge-total pulse-overcharge" id="overchargeTotal">
+            $0.00
+          </div>
+          <div style="text-align: center; font-size: 13px; font-weight: 700; color: var(--color-danger); margin-bottom: 16px;">OVERCHARGE DETECTED</div>
+        </div>
+
+        <div class="resolution-card">
+          <h3>Overcharge Breakdown</h3>
+          <div class="breakdown-item">
+            <div class="breakdown-title">Fuel Surcharge — +$87.50</div>
+            <div class="breakdown-detail">Invoiced at 18.0% vs contracted rate of 15.5%</div>
+          </div>
+          <div class="breakdown-item">
+            <div class="breakdown-title">Wait Time — +$62.50 <span class="gps-badge">&#128225; GPS Evidence</span></div>
+            <div class="breakdown-detail">Invoiced 2 hrs, GPS data shows 1 hr 12 min actual wait</div>
+          </div>
+        </div>
+
+        <div class="resolution-card">
+          <h3>AI-Drafted Dispute</h3>
+          <div class="dispute-email" id="disputeEmail"></div>
+          <div class="dispute-actions">
+            <button class="btn btn-reject btn-sm" onclick="sendDispute()">Send Dispute</button>
+            <button class="btn btn-edit btn-sm" onclick="overrideApprove()">Override &amp; Approve</button>
+          </div>
+        </div>
+      `;
+
+      // Count up totals
+      const totalInvoicedEl = document.getElementById('totalInvoiced');
+      const totalContractedEl = document.getElementById('totalContracted');
+      const overchargeTotalEl = document.getElementById('overchargeTotal');
+
+      countUp(totalInvoicedEl, 0, 2847.50, 1000, '$', '', 2);
+      countUp(totalContractedEl, 0, 2697.50, 1000, '$', '', 2);
+
+      schedule(() => {
+        countUp(overchargeTotalEl, 0, 150.00, 800, '$', '', 2);
+      }, 600);
+
+      // Type out dispute email
+      const disputeText = `Dear FastFreight team,
+
+Our automated reconciliation has identified discrepancies on INV-4402 dated 08/03/2026.
+
+1. Fuel surcharge: Invoiced at 18.0%, contracted rate is 15.5%. Overcharge: $87.50.
+
+2. Wait time: Invoiced for 2 hours. GPS tracking data confirms actual wait time of 1 hour 12 minutes at delivery point. Overcharge: $62.50.
+
+Total disputed amount: $150.00
+
+Please review and issue a credit note at your earliest convenience. Supporting GPS evidence is attached.
+
+Regards,
+NorthLink Distribution — Accounts Payable`;
+
+      schedule(() => {
+        const emailEl = document.getElementById('disputeEmail');
+        if (emailEl) typeWriter(emailEl, disputeText, 15);
+      }, 1200);
+    }
+
+    /* ── Action handlers ── */
+    function sendDispute() {
+      toast('Dispute email sent to FastFreight', 'success');
+    }
+
+    function overrideApprove() {
+      toast('INV-4402 override submitted for manager approval', 'warning');
+    }
+
+    /* ── Process pending invoice (INV-4405) ── */
+    async function processInv5() {
+      const inv5El = document.getElementById('inv5');
+      const processingEl = document.getElementById('inv5Processing');
+      const statusEl = document.getElementById('inv5Status');
+
+      // Show processing spinner
+      processingEl.classList.add('active');
+      inv5El.classList.add('shimmer');
+
+      await wait(2500);
+
+      // Remove processing spinner
+      processingEl.classList.remove('active');
+      inv5El.classList.remove('shimmer');
+
+      // Update status to Verified
+      invoices[4].status = 'verified';
+      statusEl.className = 'pill pill-success';
+      statusEl.textContent = 'Verified';
+
+      toast('INV-4405 (CityLink Logistics) verified — no discrepancies', 'success');
+    }
+
+    /* ── Process Invoice (button handler) ── */
+    async function processInvoice() {
+      if (demoRunning) return;
+      demoRunning = true;
+
+      // Process pending invoice INV-4405
+      if (invoices[4].status === 'pending') {
+        await processInv5();
+      }
+
+      // Auto-select the discrepancy invoice after a beat
+      await wait(800);
+      selectInvoice(2);
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      // Clear pending timeouts
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+      selectedInvoice = null;
+
+      // Reset INV-4405 status
+      invoices[4].status = 'pending';
+      const inv5Status = document.getElementById('inv5Status');
+      inv5Status.className = 'pill pill-neutral';
+      inv5Status.textContent = 'Pending';
+      document.getElementById('inv5Processing').classList.remove('active');
+      document.getElementById('inv5').classList.remove('shimmer');
+
+      // Clear active states
+      document.querySelectorAll('.inv-card').forEach(el => el.classList.remove('active'));
+
+      // Reset center panel
+      document.getElementById('centerContent').innerHTML = `
+        <div class="empty-state" id="emptyCenter">
+          <div class="empty-icon">&#128196;</div>
+          <p>Click an invoice to view AI analysis</p>
+        </div>
+      `;
+
+      // Reset right panel
+      document.getElementById('rightContent').innerHTML = `
+        <div class="empty-state" id="emptyRight">
+          <div class="empty-icon">&#128209;</div>
+          <p>Select an invoice to see reconciliation details</p>
+        </div>
+      `;
+
+      // Remove toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) processInvoice();
+    }, 2000);
+  </script>
+</body>
+</html>
