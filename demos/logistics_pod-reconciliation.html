@@ -733,7 +733,8 @@
     }
 
     /* ── Generate enlarged POD SVG for center panel ── */
-    function getPodSvg(pod) {
+    function getPodSvg(pod, extraStyle) {
+      extraStyle = extraStyle || '';
       const bgColors = {
         1: '#FDF8EE',
         2: '#FAF3E5',
@@ -763,7 +764,7 @@
 
       const quantityColor = pod.status === 'discrepancy' ? '#c0392b' : '#333';
 
-      return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" ${rotation}>
+      return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" ${rotation} ${extraStyle}>
         <rect x="0" y="0" width="400" height="300" fill="${bgColors[pod.id]}" rx="6"/>
         <rect x="0" y="0" width="400" height="40" fill="${headerColors[pod.id]}" rx="6"/>
         <rect x="0" y="36" width="400" height="4" fill="${headerColors[pod.id]}"/>
@@ -869,9 +870,13 @@
         </div>`;
       });
 
+      /* Limit the pod viewer height for the rotated POD so extracted data stays visible */
+      const viewerStyle = pod.id === 3 ? 'position:relative; max-height:320px;' : 'position:relative;';
+      const svgStyle = pod.id === 3 ? 'style="max-height:300px; width:auto; margin:0 auto;"' : '';
+
       centerContent.innerHTML = `
-        <div class="pod-viewer" id="podViewer" style="position: relative;">
-          ${getPodSvg(pod)}
+        <div class="pod-viewer" id="podViewer" style="${viewerStyle}">
+          ${getPodSvg(pod, svgStyle)}
           ${boxesHtml}
         </div>
         <div class="extracted-data">
