@@ -1,0 +1,1133 @@
+<!-- ABOUTME: Visual Product Search and Match mockup for NorthLink AI. -->
+<!-- ABOUTME: Customer photo matched to inventory products with confidence scores and feature extraction. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Product Search — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px);
+    }
+
+    .panel-left {
+      flex: 0 0 40%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      background: #fafafa;
+    }
+
+    .panel-right {
+      flex: 0 0 60%;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    /* Photo container */
+    .photo-container {
+      position: relative;
+      background: #e8e8ec;
+      border-radius: var(--radius);
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      margin-bottom: 16px;
+    }
+
+    .photo-scene {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      filter: blur(0.5px);
+      transform: rotate(-3deg) scale(1.08);
+      transform-origin: center center;
+    }
+
+    /* Street background */
+    .photo-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #b0c4de 0%, #8faec4 30%, #a0a0a0 60%, #787878 100%);
+    }
+
+    .photo-bg .floor {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 35%;
+      background: linear-gradient(180deg, #9a9a9a 0%, #7a7a7a 100%);
+    }
+
+    .photo-bg .floor-line {
+      position: absolute;
+      bottom: 30%;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* SVG shoe illustration */
+    .shoe-illustration {
+      position: absolute;
+      bottom: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      max-width: 280px;
+    }
+
+    /* Camera frame overlay */
+    .camera-frame {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .camera-frame::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-radius: 4px;
+    }
+
+    .camera-frame .timestamp {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      font-size: 11px;
+      font-family: monospace;
+      color: rgba(255,255,255,0.7);
+      background: rgba(0,0,0,0.3);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    .camera-frame .rec-dot {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff3b30;
+      animation: rec-blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes rec-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Photo action buttons */
+    .photo-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .photo-actions .btn {
+      flex: 1;
+    }
+
+    /* AI extraction overlay */
+    .extraction-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .extraction-overlay.visible {
+      opacity: 1;
+    }
+
+    /* Feature labels */
+    .feature-label {
+      position: absolute;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-stack);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(-5px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .feature-label.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feature-label.cat { background: var(--color-purple); top: 12%; left: 8%; }
+    .feature-label.col { background: var(--color-blue); top: 22%; left: 8%; }
+    .feature-label.style { background: var(--color-green); top: 32%; left: 8%; }
+    .feature-label.brand { background: var(--color-orange); top: 42%; left: 8%; }
+
+    /* Region outlines on shoe */
+    .region-outline {
+      position: absolute;
+      border: 2px solid;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .region-outline.visible {
+      opacity: 1;
+      animation: region-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes region-pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    .region-sole {
+      border-color: var(--color-green);
+      bottom: 22%;
+      left: 18%;
+      width: 64%;
+      height: 10%;
+      border-radius: 20px;
+    }
+
+    .region-logo {
+      border-color: var(--color-orange);
+      border-radius: 50%;
+      bottom: 42%;
+      left: 38%;
+      width: 18%;
+      height: 14%;
+    }
+
+    .region-upper {
+      border-color: var(--color-blue);
+      bottom: 30%;
+      left: 22%;
+      width: 56%;
+      height: 22%;
+      border-radius: 8px;
+    }
+
+    /* Searching overlay */
+    .searching-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(26, 27, 37, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      border-radius: var(--radius);
+    }
+
+    .searching-overlay.visible {
+      opacity: 1;
+    }
+
+    .searching-overlay .search-text {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .searching-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: var(--color-purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Panel right header */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .results-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .results-count {
+      color: var(--color-slate-gray);
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    /* Sort buttons */
+    .sort-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .sort-btn {
+      padding: 5px 14px;
+      font-family: var(--font-stack);
+      font-size: 12px;
+      font-weight: 600;
+      background: #fff;
+      border: 1px solid var(--color-light-gray);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      color: var(--color-slate-black);
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .sort-btn:hover {
+      border-color: var(--color-purple);
+      color: var(--color-purple);
+    }
+
+    .sort-btn.active {
+      background: var(--color-purple);
+      color: #fff;
+      border-color: var(--color-purple);
+    }
+
+    /* Product grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* Product card */
+    .product-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 2px solid var(--color-light-gray);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .product-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .product-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    .product-card.exact-match {
+      border-color: var(--color-success);
+      box-shadow: 0 0 0 1px var(--color-success);
+    }
+
+    .product-card.exact-match.pulse-active {
+      animation: green-pulse 2s ease-in-out 3;
+    }
+
+    @keyframes green-pulse {
+      0%, 100% { box-shadow: 0 0 0 1px var(--color-success); }
+      50% { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3); }
+    }
+
+    /* Product image placeholder */
+    .product-img {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-img svg {
+      width: 80%;
+      height: 80%;
+    }
+
+    /* Match badge */
+    .match-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      color: #fff;
+    }
+
+    .match-badge.match-high { background: var(--color-success); }
+    .match-badge.match-mid { background: var(--color-warning); }
+    .match-badge.match-low { background: var(--color-slate-gray); }
+
+    /* Special badges */
+    .special-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      color: #fff;
+    }
+
+    .badge-exact { background: var(--color-success); }
+    .badge-budget { background: var(--color-blue); }
+
+    /* Product body */
+    .product-body {
+      padding: 12px 16px 16px;
+    }
+
+    .product-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin: 0 0 4px;
+      line-height: 1.3;
+    }
+
+    .product-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-purple);
+      margin: 0 0 4px;
+    }
+
+    .product-rating {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      margin: 0 0 6px;
+    }
+
+    .product-sizes {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      margin: 0 0 10px;
+    }
+
+    .product-sizes span {
+      display: inline-block;
+      background: var(--color-off-white);
+      border: 1px solid var(--color-light-gray);
+      border-radius: 4px;
+      padding: 2px 7px;
+      margin: 2px 2px 2px 0;
+      font-weight: 600;
+      color: var(--color-slate-black);
+    }
+
+    .btn-cart {
+      width: 100%;
+      padding: 8px;
+      font-family: var(--font-stack);
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--color-purple);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-cart:hover {
+      background: #9568b8;
+    }
+
+    /* Try another button */
+    .try-another-wrap {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    /* Panel section label */
+    .panel-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-slate-gray);
+      margin-bottom: 12px;
+    }
+
+    /* Highlighted feature on hover */
+    .feature-highlight {
+      transition: opacity 0.3s ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .product-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
+      <span class="logo-text">Real Minds AI</span>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/retail-hospo.html">Retail &amp; Hospitality</a> &rarr; Visual Product Search
+      </div>
+      <div class="demo-title">Visual Product Search</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" onclick="runSearch()">Search</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Customer Photo -->
+    <div class="panel-left">
+      <div class="panel-label">Customer Photo</div>
+
+      <div class="photo-container" id="photoContainer">
+        <!-- Street/store background -->
+        <div class="photo-scene" id="photoScene">
+          <div class="photo-bg">
+            <div class="floor"></div>
+            <div class="floor-line"></div>
+          </div>
+
+          <!-- SVG Sneaker Illustration -->
+          <svg class="shoe-illustration" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sole -->
+            <path d="M30,130 Q30,140 45,142 L255,142 Q270,140 270,130 L270,120 Q200,125 150,122 Q100,119 30,125 Z" fill="#2a2a3a" stroke="#1a1a2a" stroke-width="1"/>
+            <!-- Midsole -->
+            <path d="M35,125 Q35,118 50,115 L250,115 Q265,118 265,125 L265,125 Q200,128 150,125 Q100,122 35,128 Z" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+            <!-- Shoe upper -->
+            <path d="M50,115 Q45,80 55,60 Q65,42 100,35 L180,30 Q220,28 250,40 Q260,45 262,55 L265,115 Q200,118 150,115 Q100,112 50,118 Z" fill="#ffffff" stroke="#d0d0d8" stroke-width="1"/>
+            <!-- Navy panels -->
+            <path d="M55,100 Q55,75 65,60 Q75,48 100,42 L120,38 Q90,55 80,75 Q72,92 70,110 Z" fill="#1a2744" opacity="0.9"/>
+            <path d="M230,45 Q245,50 255,60 L260,110 L240,112 Q245,70 230,50 Z" fill="#1a2744" opacity="0.9"/>
+            <!-- Heel counter -->
+            <path d="M50,115 Q48,90 55,70 L70,70 Q62,90 60,115 Z" fill="#1a2744"/>
+            <!-- Swoosh logo -->
+            <path d="M90,90 Q130,65 180,58 Q160,70 120,85 Q100,92 90,90 Z" fill="#1a2744" stroke="#0d1a30" stroke-width="0.5" opacity="0.85"/>
+            <!-- Toe cap accent -->
+            <path d="M230,50 Q250,55 260,65 L262,80 Q250,70 235,60 Z" fill="#e8e8f0" opacity="0.5"/>
+            <!-- Lace area -->
+            <ellipse cx="160" cy="38" rx="35" ry="6" fill="#f0f0f5" stroke="#d8d8e0" stroke-width="0.5"/>
+            <!-- Lace holes -->
+            <circle cx="140" cy="38" r="2" fill="#d0d0d8"/>
+            <circle cx="152" cy="36" r="2" fill="#d0d0d8"/>
+            <circle cx="164" cy="35" r="2" fill="#d0d0d8"/>
+            <circle cx="176" cy="36" r="2" fill="#d0d0d8"/>
+            <!-- Tongue -->
+            <path d="M135,38 Q145,18 165,15 Q175,18 180,38" fill="#f5f5fa" stroke="#d8d8e0" stroke-width="0.5"/>
+            <!-- Subtle shadow -->
+            <ellipse cx="155" cy="148" rx="110" ry="6" fill="rgba(0,0,0,0.1)"/>
+          </svg>
+        </div>
+
+        <!-- Camera frame overlay -->
+        <div class="camera-frame">
+          <div class="rec-dot"></div>
+          <div class="timestamp" id="cameraTimestamp">14:23:07</div>
+        </div>
+
+        <!-- AI feature extraction overlay -->
+        <div class="extraction-overlay" id="extractionOverlay">
+          <div class="feature-label cat" id="labelCat">Category: Sneakers</div>
+          <div class="feature-label col" id="labelCol">Colour: White/Navy</div>
+          <div class="feature-label style" id="labelStyle">Style: Retro runner</div>
+          <div class="feature-label brand" id="labelBrand">Brand: 78% match Nike</div>
+
+          <div class="region-outline region-sole" id="regionSole"></div>
+          <div class="region-outline region-logo" id="regionLogo"></div>
+          <div class="region-outline region-upper" id="regionUpper"></div>
+        </div>
+
+        <!-- Searching overlay -->
+        <div class="searching-overlay" id="searchingOverlay">
+          <div class="searching-spinner"></div>
+          <div class="search-text">Searching inventory...</div>
+        </div>
+      </div>
+
+      <!-- Photo action buttons -->
+      <div class="photo-actions">
+        <button class="btn btn-primary btn-sm" onclick="reloadPhoto()">Take Photo</button>
+        <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="reloadPhoto()">Upload</button>
+      </div>
+    </div>
+
+    <!-- Right panel: Matches -->
+    <div class="panel-right">
+      <div class="results-header">
+        <h2>Matches Found <span class="results-count" id="resultsCount"></span></h2>
+      </div>
+
+      <!-- Sort buttons -->
+      <div class="sort-bar" id="sortBar">
+        <button class="sort-btn active" data-sort="match" onclick="sortProducts('match', this)">Match %</button>
+        <button class="sort-btn" data-sort="price-asc" onclick="sortProducts('price-asc', this)">Price &#8593;</button>
+        <button class="sort-btn" data-sort="price-desc" onclick="sortProducts('price-desc', this)">Price &#8595;</button>
+        <button class="sort-btn" data-sort="rating" onclick="sortProducts('rating', this)">Rating</button>
+      </div>
+
+      <!-- Product grid -->
+      <div class="product-grid" id="productGrid">
+        <!-- Cards injected by JS -->
+      </div>
+
+      <!-- Try another -->
+      <div class="try-another-wrap">
+        <button class="btn btn-outline btn-sm" style="color: var(--color-purple); border-color: var(--color-purple);" onclick="tryAnother()">Try Another Photo</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your business?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Product data for both demo scenarios ── */
+    const scenarioSneakers = [
+      {
+        id: 'p1', match: 98, name: 'Nike Air Pegasus 41 White/Navy', price: 179.95, rating: 4.7,
+        sizes: [8, 9, 10, 11], badge: 'Exact Match', badgeClass: 'badge-exact', exact: true,
+        bgColor: '#f0f4f8', shoeColor: '#1a2744', accentColor: '#ffffff',
+        features: ['sole', 'logo', 'upper']
+      },
+      {
+        id: 'p2', match: 89, name: 'Nike Air Pegasus 41 White/Red', price: 179.95, rating: 4.7,
+        sizes: [7, 8, 9, 10, 11, 12], badge: null, exact: false,
+        bgColor: '#fdf2f0', shoeColor: '#c0392b', accentColor: '#ffffff',
+        features: ['sole', 'logo']
+      },
+      {
+        id: 'p3', match: 82, name: 'New Balance 574 White/Navy', price: 149.95, rating: 4.5,
+        sizes: [8, 9, 10, 11], badge: null, exact: false,
+        bgColor: '#f0f4f8', shoeColor: '#1a2744', accentColor: '#ffffff',
+        features: ['upper']
+      },
+      {
+        id: 'p4', match: 76, name: 'Asics Gel-Excite White/Blue', price: 129.95, rating: 4.3,
+        sizes: [8, 9, 10, 12], badge: null, exact: false,
+        bgColor: '#f0f5fa', shoeColor: '#2980b9', accentColor: '#ffffff',
+        features: ['sole']
+      },
+      {
+        id: 'p5', match: 71, name: 'Puma RS-X White/Grey', price: 159.95, rating: 4.4,
+        sizes: [7, 8, 9, 10], badge: null, exact: false,
+        bgColor: '#f5f5f5', shoeColor: '#7f8c8d', accentColor: '#ffffff',
+        features: []
+      },
+      {
+        id: 'p6', match: 68, name: 'Adidas Run Falcon White/Navy', price: 89.95, rating: 4.1,
+        sizes: [8, 9, 10, 11, 12], badge: 'Budget Pick', badgeClass: 'badge-budget', exact: false,
+        bgColor: '#f0f4f8', shoeColor: '#1a2744', accentColor: '#ffffff',
+        features: ['upper']
+      }
+    ];
+
+    const scenarioHandbag = [
+      {
+        id: 'p1', match: 95, name: 'Coach Tabby Shoulder Bag Tan', price: 595.00, rating: 4.8,
+        sizes: [], badge: 'Exact Match', badgeClass: 'badge-exact', exact: true,
+        bgColor: '#faf5ef', shoeColor: '#8B6914', accentColor: '#D4A547',
+        features: ['sole', 'logo', 'upper'], isBag: true
+      },
+      {
+        id: 'p2', match: 87, name: 'Coach Tabby Shoulder Bag Black', price: 595.00, rating: 4.8,
+        sizes: [], badge: null, exact: false,
+        bgColor: '#f0f0f0', shoeColor: '#2c2c2c', accentColor: '#4a4a4a',
+        features: ['sole', 'logo'], isBag: true
+      },
+      {
+        id: 'p3', match: 79, name: 'Marc Jacobs Snapshot Tan', price: 495.00, rating: 4.5,
+        sizes: [], badge: null, exact: false,
+        bgColor: '#faf5ef', shoeColor: '#9B7B3C', accentColor: '#C4A04A',
+        features: ['upper'], isBag: true
+      },
+      {
+        id: 'p4', match: 73, name: 'Kate Spade Knott Saddle', price: 449.00, rating: 4.4,
+        sizes: [], badge: null, exact: false,
+        bgColor: '#f8f0e8', shoeColor: '#A0724A', accentColor: '#C49A6C',
+        features: ['sole'], isBag: true
+      },
+      {
+        id: 'p5', match: 67, name: 'Tory Burch Kira Chevron Tan', price: 628.00, rating: 4.6,
+        sizes: [], badge: null, exact: false,
+        bgColor: '#faf5ef', shoeColor: '#9B7B3C', accentColor: '#B8942F',
+        features: [], isBag: true
+      },
+      {
+        id: 'p6', match: 61, name: 'Fossil Jolie Crossbody Tan', price: 189.00, rating: 4.0,
+        sizes: [], badge: 'Budget Pick', badgeClass: 'badge-budget', exact: false,
+        bgColor: '#faf5ef', shoeColor: '#8B6914', accentColor: '#B8860B',
+        features: ['upper'], isBag: true
+      }
+    ];
+
+    /* Extraction labels per scenario */
+    const extractionSneakers = {
+      cat: 'Category: Sneakers',
+      col: 'Colour: White/Navy',
+      style: 'Style: Retro runner',
+      brand: 'Brand: 78% match Nike'
+    };
+
+    const extractionHandbag = {
+      cat: 'Category: Handbag',
+      col: 'Colour: Tan/Brown',
+      style: 'Style: Shoulder bag',
+      brand: 'Brand: 82% match Coach'
+    };
+
+    let currentScenario = 'sneakers';
+    let currentProducts = scenarioSneakers;
+    let currentExtraction = extractionSneakers;
+    let demoRunning = false;
+    let animationTimeouts = [];
+
+    /* ── Build product card HTML ── */
+    function buildProductCard(product) {
+      const matchClass = product.match >= 90 ? 'match-high' : product.match >= 70 ? 'match-mid' : 'match-low';
+      const exactClass = product.exact ? ' exact-match' : '';
+      const starsStr = '\u2B50 ' + product.rating;
+      const sizesHtml = product.sizes.length > 0
+        ? '<div class="product-sizes">' + product.sizes.map(s => '<span>' + s + '</span>').join('') + '</div>'
+        : '';
+      const badgeHtml = product.badge
+        ? '<div class="special-badge ' + product.badgeClass + '">' + product.badge + '</div>'
+        : '';
+
+      const svgHtml = product.isBag ? buildBagSvg(product) : buildShoeSvg(product);
+
+      return '<div class="product-card' + exactClass + '" id="' + product.id + '" data-match="' + product.match + '" data-price="' + product.price + '" data-rating="' + product.rating + '" data-features=\'' + JSON.stringify(product.features) + '\'' +
+        ' onmouseenter="highlightFeatures(this)" onmouseleave="unhighlightFeatures()">' +
+        '<div class="product-img" style="background:' + product.bgColor + ';">' +
+          svgHtml +
+          '<div class="match-badge ' + matchClass + '"><span class="match-pct" data-target="' + product.match + '">0%</span></div>' +
+          badgeHtml +
+        '</div>' +
+        '<div class="product-body">' +
+          '<p class="product-name">' + product.name + '</p>' +
+          '<p class="product-price">$' + product.price.toFixed(2) + '</p>' +
+          '<p class="product-rating">' + starsStr + '</p>' +
+          sizesHtml +
+          '<button class="btn-cart" onclick="addToCart(event, \'' + product.name + '\')">Add to Cart</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    /* ── Build shoe SVG for product card ── */
+    function buildShoeSvg(product) {
+      return '<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M20,80 Q20,85 30,87 L170,87 Q180,85 180,80 L180,75 Q140,78 100,76 Q60,74 20,78 Z" fill="#2a2a3a"/>' +
+        '<path d="M25,78 Q25,72 35,70 L165,70 Q175,72 175,78 Q140,80 100,78 Q60,76 25,80 Z" fill="' + product.accentColor + '" stroke="#e0e0e0" stroke-width="0.5"/>' +
+        '<path d="M35,70 Q32,48 40,35 Q48,25 70,20 L130,18 Q150,17 165,25 Q172,28 174,33 L176,70 Q140,72 100,70 Q60,68 35,72 Z" fill="' + product.accentColor + '" stroke="#d0d0d8" stroke-width="0.5"/>' +
+        '<path d="M38,62 Q38,45 46,35 Q54,27 70,24 L85,22 Q64,34 56,48 Q50,58 48,68 Z" fill="' + product.shoeColor + '" opacity="0.85"/>' +
+        '<path d="M155,28 Q165,32 172,38 L174,68 L160,69 Q163,42 155,32 Z" fill="' + product.shoeColor + '" opacity="0.85"/>' +
+        '<path d="M62,56 Q90,40 125,35 Q110,43 82,53 Q68,58 62,56 Z" fill="' + product.shoeColor + '" opacity="0.75"/>' +
+      '</svg>';
+    }
+
+    /* ── Build bag SVG for product card ── */
+    function buildBagSvg(product) {
+      return '<svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M70,30 Q70,10 100,10 Q130,10 130,30" fill="none" stroke="' + product.shoeColor + '" stroke-width="4" stroke-linecap="round"/>' +
+        '<rect x="45" y="30" width="110" height="75" rx="8" fill="' + product.shoeColor + '"/>' +
+        '<rect x="50" y="35" width="100" height="65" rx="5" fill="' + product.accentColor + '" opacity="0.3"/>' +
+        '<rect x="85" y="55" width="30" height="8" rx="4" fill="' + product.accentColor + '"/>' +
+        '<circle cx="100" cy="59" r="3" fill="' + product.shoeColor + '"/>' +
+      '</svg>';
+    }
+
+    /* ── Render all product cards ── */
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = currentProducts.map(p => buildProductCard(p)).join('');
+    }
+
+    /* ── Run the search animation sequence ── */
+    async function runSearch() {
+      if (demoRunning) return;
+      demoRunning = true;
+      resetAll(true);
+      await wait(200);
+
+      // Step 1: Show extraction overlay
+      const overlay = document.getElementById('extractionOverlay');
+      overlay.classList.add('visible');
+
+      // Step 2: Animate feature labels appearing one by one
+      const labels = ['labelCat', 'labelCol', 'labelStyle', 'labelBrand'];
+      for (let i = 0; i < labels.length; i++) {
+        const tid = setTimeout(() => {
+          document.getElementById(labels[i]).classList.add('visible');
+        }, 300 + i * 400);
+        animationTimeouts.push(tid);
+      }
+
+      // Step 3: Show region outlines
+      const regions = ['regionUpper', 'regionSole', 'regionLogo'];
+      for (let i = 0; i < regions.length; i++) {
+        const tid = setTimeout(() => {
+          document.getElementById(regions[i]).classList.add('visible');
+        }, 1800 + i * 300);
+        animationTimeouts.push(tid);
+      }
+
+      // Step 4: Show searching overlay
+      const searchTid = setTimeout(() => {
+        document.getElementById('searchingOverlay').classList.add('visible');
+      }, 2800);
+      animationTimeouts.push(searchTid);
+
+      // Step 5: Hide searching, show results
+      const resultsTid = setTimeout(() => {
+        document.getElementById('searchingOverlay').classList.remove('visible');
+        document.getElementById('resultsCount').textContent = '— ' + currentProducts.length + ' products';
+        showProductCards();
+      }, 4300);
+      animationTimeouts.push(resultsTid);
+    }
+
+    /* ── Show product cards one by one with count-up ── */
+    function showProductCards() {
+      const cards = document.querySelectorAll('.product-card');
+      cards.forEach((card, i) => {
+        const tid = setTimeout(() => {
+          card.classList.add('visible');
+
+          // Count up match percentage
+          const pctEl = card.querySelector('.match-pct');
+          const target = parseInt(pctEl.dataset.target);
+          countUp(pctEl, 0, target, 800, '', '%');
+
+          // Pulse the exact match card
+          if (card.classList.contains('exact-match')) {
+            const pulseTid = setTimeout(() => {
+              card.classList.add('pulse-active');
+            }, 500);
+            animationTimeouts.push(pulseTid);
+          }
+
+          // Mark demo as done after last card
+          if (i === cards.length - 1) {
+            const doneTid = setTimeout(() => {
+              demoRunning = false;
+            }, 500);
+            animationTimeouts.push(doneTid);
+          }
+        }, i * 300);
+        animationTimeouts.push(tid);
+      });
+    }
+
+    /* ── Sort products with smooth animation ── */
+    function sortProducts(sortType, btn) {
+      // Update active button
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const grid = document.getElementById('productGrid');
+      const cards = Array.from(grid.querySelectorAll('.product-card'));
+
+      // Determine sort order
+      cards.sort((a, b) => {
+        switch (sortType) {
+          case 'match':
+            return parseFloat(b.dataset.match) - parseFloat(a.dataset.match);
+          case 'price-asc':
+            return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+          case 'price-desc':
+            return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+          case 'rating':
+            return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+          default:
+            return 0;
+        }
+      });
+
+      // Animate: fade out, reorder, fade in
+      cards.forEach(c => {
+        c.style.opacity = '0';
+        c.style.transform = 'translateY(10px)';
+      });
+
+      setTimeout(() => {
+        cards.forEach(c => grid.appendChild(c));
+        cards.forEach((c, i) => {
+          setTimeout(() => {
+            c.style.opacity = '1';
+            c.style.transform = 'translateY(0)';
+          }, i * 80);
+        });
+      }, 300);
+    }
+
+    /* ── Highlight features on photo when hovering a product card ── */
+    function highlightFeatures(card) {
+      const features = JSON.parse(card.dataset.features || '[]');
+      const regionMap = { sole: 'regionSole', logo: 'regionLogo', upper: 'regionUpper' };
+
+      // Dim all regions first
+      ['regionSole', 'regionLogo', 'regionUpper'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el.classList.contains('visible')) {
+          el.style.opacity = '0.2';
+        }
+      });
+
+      // Highlight matching features
+      features.forEach(f => {
+        const el = document.getElementById(regionMap[f]);
+        if (el && el.classList.contains('visible')) {
+          el.style.opacity = '1';
+          el.style.borderWidth = '3px';
+        }
+      });
+    }
+
+    function unhighlightFeatures() {
+      ['regionSole', 'regionLogo', 'regionUpper'].forEach(id => {
+        const el = document.getElementById(id);
+        el.style.opacity = '';
+        el.style.borderWidth = '';
+      });
+    }
+
+    /* ── Add to cart ── */
+    function addToCart(event, productName) {
+      event.stopPropagation();
+      toast(productName + ' added to cart', 'success');
+    }
+
+    /* ── Reload photo (just re-runs the demo) ── */
+    function reloadPhoto() {
+      resetAll();
+      setTimeout(() => runSearch(), 300);
+    }
+
+    /* ── Try another photo — swap scenario ── */
+    function tryAnother() {
+      if (currentScenario === 'sneakers') {
+        currentScenario = 'handbag';
+        currentProducts = scenarioHandbag;
+        currentExtraction = extractionHandbag;
+        swapPhotoToHandbag();
+      } else {
+        currentScenario = 'sneakers';
+        currentProducts = scenarioSneakers;
+        currentExtraction = extractionSneakers;
+        swapPhotoToSneakers();
+      }
+
+      // Update extraction labels
+      document.getElementById('labelCat').textContent = currentExtraction.cat;
+      document.getElementById('labelCol').textContent = currentExtraction.col;
+      document.getElementById('labelStyle').textContent = currentExtraction.style;
+      document.getElementById('labelBrand').textContent = currentExtraction.brand;
+
+      resetAll();
+      renderProducts();
+      setTimeout(() => runSearch(), 500);
+    }
+
+    /* ── Swap photo illustration to handbag ── */
+    function swapPhotoToHandbag() {
+      const scene = document.getElementById('photoScene');
+      const existingShoe = scene.querySelector('.shoe-illustration');
+      if (existingShoe) existingShoe.remove();
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'shoe-illustration');
+      svg.setAttribute('viewBox', '0 0 300 200');
+      svg.innerHTML =
+        '<path d="M110,50 Q110,15 150,15 Q190,15 190,50" fill="none" stroke="#8B6914" stroke-width="6" stroke-linecap="round"/>' +
+        '<rect x="70" y="50" width="160" height="120" rx="12" fill="#C4A04A"/>' +
+        '<rect x="78" y="58" width="144" height="104" rx="8" fill="#D4A547" opacity="0.7"/>' +
+        '<rect x="120" y="90" width="60" height="14" rx="7" fill="#8B6914"/>' +
+        '<circle cx="150" cy="97" r="5" fill="#C4A04A"/>' +
+        '<line x1="90" y1="130" x2="210" y2="130" stroke="#8B6914" stroke-width="1" opacity="0.4"/>' +
+        '<ellipse cx="150" cy="178" rx="80" ry="8" fill="rgba(0,0,0,0.1)"/>';
+      scene.appendChild(svg);
+      scene.style.transform = 'rotate(2deg) scale(1.08)';
+
+      // Adjust region outlines for bag
+      document.getElementById('regionSole').style.cssText += 'bottom:12%;left:25%;width:50%;height:15%;border-radius:8px;';
+      document.getElementById('regionLogo').style.cssText += 'bottom:42%;left:40%;width:20%;height:10%;border-radius:6px;';
+      document.getElementById('regionUpper').style.cssText += 'bottom:25%;left:28%;width:44%;height:30%;border-radius:10px;';
+    }
+
+    /* ── Swap photo illustration back to sneakers ── */
+    function swapPhotoToSneakers() {
+      const scene = document.getElementById('photoScene');
+      const existingBag = scene.querySelector('.shoe-illustration');
+      if (existingBag) existingBag.remove();
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'shoe-illustration');
+      svg.setAttribute('viewBox', '0 0 300 160');
+      svg.innerHTML =
+        '<path d="M30,130 Q30,140 45,142 L255,142 Q270,140 270,130 L270,120 Q200,125 150,122 Q100,119 30,125 Z" fill="#2a2a3a" stroke="#1a1a2a" stroke-width="1"/>' +
+        '<path d="M35,125 Q35,118 50,115 L250,115 Q265,118 265,125 L265,125 Q200,128 150,125 Q100,122 35,128 Z" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>' +
+        '<path d="M50,115 Q45,80 55,60 Q65,42 100,35 L180,30 Q220,28 250,40 Q260,45 262,55 L265,115 Q200,118 150,115 Q100,112 50,118 Z" fill="#ffffff" stroke="#d0d0d8" stroke-width="1"/>' +
+        '<path d="M55,100 Q55,75 65,60 Q75,48 100,42 L120,38 Q90,55 80,75 Q72,92 70,110 Z" fill="#1a2744" opacity="0.9"/>' +
+        '<path d="M230,45 Q245,50 255,60 L260,110 L240,112 Q245,70 230,50 Z" fill="#1a2744" opacity="0.9"/>' +
+        '<path d="M50,115 Q48,90 55,70 L70,70 Q62,90 60,115 Z" fill="#1a2744"/>' +
+        '<path d="M90,90 Q130,65 180,58 Q160,70 120,85 Q100,92 90,90 Z" fill="#1a2744" stroke="#0d1a30" stroke-width="0.5" opacity="0.85"/>' +
+        '<path d="M230,50 Q250,55 260,65 L262,80 Q250,70 235,60 Z" fill="#e8e8f0" opacity="0.5"/>' +
+        '<ellipse cx="160" cy="38" rx="35" ry="6" fill="#f0f0f5" stroke="#d8d8e0" stroke-width="0.5"/>' +
+        '<circle cx="140" cy="38" r="2" fill="#d0d0d8"/>' +
+        '<circle cx="152" cy="36" r="2" fill="#d0d0d8"/>' +
+        '<circle cx="164" cy="35" r="2" fill="#d0d0d8"/>' +
+        '<circle cx="176" cy="36" r="2" fill="#d0d0d8"/>' +
+        '<path d="M135,38 Q145,18 165,15 Q175,18 180,38" fill="#f5f5fa" stroke="#d8d8e0" stroke-width="0.5"/>' +
+        '<ellipse cx="155" cy="148" rx="110" ry="6" fill="rgba(0,0,0,0.1)"/>';
+      scene.appendChild(svg);
+      scene.style.transform = 'rotate(-3deg) scale(1.08)';
+
+      // Reset region outlines to shoe positions
+      document.getElementById('regionSole').style.cssText = '';
+      document.getElementById('regionLogo').style.cssText = '';
+      document.getElementById('regionUpper').style.cssText = '';
+    }
+
+    /* ── Reset everything ── */
+    function resetAll(keepProducts) {
+      animationTimeouts.forEach(t => clearTimeout(t));
+      animationTimeouts = [];
+      demoRunning = false;
+
+      // Hide extraction overlay and labels
+      document.getElementById('extractionOverlay').classList.remove('visible');
+      ['labelCat', 'labelCol', 'labelStyle', 'labelBrand'].forEach(id => {
+        document.getElementById(id).classList.remove('visible');
+      });
+
+      // Hide region outlines
+      ['regionSole', 'regionLogo', 'regionUpper'].forEach(id => {
+        document.getElementById(id).classList.remove('visible');
+      });
+
+      // Hide searching overlay
+      document.getElementById('searchingOverlay').classList.remove('visible');
+
+      // Reset results count
+      document.getElementById('resultsCount').textContent = '';
+
+      // Reset product cards
+      document.querySelectorAll('.product-card').forEach(c => {
+        c.classList.remove('visible', 'pulse-active');
+        c.style.opacity = '0';
+        c.style.transform = 'translateY(20px)';
+      });
+
+      // Reset sort buttons
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-sort="match"]').classList.add('active');
+
+      // Remove toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }
+
+    /* ── Camera timestamp updater ── */
+    function updateTimestamp() {
+      const now = new Date();
+      const ts = now.getHours().toString().padStart(2, '0') + ':' +
+                 now.getMinutes().toString().padStart(2, '0') + ':' +
+                 now.getSeconds().toString().padStart(2, '0');
+      document.getElementById('cameraTimestamp').textContent = ts;
+    }
+    setInterval(updateTimestamp, 1000);
+
+    /* ── Initial render and auto-start ── */
+    renderProducts();
+    setTimeout(() => {
+      if (!demoRunning) runSearch();
+    }, 2000);
+  </script>
+</body>
+</html>
