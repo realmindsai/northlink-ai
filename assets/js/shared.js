@@ -217,6 +217,24 @@ function highlightCard(id) {
 }
 
 /**
+ * Make demo-card-special cards clickable — navigates to the demo page.
+ * Clicking anywhere on the card (not just the demo-link) opens the demo.
+ * Initialized automatically on DOMContentLoaded for all industry pages.
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.use-case-card.demo-card-special').forEach(function(card) {
+    var link = card.querySelector('.demo-link');
+    if (!link) return;
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function(e) {
+      /* Don't double-navigate if they clicked the link itself */
+      if (e.target.closest('.demo-link')) return;
+      window.location.href = link.href;
+    });
+  });
+});
+
+/**
  * Accordion toggle — expands/collapses an accordion section.
  * Call from onclick on the accordion header.
  * @param {HTMLElement} header - The clicked accordion header

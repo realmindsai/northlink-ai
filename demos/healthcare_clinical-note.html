@@ -454,6 +454,7 @@
       </div>
 
       <!-- Transcript area -->
+      <div style="font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--color-slate-gray); margin-bottom:8px; display:none;" id="transcriptLabel">&#128274; Confidential &mdash; Live Transcript</div>
       <div class="transcript-area" id="transcriptArea"></div>
     </div>
 
@@ -731,8 +732,8 @@
     /* ── Main demo sequence ── */
     async function startDemo() {
       if (demoRunning) return;
-      demoRunning = true;
       resetAll();
+      demoRunning = true;
 
       initWaveform();
       await wait(500);

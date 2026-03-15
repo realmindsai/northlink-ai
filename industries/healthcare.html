@@ -50,7 +50,7 @@
   <div class="section">
     <div class="overview-intro">
       <div class="section-label">The AI Opportunity</div>
-      <h2>12 ways AI is transforming healthcare</h2>
+      <h2>14 ways AI is transforming healthcare</h2>
       <p>From the consulting room to the front desk, AI handles the paperwork so your practitioners stay with patients.</p>
       <div class="click-hint">Click any tile to see the full story below</div>
     </div>
@@ -103,14 +103,30 @@
         <div class="tile-desc">AI matches cancellations to waitlisted patients instantly</div>
       </a>
 
-      <div class="category-label">Billing &amp; Compliance</div>
+      <div class="category-label">NDIS &amp; Disability Services</div>
 
-      <a href="#detail-mbs-coding" class="overview-tile" onclick="highlightCard('detail-mbs-coding')">
-        <div class="tile-icon">&#128179;</div>
-        <h4>MBS Coding Assistant</h4>
-        <div class="tile-stat">Guesswork &rarr; 94% accuracy</div>
-        <div class="tile-desc">AI recommends MBS items with confidence scores and audit flags</div>
+      <a href="#detail-ndis-plan-dashboard" class="overview-tile has-demo" onclick="highlightCard('detail-ndis-plan-dashboard')">
+        <div class="tile-icon">&#128202;</div>
+        <h4>NDIS Plan Utilisation Dashboard</h4>
+        <div class="tile-stat">$32k funding at risk &rarr; flagged</div>
+        <div class="tile-desc">AI tracks plan budgets, flags underutilisation, suggests bookings before funding expires</div>
       </a>
+
+      <a href="#detail-ndis-note-to-claim" class="overview-tile has-demo" onclick="highlightCard('detail-ndis-note-to-claim')">
+        <div class="tile-icon">&#128221;</div>
+        <h4>Progress Note to Claim</h4>
+        <div class="tile-stat">12 min admin &rarr; 0 seconds</div>
+        <div class="tile-desc">AI extracts NDIS line items from session notes and generates compliant claims</div>
+      </a>
+
+      <a href="#detail-ndis-service-agreement" class="overview-tile has-demo" onclick="highlightCard('detail-ndis-service-agreement')">
+        <div class="tile-icon">&#128196;</div>
+        <h4>Service Agreement Generator</h4>
+        <div class="tile-stat">2 hours &rarr; 30 seconds</div>
+        <div class="tile-desc">AI generates NDIS-compliant service agreements with Price Guide rates</div>
+      </a>
+
+      <div class="category-label">Billing &amp; Compliance</div>
 
       <a href="#detail-compliance" class="overview-tile" onclick="highlightCard('detail-compliance')">
         <div class="tile-icon">&#128218;</div>
@@ -159,7 +175,7 @@
     <div class="deep-dive-intro">
       <div class="section-label">Dig Deeper</div>
       <h2>How each one works</h2>
-      <p>Real pain points, real solutions, real time savings. Three of these have live demos you can try right now.</p>
+      <p>Real pain points, real solutions, real time savings. Five of these have live demos you can try right now.</p>
     </div>
 
     <!-- Clinical Documentation -->
@@ -246,21 +262,54 @@
       </div>
     </div>
 
+    <!-- NDIS & Disability Services -->
+    <div class="category-section">
+      <h3><span class="cat-icon">&#9855;</span> NDIS &amp; Disability Services <span class="cat-line"></span></h3>
+      <div class="use-case-cards">
+
+        <div class="use-case-card demo-card-special" id="detail-ndis-plan-dashboard">
+          <h4>&#128202; NDIS Plan Utilisation Dashboard</h4>
+          <div class="pain">"We're 9 months into the plan and half the funding is unspent. Participants lose it if we don't act — but nobody's tracking it until the plan review meeting."</div>
+          <div class="solution">AI monitors plan budgets across Core, Capacity Building, and Capital categories in real time. Flags underutilised line items, calculates funding at risk of expiry, and suggests specific service bookings to maximise plan value before the plan period ends.</div>
+          <div class="roi-line">
+            <span class="before">$32k funding at risk</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">Flagged with action plan</span>
+          </div>
+          <a href="../demos/healthcare_ndis-plan-dashboard.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card demo-card-special" id="detail-ndis-note-to-claim">
+          <h4>&#128221; Progress Note to Claim</h4>
+          <div class="pain">"Support workers write session notes, then someone else has to figure out the NDIS line item, check the Price Guide rate, and manually create the claim. It takes 12 minutes per session."</div>
+          <div class="solution">AI reads the progress note and extracts the correct NDIS support category and line item number. Generates a compliant claim with participant goals linked as evidence. Checks worker-to-participant ratios, session duration, and Price Guide rates automatically.</div>
+          <div class="roi-line">
+            <span class="before">12 min per claim</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">0 seconds</span>
+          </div>
+          <a href="../demos/healthcare_ndis-note-to-claim.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+        <div class="use-case-card demo-card-special" id="detail-ndis-service-agreement">
+          <h4>&#128196; Service Agreement Generator</h4>
+          <div class="pain">"Every new participant needs a service agreement. We copy-paste from the last one, update the names and rates, and hope the cancellation terms are still compliant. It takes 2 hours."</div>
+          <div class="solution">AI generates a complete NDIS-compliant service agreement from participant plan details. Includes service schedules with current Price Guide rates, cancellation terms per NDIS rules, participant rights, and signature sections. Ready for review in 30 seconds.</div>
+          <div class="roi-line">
+            <span class="before">2 hours of copy-paste</span>
+            <span class="arrow">&rarr;</span>
+            <span class="after">30 seconds, compliant</span>
+          </div>
+          <a href="../demos/healthcare_ndis-service-agreement.html" class="demo-link">Try Live Demo &rarr;</a>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Billing & Compliance -->
     <div class="category-section">
       <h3><span class="cat-icon">&#128179;</span> Billing &amp; Compliance <span class="cat-line"></span></h3>
       <div class="use-case-cards">
-
-        <div class="use-case-card" id="detail-mbs-coding">
-          <h4>&#128179; MBS Coding Assistant</h4>
-          <div class="pain">"Billing codes are a guessing game. Level B or Level C? Did we hit the 20-minute threshold? Over-code and risk an audit. Under-code and lose revenue."</div>
-          <div class="solution">AI analyses clinical notes and recommends MBS item numbers with confidence scores. Flags audit risks — consultation duration too short for the claimed level, missing documentation for complex items. Maps evidence from the clinical record to each code.</div>
-          <div class="roi-line">
-            <span class="before">Guesswork</span>
-            <span class="arrow">&rarr;</span>
-            <span class="after">94% coding accuracy</span>
-          </div>
-        </div>
 
         <div class="use-case-card" id="detail-compliance">
           <h4>&#128218; Compliance Document Drafting</h4>
