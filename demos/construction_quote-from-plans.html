@@ -419,8 +419,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -464,7 +466,7 @@
             <style>
               .wall { stroke: #1A1B25; stroke-width: 4; fill: none; stroke-linecap: square; }
               .wall-thin { stroke: #1A1B25; stroke-width: 2; fill: none; stroke-linecap: square; }
-              .room-label { font-family: 'Epilogue', sans-serif; font-size: 13px; font-weight: 600; fill: #373841; text-anchor: middle; }
+              .room-label { font-family: 'Epilogue', sans-serif; font-size: 13px; font-weight: 600; fill: #555555; text-anchor: middle; }
               .dim-label { font-family: 'Epilogue', sans-serif; font-size: 10px; font-weight: 400; fill: #8D8D92; text-anchor: middle; }
               .window-mark { stroke: #1A1B25; stroke-width: 1.5; fill: none; }
               .door-arc { stroke: #1A1B25; stroke-width: 1.5; fill: none; stroke-dasharray: 3,2; }
@@ -889,8 +891,8 @@
     /* ── Animation sequence ── */
     async function startDemo() {
       if (demoRunning) return;
-      demoRunning = true;
       resetAll();
+      demoRunning = true;
 
       // Step 1: Show processing overlay (1.5s)
       const overlay = document.getElementById('processingOverlay');

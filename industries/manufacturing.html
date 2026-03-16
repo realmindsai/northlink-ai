@@ -17,8 +17,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -59,14 +61,14 @@
 
       <div class="category-label">Quoting &amp; Estimating</div>
 
-      <a href="#detail-quote-from-drawings" class="overview-tile has-demo" onclick="highlightCard('detail-quote-from-drawings')">
+      <a href="../demos/manufacturing_quote-from-drawings.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128196;</div>
         <h4>Quote from Drawings</h4>
         <div class="tile-stat">3 hours &rarr; 30 seconds</div>
         <div class="tile-desc">AI reads engineering drawings and generates line-item quotes</div>
       </a>
 
-      <a href="#detail-rfq-copilot" class="overview-tile has-demo" onclick="highlightCard('detail-rfq-copilot')">
+      <a href="../demos/manufacturing_rfq-copilot.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128231;</div>
         <h4>RFQ-to-Quote Copilot</h4>
         <div class="tile-stat">Days &rarr; 2 minutes</div>
@@ -82,7 +84,7 @@
 
       <div class="category-label">Production &amp; Operations</div>
 
-      <a href="#detail-scheduling" class="overview-tile has-demo" onclick="highlightCard('detail-scheduling')">
+      <a href="../demos/manufacturing_scheduling.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128197;</div>
         <h4>Scheduling Optimiser</h4>
         <div class="tile-stat">45 min &rarr; 2 seconds</div>
@@ -168,6 +170,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-quote-from-drawings">
+          <a href="../demos/manufacturing_quote-from-drawings.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128196; Quote from Drawings</h4>
           <div class="pain">"The estimator opens the drawing, counts features, checks material prices, calculates setup time, types it all into a spreadsheet. Every. Single. Job. Three hours gone."</div>
           <div class="solution">AI reads engineering drawings, annotates features, identifies materials and operations, and generates a detailed line-item quote with margin slider. Your estimator reviews and adjusts instead of building from scratch.</div>
@@ -176,10 +179,10 @@
             <span class="arrow">&rarr;</span>
             <span class="after">30 seconds</span>
           </div>
-          <a href="../demos/manufacturing_quote-from-drawings.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card demo-card-special" id="detail-rfq-copilot">
+          <a href="../demos/manufacturing_rfq-copilot.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128231; RFQ-to-Quote Copilot</h4>
           <div class="pain">"A 12-page RFQ arrives with specs, drawings, and compliance requirements buried in email attachments. Someone has to read it all before we can even start quoting. Tender packs sit in the inbox for days."</div>
           <div class="solution">AI parses email and PDF tender packs, extracts structured requirements, identifies key specifications, and builds a draft quote with source attribution linking every line item back to the original document.</div>
@@ -188,7 +191,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">2 minutes</span>
           </div>
-          <a href="../demos/manufacturing_rfq-copilot.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card" id="detail-historical-costing">
@@ -211,6 +213,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-scheduling">
+          <a href="../demos/manufacturing_scheduling.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128197; Scheduling Optimiser</h4>
           <div class="pain">"When the best customer calls with an urgent order, someone spends 45 minutes rearranging the whiteboard. And still misses a deadline. A rush job throws the whole week off."</div>
           <div class="solution">AI optimises work order scheduling across machines, minimising changeover time and meeting deadlines. Drag a rush job onto the Gantt chart and watch AI re-optimise the entire week in seconds.</div>
@@ -219,7 +222,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">2 seconds</span>
           </div>
-          <a href="../demos/manufacturing_scheduling.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card" id="detail-predictive-maintenance">

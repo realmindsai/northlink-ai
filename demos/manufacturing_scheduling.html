@@ -407,8 +407,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -521,38 +523,38 @@
     /* ── Job definitions (initial positions) ── */
     const initialJobs = [
       { id: '0881', customer: 'Precision Metals', machine: 'cnc-lathe-1',     startSlot: 0, spanSlots: 3, hours: 12, color: '#A77ACD' },
-      { id: '0883', customer: 'BuildRight',       machine: 'cnc-mill-2',      startSlot: 0, spanSlots: 2, hours: 8,  color: '#5791C7' },
-      { id: '0884', customer: 'AusTech',          machine: 'wire-edm',        startSlot: 1, spanSlots: 4, hours: 24, color: '#349990' },
-      { id: '0885', customer: 'TechParts',        machine: 'cnc-lathe-1',     startSlot: 3, spanSlots: 1, hours: 4,  color: '#FFDA47' },
+      { id: '0883', customer: 'BuildRight',       machine: 'cnc-mill-2',      startSlot: 0, spanSlots: 2, hours: 8,  color: '#8D8D92' },
+      { id: '0884', customer: 'AusTech',          machine: 'wire-edm',        startSlot: 1, spanSlots: 4, hours: 24, color: '#22C55E' },
+      { id: '0885', customer: 'TechParts',        machine: 'cnc-lathe-1',     startSlot: 3, spanSlots: 1, hours: 4,  color: '#F79A83' },
       { id: '0886', customer: 'Metro Eng',        machine: 'surface-grinder', startSlot: 2, spanSlots: 2, hours: 8,  color: '#F26541' },
       { id: '0887', customer: 'FastFab',          machine: 'cnc-lathe-1',     startSlot: 4, spanSlots: 3, hours: 16, color: '#8D8D92' },
       { id: '0888', customer: 'SteelCo',          machine: 'assembly-bay',    startSlot: 0, spanSlots: 5, hours: 32, color: '#A77ACD' },
-      { id: '0889', customer: 'QualityParts',     machine: 'cnc-mill-2',      startSlot: 2, spanSlots: 5, hours: 32, color: '#349990' },
-      { id: '0890', customer: 'NorthFab',         machine: 'wire-edm',        startSlot: 5, spanSlots: 4, hours: 24, color: '#5791C7' },
+      { id: '0889', customer: 'QualityParts',     machine: 'cnc-mill-2',      startSlot: 2, spanSlots: 5, hours: 32, color: '#22C55E' },
+      { id: '0890', customer: 'NorthFab',         machine: 'wire-edm',        startSlot: 5, spanSlots: 4, hours: 24, color: '#8D8D92' },
       { id: '0891', customer: 'CoreMfg',          machine: 'surface-grinder', startSlot: 4, spanSlots: 4, hours: 24, color: '#F26541' },
-      { id: '0895', customer: 'AlphaSteel',       machine: 'assembly-bay',    startSlot: 5, spanSlots: 3, hours: 20, color: '#FFDA47' },
+      { id: '0895', customer: 'AlphaSteel',       machine: 'assembly-bay',    startSlot: 5, spanSlots: 3, hours: 20, color: '#F79A83' },
       { id: '0896', customer: 'ProCast',          machine: 'surface-grinder', startSlot: 0, spanSlots: 2, hours: 8,  color: '#8D8D92' },
-      { id: '0897', customer: 'IronWorks',        machine: 'cnc-lathe-1',     startSlot: 7, spanSlots: 3, hours: 12, color: '#349990' },
-      { id: '0898', customer: 'BoltCo',           machine: 'wire-edm',        startSlot: 9, spanSlots: 1, hours: 4,  color: '#FFDA47' },
+      { id: '0897', customer: 'IronWorks',        machine: 'cnc-lathe-1',     startSlot: 7, spanSlots: 3, hours: 12, color: '#22C55E' },
+      { id: '0898', customer: 'BoltCo',           machine: 'wire-edm',        startSlot: 9, spanSlots: 1, hours: 4,  color: '#F79A83' },
       { id: '0899', customer: 'PeakMfg',          machine: 'assembly-bay',    startSlot: 8, spanSlots: 2, hours: 12, color: '#8D8D92' }
     ];
 
     /* Jobs after AI optimisation (rush job 0892 inserted into CNC Mill) */
     const optimisedJobs = [
       { id: '0881', customer: 'Precision Metals', machine: 'cnc-lathe-1',     startSlot: 0, spanSlots: 3, hours: 12, color: '#A77ACD' },
-      { id: '0883', customer: 'BuildRight',       machine: 'cnc-mill-2',      startSlot: 2, spanSlots: 2, hours: 8,  color: '#5791C7' },  // shifted Mon->Tue
-      { id: '0884', customer: 'AusTech',          machine: 'wire-edm',        startSlot: 1, spanSlots: 4, hours: 24, color: '#349990' },
-      { id: '0885', customer: 'TechParts',        machine: 'cnc-lathe-1',     startSlot: 3, spanSlots: 1, hours: 4,  color: '#FFDA47' },
+      { id: '0883', customer: 'BuildRight',       machine: 'cnc-mill-2',      startSlot: 2, spanSlots: 2, hours: 8,  color: '#8D8D92' },  // shifted Mon->Tue
+      { id: '0884', customer: 'AusTech',          machine: 'wire-edm',        startSlot: 1, spanSlots: 4, hours: 24, color: '#22C55E' },
+      { id: '0885', customer: 'TechParts',        machine: 'cnc-lathe-1',     startSlot: 3, spanSlots: 1, hours: 4,  color: '#F79A83' },
       { id: '0886', customer: 'Metro Eng',        machine: 'surface-grinder', startSlot: 2, spanSlots: 2, hours: 8,  color: '#F26541' },
       { id: '0887', customer: 'FastFab',          machine: 'cnc-lathe-1',     startSlot: 4, spanSlots: 3, hours: 16, color: '#8D8D92' },
       { id: '0888', customer: 'SteelCo',          machine: 'assembly-bay',    startSlot: 0, spanSlots: 5, hours: 32, color: '#A77ACD' },
-      { id: '0889', customer: 'QualityParts',     machine: 'cnc-mill-2',      startSlot: 4, spanSlots: 5, hours: 32, color: '#349990' },  // shifted later
-      { id: '0890', customer: 'NorthFab',         machine: 'wire-edm',        startSlot: 5, spanSlots: 4, hours: 24, color: '#5791C7' },
+      { id: '0889', customer: 'QualityParts',     machine: 'cnc-mill-2',      startSlot: 4, spanSlots: 5, hours: 32, color: '#22C55E' },  // shifted later
+      { id: '0890', customer: 'NorthFab',         machine: 'wire-edm',        startSlot: 5, spanSlots: 4, hours: 24, color: '#8D8D92' },
       { id: '0891', customer: 'CoreMfg',          machine: 'surface-grinder', startSlot: 4, spanSlots: 5, hours: 24, color: '#F26541' },  // extends into Fri
-      { id: '0895', customer: 'AlphaSteel',       machine: 'assembly-bay',    startSlot: 5, spanSlots: 3, hours: 20, color: '#FFDA47' },
+      { id: '0895', customer: 'AlphaSteel',       machine: 'assembly-bay',    startSlot: 5, spanSlots: 3, hours: 20, color: '#F79A83' },
       { id: '0896', customer: 'ProCast',          machine: 'surface-grinder', startSlot: 0, spanSlots: 2, hours: 8,  color: '#8D8D92' },
-      { id: '0897', customer: 'IronWorks',        machine: 'cnc-lathe-1',     startSlot: 7, spanSlots: 3, hours: 12, color: '#349990' },
-      { id: '0898', customer: 'BoltCo',           machine: 'wire-edm',        startSlot: 9, spanSlots: 1, hours: 4,  color: '#FFDA47' },
+      { id: '0897', customer: 'IronWorks',        machine: 'cnc-lathe-1',     startSlot: 7, spanSlots: 3, hours: 12, color: '#22C55E' },
+      { id: '0898', customer: 'BoltCo',           machine: 'wire-edm',        startSlot: 9, spanSlots: 1, hours: 4,  color: '#F79A83' },
       { id: '0899', customer: 'PeakMfg',          machine: 'assembly-bay',    startSlot: 8, spanSlots: 2, hours: 12, color: '#8D8D92' },
       { id: '0892', customer: 'AusTech',          machine: 'cnc-mill-2',      startSlot: 0, spanSlots: 2, hours: 16, color: '#F26541', isRush: true }  // RUSH job placed
     ];
@@ -868,8 +870,8 @@
     /* ── Start Demo (auto or button) ── */
     async function startDemo() {
       if (demoRunning) return;
-      demoRunning = true;
       resetAll();
+      demoRunning = true;
 
       // Build and render initial state
       buildGantt();

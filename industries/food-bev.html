@@ -17,8 +17,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -59,7 +61,7 @@
 
       <div class="category-label">Compliance &amp; Labelling</div>
 
-      <a href="#detail-label-compliance" class="overview-tile has-demo" onclick="highlightCard('detail-label-compliance')">
+      <a href="../demos/food_label-compliance.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128203;</div>
         <h4>Label Compliance Checker</h4>
         <div class="tile-stat">2 hrs &rarr; 30 seconds</div>
@@ -82,14 +84,14 @@
 
       <div class="category-label">Traceability &amp; Recall</div>
 
-      <a href="#detail-batch-traceability" class="overview-tile has-demo" onclick="highlightCard('detail-batch-traceability')">
+      <a href="../demos/food_batch-traceability.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128269;</div>
         <h4>Batch Traceability</h4>
         <div class="tile-stat">Days &rarr; 3 seconds</div>
         <div class="tile-desc">Map the full genealogy tree from supplier to retail in seconds</div>
       </a>
 
-      <a href="#detail-recall-war-room" class="overview-tile has-demo" onclick="highlightCard('detail-recall-war-room')">
+      <a href="../demos/food_recall-war-room.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128680;</div>
         <h4>Recall War Room</h4>
         <div class="tile-stat">All-hands chaos &rarr; 2.8 seconds</div>
@@ -168,6 +170,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-label-compliance">
+          <a href="../demos/food_label-compliance.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128203; Label Compliance Checker</h4>
           <div class="pain">"FSANZ Standard 1.2.1 has 47 mandatory elements. Our compliance manager checks them by eye. Mistakes still get through — and a single missed allergen declaration can trigger a recall."</div>
           <div class="solution">AI scans food labels against the full FSANZ standards library, flags violations with specific clause references, checks allergen declarations, nutritional panel accuracy, and mandatory warning statements. Returns a compliance report in 30 seconds.</div>
@@ -176,7 +179,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">30 seconds</span>
           </div>
-          <a href="../demos/food_label-compliance.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card" id="detail-regulatory-monitoring">
@@ -210,6 +212,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-batch-traceability">
+          <a href="../demos/food_batch-traceability.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128269; Batch Traceability</h4>
           <div class="pain">"Tracing a batch takes days of spreadsheet cross-referencing. Three systems, no links between them, and someone always has the file open."</div>
           <div class="solution">AI maps the full genealogy tree: suppliers &rarr; raw materials &rarr; production runs &rarr; finished goods &rarr; distribution &rarr; retail. Type a batch number and see the complete forward and backward trace in 3 seconds.</div>
@@ -218,10 +221,10 @@
             <span class="arrow">&rarr;</span>
             <span class="after">3 seconds</span>
           </div>
-          <a href="../demos/food_batch-traceability.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card demo-card-special" id="detail-recall-war-room">
+          <a href="../demos/food_recall-war-room.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128680; Recall War Room</h4>
           <div class="pain">"A recall notice at 2am means all-hands chaos. Which batches? Which SKUs? Which customers? Everyone scrambles through paper records and shared drives."</div>
           <div class="solution">AI traces contamination forward through the entire supply chain — from the affected ingredient to every batch, SKU, and customer that received it. Scopes the recall in 2.8 seconds and drafts communications for customers, regulators, and internal teams.</div>
@@ -230,7 +233,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">2.8 seconds to scope</span>
           </div>
-          <a href="../demos/food_recall-war-room.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card" id="detail-supplier-audit">

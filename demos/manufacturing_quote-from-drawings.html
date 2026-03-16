@@ -448,8 +448,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -497,8 +499,8 @@
               .dwg-center { stroke: #1A1B25; stroke-width: 0.5; fill: none; stroke-dasharray: 12,3,3,3; }
               .dwg-dim { stroke: #555; stroke-width: 0.6; fill: none; }
               .dwg-dim-text { font-family: 'Epilogue', sans-serif; font-size: 10px; font-weight: 400; fill: #555; text-anchor: middle; }
-              .dwg-label { font-family: 'Epilogue', sans-serif; font-size: 9px; font-weight: 500; fill: #373841; text-anchor: start; }
-              .dwg-callout { font-family: 'Epilogue', sans-serif; font-size: 8.5px; font-weight: 500; fill: #373841; }
+              .dwg-label { font-family: 'Epilogue', sans-serif; font-size: 9px; font-weight: 500; fill: #555555; text-anchor: start; }
+              .dwg-callout { font-family: 'Epilogue', sans-serif; font-size: 8.5px; font-weight: 500; fill: #555555; }
               .dwg-view-label { font-family: 'Epilogue', sans-serif; font-size: 11px; font-weight: 600; fill: #1A1B25; text-anchor: middle; }
               .ann-label { font-family: 'Epilogue', sans-serif; font-size: 8px; font-weight: 700; fill: #fff; text-anchor: middle; dominant-baseline: central; }
             </style>
@@ -864,8 +866,8 @@
     /* ── Animation sequence ── */
     async function startDemo() {
       if (demoRunning) return;
-      demoRunning = true;
       resetAll();
+      demoRunning = true;
 
       /* Step 1: Show processing overlay with shimmer (1.5s) */
       const overlay = document.getElementById('processingOverlay');

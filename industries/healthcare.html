@@ -17,8 +17,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -59,7 +61,7 @@
 
       <div class="category-label">Clinical Documentation</div>
 
-      <a href="#detail-clinical-note" class="overview-tile has-demo" onclick="highlightCard('detail-clinical-note')">
+      <a href="../demos/healthcare_clinical-note.html" class="overview-tile has-demo">
         <div class="tile-icon">&#127908;</div>
         <h4>Clinical Note Generator</h4>
         <div class="tile-stat">20 min &rarr; 0 seconds</div>
@@ -82,7 +84,7 @@
 
       <div class="category-label">Scheduling &amp; Patient Flow</div>
 
-      <a href="#detail-noshow-predictor" class="overview-tile has-demo" onclick="highlightCard('detail-noshow-predictor')">
+      <a href="../demos/healthcare_noshow-predictor.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128197;</div>
         <h4>No-Show Predictor</h4>
         <div class="tile-stat">15% no-shows &rarr; 8%</div>
@@ -105,21 +107,21 @@
 
       <div class="category-label">NDIS &amp; Disability Services</div>
 
-      <a href="#detail-ndis-plan-dashboard" class="overview-tile has-demo" onclick="highlightCard('detail-ndis-plan-dashboard')">
+      <a href="../demos/healthcare_ndis-plan-dashboard.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128202;</div>
         <h4>NDIS Plan Utilisation Dashboard</h4>
         <div class="tile-stat">$32k funding at risk &rarr; flagged</div>
         <div class="tile-desc">AI tracks plan budgets, flags underutilisation, suggests bookings before funding expires</div>
       </a>
 
-      <a href="#detail-ndis-note-to-claim" class="overview-tile has-demo" onclick="highlightCard('detail-ndis-note-to-claim')">
+      <a href="../demos/healthcare_ndis-note-to-claim.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128221;</div>
         <h4>Progress Note to Claim</h4>
         <div class="tile-stat">12 min admin &rarr; 0 seconds</div>
         <div class="tile-desc">AI extracts NDIS line items from session notes and generates compliant claims</div>
       </a>
 
-      <a href="#detail-ndis-service-agreement" class="overview-tile has-demo" onclick="highlightCard('detail-ndis-service-agreement')">
+      <a href="../demos/healthcare_ndis-service-agreement.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128196;</div>
         <h4>Service Agreement Generator</h4>
         <div class="tile-stat">2 hours &rarr; 30 seconds</div>
@@ -184,6 +186,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-clinical-note">
+          <a href="../demos/healthcare_clinical-note.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#127908; Clinical Note Generator</h4>
           <div class="pain">"A 15-minute consultation means 20 minutes of admin. 40% of practitioner time goes to paperwork instead of patients."</div>
           <div class="solution">AI listens to the consultation and generates a structured SOAP note in real time. Highlights clinical terms with ICD-10 and MBS codes. Filters small talk automatically so only clinically relevant content makes it into the record.</div>
@@ -192,7 +195,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">0 seconds</span>
           </div>
-          <a href="../demos/healthcare_clinical-note.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card" id="detail-referral-letter">
@@ -226,6 +228,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-noshow-predictor">
+          <a href="../demos/healthcare_noshow-predictor.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128197; No-Show Predictor</h4>
           <div class="pain">"No-shows cost us $1,200 a day. That's 4 empty slots. Phone confirmations don't reach the high-risk patients."</div>
           <div class="solution">AI scores each appointment by no-show risk using patient history, demographics, and behavioural patterns. High-risk bookings get targeted interventions — SMS reminders, pre-payment prompts, or overbooking recommendations. Cuts no-shows from 15% to 8%.</div>
@@ -234,7 +237,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">8% with AI intervention</span>
           </div>
-          <a href="../demos/healthcare_noshow-predictor.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card" id="detail-scheduling">
@@ -268,6 +270,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-ndis-plan-dashboard">
+          <a href="../demos/healthcare_ndis-plan-dashboard.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128202; NDIS Plan Utilisation Dashboard</h4>
           <div class="pain">"We're 9 months into the plan and half the funding is unspent. Participants lose it if we don't act — but nobody's tracking it until the plan review meeting."</div>
           <div class="solution">AI monitors plan budgets across Core, Capacity Building, and Capital categories in real time. Flags underutilised line items, calculates funding at risk of expiry, and suggests specific service bookings to maximise plan value before the plan period ends.</div>
@@ -276,10 +279,10 @@
             <span class="arrow">&rarr;</span>
             <span class="after">Flagged with action plan</span>
           </div>
-          <a href="../demos/healthcare_ndis-plan-dashboard.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card demo-card-special" id="detail-ndis-note-to-claim">
+          <a href="../demos/healthcare_ndis-note-to-claim.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128221; Progress Note to Claim</h4>
           <div class="pain">"Support workers write session notes, then someone else has to figure out the NDIS line item, check the Price Guide rate, and manually create the claim. It takes 12 minutes per session."</div>
           <div class="solution">AI reads the progress note and extracts the correct NDIS support category and line item number. Generates a compliant claim with participant goals linked as evidence. Checks worker-to-participant ratios, session duration, and Price Guide rates automatically.</div>
@@ -288,10 +291,10 @@
             <span class="arrow">&rarr;</span>
             <span class="after">0 seconds</span>
           </div>
-          <a href="../demos/healthcare_ndis-note-to-claim.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card demo-card-special" id="detail-ndis-service-agreement">
+          <a href="../demos/healthcare_ndis-service-agreement.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128196; Service Agreement Generator</h4>
           <div class="pain">"Every new participant needs a service agreement. We copy-paste from the last one, update the names and rates, and hope the cancellation terms are still compliant. It takes 2 hours."</div>
           <div class="solution">AI generates a complete NDIS-compliant service agreement from participant plan details. Includes service schedules with current Price Guide rates, cancellation terms per NDIS rules, participant rights, and signature sections. Ready for review in 30 seconds.</div>
@@ -300,7 +303,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">30 seconds, compliant</span>
           </div>
-          <a href="../demos/healthcare_ndis-service-agreement.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
       </div>

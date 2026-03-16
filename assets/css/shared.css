@@ -2,22 +2,25 @@
    ABOUTME: Provides CSS custom properties, typography, layout, cards, animations, and responsive breakpoints. */
 
 /* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ── CSS Custom Properties ── */
 :root {
   /* Brand colours */
   --color-purple: #A77ACD;
+  --color-purple-light: #F0EBF4;
   --color-black: #1A1B25;
-  --color-slate-black: #373841;
+  --color-slate-black: #555555;
   --color-orange: #F26541;
-  --color-green: #349990;
-  --color-blue: #5791C7;
-  --color-yellow: #FFDA47;
+  --color-green: #22C55E;
+  --color-green-light: #ecfdf5;
+  --color-blue: #8D8D92;          /* deprecated — alias for slate gray */
+  --color-yellow: #F59E0B;        /* deprecated — alias for warning amber */
   --color-slate-gray: #8D8D92;
-  --color-off-white: #FAF9F7;
-  --color-oat: #F1E8D7;
-  --color-light-gray: #E7E7EA;
+  --color-off-white: #FAFAFA;
+  --color-stone: #EDEBE8;
+  --color-oat: #EDEBE8;           /* alias for --color-stone */
+  --color-light-gray: #E8E8EB;
 
   /* Status colours */
   --color-success: #22C55E;
@@ -26,14 +29,15 @@
 
   /* Chart palette */
   --chart-1: #A77ACD;
-  --chart-2: #5791C7;
-  --chart-3: #349990;
-  --chart-4: #FFDA47;
-  --chart-5: #F26541;
-  --chart-6: #8D8D92;
+  --chart-2: #F26541;
+  --chart-3: #22C55E;
+  --chart-4: #8D8D92;
+  --chart-5: #C4A0DB;
+  --chart-6: #F79A83;
 
   /* Typography */
   --font-stack: 'Epilogue', Inter, 'SF Pro', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   /* Breakpoints (for reference — used in media queries) */
   --bp-mobile: 768px;
@@ -139,6 +143,38 @@ h3 {
   color: #fff;
   font-weight: 600;
   font-size: 16px;
+  white-space: nowrap;
+}
+
+/* ── Wordmark ── */
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.wordmark-name {
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.wordmark-name .wm-rm {
+  color: #fff;
+  font-weight: 700;
+}
+
+.wordmark-name .wm-ai {
+  color: var(--color-purple);
+  font-weight: 500;
+}
+
+.wordmark-tagline {
+  color: var(--color-slate-gray);
+  font-size: 11px;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.5px;
   white-space: nowrap;
 }
 
@@ -460,11 +496,8 @@ a.pain-card:hover {
 
 /* Demo card gradient headers */
 .gradient-purple-orange { background: linear-gradient(135deg, var(--color-purple), var(--color-orange)); color: #fff; }
-.gradient-blue-green    { background: linear-gradient(135deg, var(--color-blue), var(--color-green)); color: #fff; }
-.gradient-green-yellow  { background: linear-gradient(135deg, var(--color-green), var(--color-yellow)); color: #fff; }
-.gradient-orange-yellow { background: linear-gradient(135deg, var(--color-orange), var(--color-yellow)); color: #fff; }
-.gradient-purple-blue   { background: linear-gradient(135deg, var(--color-purple), var(--color-blue)); color: #fff; }
-.gradient-blue-purple   { background: linear-gradient(135deg, var(--color-blue), var(--color-purple)); color: #fff; }
+.gradient-purple-green  { background: linear-gradient(135deg, var(--color-purple), var(--color-green)); color: #fff; }
+.gradient-orange-green  { background: linear-gradient(135deg, var(--color-orange), var(--color-green)); color: #fff; }
 
 /* ── Accordion ── */
 .accordion-group {
@@ -625,7 +658,7 @@ a.pain-card:hover {
 }
 
 .data-table tr:nth-child(even) td {
-  background: #fafafa;
+  background: #FAFAFA;
 }
 
 /* ── Demo Top Bar ── */
@@ -886,7 +919,7 @@ a.pain-card:hover {
 
 .overview-tile.has-demo {
   border-color: var(--color-purple);
-  background: linear-gradient(135deg, var(--color-off-white), #f3ecf8);
+  background: linear-gradient(135deg, var(--color-off-white), #F0EBF4);
 }
 
 .overview-tile.has-demo::after {
@@ -1063,14 +1096,32 @@ a.pain-card:hover {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-purple);
-  background: #f3ecf8;
+  background: #F0EBF4;
   padding: 6px 14px;
   border-radius: var(--radius-pill);
 }
 
 .demo-link:hover {
   text-decoration: none;
-  background: #ebe0f3;
+  background: #E5DDE9;
+}
+
+.demo-card-special .demo-link {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin-top: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  background: var(--color-purple);
+  color: #fff;
+  padding: 4px 10px;
+}
+
+.demo-card-special .demo-link:hover {
+  background: #9568b8;
 }
 
 /* ── Responsive: Overview Grid & Use Case Cards ── */

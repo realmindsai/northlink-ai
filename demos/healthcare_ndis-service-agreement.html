@@ -1,0 +1,1218 @@
+<!-- ABOUTME: NDIS Service Agreement Generator mockup for NorthLink AI. -->
+<!-- ABOUTME: AI generates compliant service agreements from participant plan details with NDIS Price Guide rates. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NDIS Service Agreement Generator — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 44px - 52px);
+    }
+
+    .panel-left {
+      flex: 0 0 45%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-right {
+      flex: 0 0 55%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    /* Participant info bar */
+    .participant-bar {
+      display: flex;
+      align-items: center;
+      padding: 8px 24px;
+      background: var(--color-oat);
+      font-size: 13px;
+      color: var(--color-slate-black);
+      border-bottom: 1px solid var(--color-light-gray);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .participant-bar .participant-label {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .participant-bar .sep {
+      color: var(--color-slate-gray);
+    }
+
+    /* Panel heading */
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 4px;
+    }
+
+    .panel-subheading {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      margin-bottom: 0;
+    }
+
+    /* Plan detail cards */
+    .plan-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 16px 20px;
+    }
+
+    .plan-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .plan-card-header .card-icon {
+      font-size: 18px;
+    }
+
+    .plan-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .plan-card ol, .plan-card ul {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 13px;
+      color: var(--color-slate-black);
+      line-height: 1.7;
+    }
+
+    .plan-card ol li, .plan-card ul li {
+      margin-bottom: 2px;
+    }
+
+    /* Funded supports table in left panel */
+    .funded-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .funded-table th {
+      text-align: left;
+      padding: 6px 8px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      border-bottom: 2px solid var(--color-light-gray);
+      background: var(--color-off-white);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .funded-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--color-light-gray);
+      color: var(--color-slate-black);
+    }
+
+    .funded-table .category-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-core {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-capacity {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-capital {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .funded-table .amount {
+      font-weight: 600;
+      color: var(--color-black);
+      text-align: right;
+    }
+
+    .funded-table .spent-note {
+      font-size: 11px;
+      color: var(--color-slate-gray);
+      font-style: italic;
+    }
+
+    /* Provider details grid */
+    .provider-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 16px;
+      font-size: 13px;
+    }
+
+    .provider-grid .label {
+      font-weight: 600;
+      color: var(--color-slate-black);
+    }
+
+    .provider-grid .value {
+      color: var(--color-black);
+    }
+
+    .provider-grid .value.full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* Right panel - agreement sections */
+    .agreement-section {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 20px;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .agreement-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .agreement-section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--color-light-gray);
+    }
+
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--color-purple);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .agreement-section .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .agreement-section .detail-label {
+      color: var(--color-slate-gray);
+      font-weight: 500;
+    }
+
+    .agreement-section .detail-value {
+      color: var(--color-black);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    /* Services schedule table */
+    .services-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .services-table th {
+      text-align: left;
+      padding: 8px 10px;
+      font-weight: 600;
+      color: var(--color-slate-black);
+      border-bottom: 2px solid var(--color-light-gray);
+      background: var(--color-off-white);
+      font-size: 12px;
+    }
+
+    .services-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--color-light-gray);
+      color: var(--color-slate-black);
+    }
+
+    .services-table tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    .services-table tr {
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .services-table tr.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .services-table thead tr {
+      opacity: 1;
+      transform: none;
+    }
+
+    .services-table .support-code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--color-purple);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .services-table .cost-cell {
+      font-weight: 600;
+      color: var(--color-black);
+      text-align: right;
+    }
+
+    .services-table .rate-cell {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .totals-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 32px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 2px solid var(--color-purple);
+    }
+
+    .total-item {
+      text-align: right;
+    }
+
+    .total-item .total-label {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .total-item .total-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-purple);
+    }
+
+    /* Compliance checks */
+    .compliance-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .compliance-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--color-slate-black);
+      border-bottom: 1px solid var(--color-light-gray);
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .compliance-item:last-child {
+      border-bottom: none;
+    }
+
+    .compliance-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .compliance-check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--color-success);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transform: scale(0);
+      transition: transform 0.3s ease;
+    }
+
+    .compliance-item.visible .compliance-check {
+      transform: scale(1);
+    }
+
+    /* Cancellation policy items */
+    .policy-item {
+      display: flex;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 14px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+    }
+
+    .policy-icon {
+      flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+      color: var(--color-orange);
+      font-weight: 700;
+    }
+
+    .policy-label {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    /* Participant rights */
+    .rights-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .rights-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 14px;
+      color: var(--color-slate-black);
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .rights-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .rights-icon {
+      flex-shrink: 0;
+      color: var(--color-blue);
+      font-size: 14px;
+      margin-top: 2px;
+    }
+
+    /* Signature section */
+    .signature-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 8px;
+    }
+
+    .signature-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .signature-role {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-slate-gray);
+    }
+
+    .signature-line {
+      border-bottom: 2px dotted var(--color-slate-gray);
+      height: 40px;
+      position: relative;
+    }
+
+    .signature-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-black);
+      margin-top: 4px;
+    }
+
+    .signature-date-label {
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      margin-top: 8px;
+    }
+
+    .signature-date-line {
+      border-bottom: 2px dotted var(--color-slate-gray);
+      height: 28px;
+      width: 160px;
+    }
+
+    .compliance-footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-light-gray);
+      font-size: 12px;
+      color: var(--color-slate-gray);
+      font-style: italic;
+      text-align: center;
+    }
+
+    /* Status indicator on left panel */
+    .scan-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-purple);
+      padding: 8px 12px;
+      background: rgba(167, 122, 205, 0.08);
+      border-radius: var(--radius-sm);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .scan-status.visible {
+      opacity: 1;
+    }
+
+    .scan-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-purple);
+      animation: pulse-dot 1s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--color-black);
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .bottom-bar .time-info {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+    }
+
+    .bottom-bar .time-info .time-value {
+      color: var(--color-purple);
+      font-weight: 600;
+    }
+
+    .bottom-bar .bottom-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Typewriter cursor */
+    .typing-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--color-purple);
+      margin-left: 2px;
+      animation: cursorBlink 0.6s infinite;
+      vertical-align: text-bottom;
+    }
+
+    @keyframes cursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+      .signature-area {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <a href="https://realmindsai.com.au" class="logo-link">
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
+      </a>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/healthcare.html">Healthcare</a> &rarr; Service Agreement Generator
+      </div>
+      <div class="demo-title">NDIS Service Agreement Generator</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" id="btnGenerate" onclick="startDemo()">Generate Agreement</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Participant info bar -->
+  <div class="participant-bar">
+    <span class="participant-label">Participant:</span> Emma Nguyen
+    <span class="sep">|</span>
+    <span class="participant-label">NDIS Number:</span> 431 285 679
+    <span class="sep">|</span>
+    <span class="participant-label">Plan Period:</span> 1 Jul 2025 &ndash; 30 Jun 2026
+    <span class="sep">|</span>
+    <span class="participant-label">Plan Manager:</span> Self-managed
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Participant Plan Details -->
+    <div class="panel-left" id="panelLeft">
+      <div>
+        <div class="panel-heading">Participant Plan Summary</div>
+        <p class="panel-subheading">Imported from NDIS participant portal</p>
+      </div>
+
+      <!-- Plan Goals -->
+      <div class="plan-card">
+        <div class="plan-card-header">
+          <span class="card-icon">🎯</span>
+          <span class="plan-card-title">Plan Goals</span>
+        </div>
+        <ol>
+          <li>Increase independence in daily living activities</li>
+          <li>Build capacity for community participation</li>
+          <li>Develop independent travel skills</li>
+          <li>Maintain health and wellbeing through therapy</li>
+        </ol>
+      </div>
+
+      <!-- Funded Supports -->
+      <div class="plan-card">
+        <div class="plan-card-header">
+          <span class="card-icon">💰</span>
+          <span class="plan-card-title">Funded Supports (Relevant to Provider)</span>
+        </div>
+        <table class="funded-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Support Area</th>
+              <th style="text-align:right">Budget</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="category-badge badge-core">Core</span></td>
+              <td>Assistance with Social &amp; Community Participation</td>
+              <td class="amount">$16,500/yr</td>
+            </tr>
+            <tr>
+              <td><span class="category-badge badge-core">Core</span></td>
+              <td>Assistance with Daily Life</td>
+              <td class="amount">$18,000/yr</td>
+            </tr>
+            <tr>
+              <td><span class="category-badge badge-capacity">Capacity</span></td>
+              <td>Improved Daily Living (OT/Speech)</td>
+              <td class="amount">$12,750/yr</td>
+            </tr>
+            <tr>
+              <td><span class="category-badge badge-capital">Capital</span></td>
+              <td>Assistive Technology</td>
+              <td class="amount">$5,200</td>
+            </tr>
+            <tr>
+              <td colspan="3" class="spent-note">Capital: Assistive Technology already spent</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Provider Details -->
+      <div class="plan-card">
+        <div class="plan-card-header">
+          <span class="card-icon">🏥</span>
+          <span class="plan-card-title">Provider Details</span>
+        </div>
+        <div class="provider-grid">
+          <span class="label">Provider</span>
+          <span class="value">North Melbourne Allied Health</span>
+          <span class="label">ABN</span>
+          <span class="value">12 345 678 901</span>
+          <span class="label">Registration</span>
+          <span class="value">NDIS Registered</span>
+          <span class="label">Services</span>
+          <span class="value">Community Participation, Daily Living Support, Allied Health</span>
+        </div>
+      </div>
+
+      <!-- Scan status indicator -->
+      <div class="scan-status" id="scanStatus">
+        <span class="scan-dot"></span>
+        <span id="scanStatusText">Scanning plan details...</span>
+      </div>
+    </div>
+
+    <!-- Right panel: Generated Service Agreement -->
+    <div class="panel-right" id="panelRight">
+      <div class="panel-heading">Generated Service Agreement</div>
+      <p class="panel-subheading" style="margin-bottom:16px">AI-generated from participant plan and NDIS Price Guide 2025-26</p>
+
+      <!-- Section 1: Agreement Overview -->
+      <div class="agreement-section" id="section1">
+        <div class="agreement-section-header">
+          <span class="section-number">1</span>
+          <span class="section-title">Agreement Overview</span>
+        </div>
+        <div id="section1Body">
+          <div class="detail-row">
+            <span class="detail-label">Agreement Between</span>
+            <span class="detail-value" id="agParties"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">NDIS Number</span>
+            <span class="detail-value" id="agNdis"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Agreement Period</span>
+            <span class="detail-value" id="agPeriod"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Review Date</span>
+            <span class="detail-value" id="agReview"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Services & Schedule -->
+      <div class="agreement-section" id="section2">
+        <div class="agreement-section-header">
+          <span class="section-number">2</span>
+          <span class="section-title">Services &amp; Schedule</span>
+        </div>
+        <div id="section2Body">
+          <table class="services-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Support Item</th>
+                <th style="text-align:right">Rate</th>
+                <th>Frequency</th>
+                <th style="text-align:right">Weekly</th>
+                <th style="text-align:right">Annual Est.</th>
+              </tr>
+            </thead>
+            <tbody id="servicesTableBody">
+            </tbody>
+          </table>
+          <div class="totals-row" id="totalsRow" style="opacity:0; transition: opacity 0.5s ease;">
+            <div class="total-item">
+              <div class="total-label">Weekly Total</div>
+              <div class="total-value" id="weeklyTotal">$0</div>
+            </div>
+            <div class="total-item">
+              <div class="total-label">Annual Estimate</div>
+              <div class="total-value" id="annualTotal">$0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: NDIS Price Guide Compliance -->
+      <div class="agreement-section" id="section3">
+        <div class="agreement-section-header">
+          <span class="section-number">3</span>
+          <span class="section-title">NDIS Price Guide Compliance</span>
+        </div>
+        <div id="section3Body">
+          <ul class="compliance-list" id="complianceList">
+            <li class="compliance-item" data-check>
+              <span class="compliance-check">&#10003;</span>
+              <span>All rates within NDIS Price Guide 2025-26 limits</span>
+            </li>
+            <li class="compliance-item" data-check>
+              <span class="compliance-check">&#10003;</span>
+              <span>Worker-to-participant ratios documented</span>
+            </li>
+            <li class="compliance-item" data-check>
+              <span class="compliance-check">&#10003;</span>
+              <span>Travel claiming within 20km NDIS limit</span>
+            </li>
+            <li class="compliance-item" data-check>
+              <span class="compliance-check">&#10003;</span>
+              <span>Cancellation terms per NDIS rules</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Section 4: Cancellation Policy -->
+      <div class="agreement-section" id="section4">
+        <div class="agreement-section-header">
+          <span class="section-number">4</span>
+          <span class="section-title">Cancellation Policy</span>
+        </div>
+        <div id="section4Body">
+          <div class="policy-item">
+            <span class="policy-icon">⚠</span>
+            <span><span class="policy-label">Short notice cancellation:</span> Less than 2 clear business days notice</span>
+          </div>
+          <div class="policy-item">
+            <span class="policy-icon">💲</span>
+            <span><span class="policy-label">Short notice fee:</span> 100% of agreed service cost (per NDIS Price Guide)</span>
+          </div>
+          <div class="policy-item">
+            <span class="policy-icon">📋</span>
+            <span><span class="policy-label">Provider cancellation:</span> Must provide 2 business days notice</span>
+          </div>
+          <div class="policy-item">
+            <span class="policy-icon">🚫</span>
+            <span><span class="policy-label">No-show:</span> Claimable under NDIS short notice provisions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Participant Rights -->
+      <div class="agreement-section" id="section5">
+        <div class="agreement-section-header">
+          <span class="section-number">5</span>
+          <span class="section-title">Participant Rights</span>
+        </div>
+        <div id="section5Body">
+          <ul class="rights-list" id="rightsList">
+            <li class="rights-item">
+              <span class="rights-icon">&#9679;</span>
+              <span>Right to change providers at any time</span>
+            </li>
+            <li class="rights-item">
+              <span class="rights-icon">&#9679;</span>
+              <span>14 days written notice to end agreement</span>
+            </li>
+            <li class="rights-item">
+              <span class="rights-icon">&#9679;</span>
+              <span>Right to access NDIS complaints process</span>
+            </li>
+            <li class="rights-item">
+              <span class="rights-icon">&#9679;</span>
+              <span>Provider must maintain incident management system</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Section 6: Signatures -->
+      <div class="agreement-section" id="section6">
+        <div class="agreement-section-header">
+          <span class="section-number">6</span>
+          <span class="section-title">Signatures</span>
+        </div>
+        <div id="section6Body">
+          <div class="signature-area">
+            <div class="signature-block">
+              <span class="signature-role">Participant</span>
+              <div class="signature-line"></div>
+              <span class="signature-name">Emma Nguyen</span>
+              <span class="signature-date-label">Date</span>
+              <div class="signature-date-line"></div>
+            </div>
+            <div class="signature-block">
+              <span class="signature-role">Provider Representative</span>
+              <div class="signature-line"></div>
+              <span class="signature-name">North Melbourne Allied Health</span>
+              <span class="signature-date-label">Date</span>
+              <div class="signature-date-line"></div>
+            </div>
+          </div>
+          <div class="compliance-footer">
+            This agreement generated in compliance with NDIS Practice Standards and Quality Indicators
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <div class="time-info">
+      Sections: <span class="time-value" id="sectionCount">0</span>
+      &nbsp;|&nbsp; Price Guide: <span class="time-value">2025-26</span>
+      &nbsp;|&nbsp; Generation time: <span class="time-value" id="genTime">0 sec</span>
+      &nbsp;|&nbsp; Time saved: <span class="time-value" id="timeSaved">~0 hours</span>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn btn-approve btn-sm" onclick="toast('Service agreement approved and saved', 'success')">Approve Agreement</button>
+      <button class="btn btn-edit btn-sm" onclick="toast('Opening agreement editor...', 'info')">Edit Agreement</button>
+      <button class="btn btn-primary btn-sm" onclick="toast('Generating PDF for download...', 'info')">Download PDF</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your practice?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Services schedule data ── */
+    const servicesData = [
+      {
+        service: 'Community Access',
+        code: '04_049_0104_6_1',
+        rate: '$67.56/hr',
+        frequency: '2x weekly (3hr)',
+        weekly: 405.36,
+        annual: 5878
+      },
+      {
+        service: 'Daily Living Support',
+        code: '01_011_0107_1_1',
+        rate: '$65.47/hr',
+        frequency: '3x weekly (2hr)',
+        weekly: 392.82,
+        annual: 5696
+      },
+      {
+        service: 'Occupational Therapy',
+        code: '15_037_0106_1_3',
+        rate: '$214.41/session',
+        frequency: 'Fortnightly',
+        weekly: 107.21,
+        annual: 2786
+      },
+      {
+        service: 'Travel (worker)',
+        code: '01_019_0104_6_1',
+        rate: '$0.97/km',
+        frequency: 'As required',
+        weeklyApprox: '~$25',
+        annualApprox: '~$650'
+      }
+    ];
+
+    /* ── Agreement overview data ── */
+    const agreementDetails = {
+      parties: 'North Melbourne Allied Health & Emma Nguyen',
+      ndis: '431 285 679',
+      period: '15 March 2026 – 30 June 2026',
+      review: '15 June 2026'
+    };
+
+    /* ── State ── */
+    let demoRunning = false;
+    let genStartTime = 0;
+
+    /* ── Build a service table row ── */
+    function createServiceRow(data) {
+      const tr = document.createElement('tr');
+      const weeklyDisplay = data.weeklyApprox || ('$' + data.weekly.toFixed(2));
+      const annualDisplay = data.annualApprox || ('$' + data.annual.toLocaleString());
+      tr.innerHTML =
+        '<td>' + data.service + '<span class="support-code">' + data.code + '</span></td>' +
+        '<td class="rate-cell">' + data.rate + '</td>' +
+        '<td>' + data.frequency + '</td>' +
+        '<td class="cost-cell"><span class="weekly-val">' + weeklyDisplay + '</span></td>' +
+        '<td class="cost-cell"><span class="annual-val">' + annualDisplay + '</span></td>';
+      return tr;
+    }
+
+    /* ── Typewriter for simple text content ── */
+    function typeWriteValue(element, text, speed) {
+      speed = speed || 20;
+      return new Promise(function(resolve) {
+        var i = 0;
+        element.textContent = '';
+        var interval = setInterval(function() {
+          element.textContent += text.charAt(i);
+          i++;
+          if (i >= text.length) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    /* ── Main demo sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      resetAll();
+      demoRunning = true;
+      genStartTime = performance.now();
+
+      /* Step 1: Show scan status on left panel */
+      var scanStatus = document.getElementById('scanStatus');
+      scanStatus.classList.add('visible');
+      document.getElementById('scanStatusText').textContent = 'Scanning plan details...';
+
+      /* Step 2: Shimmer the left panel */
+      await shimmer(document.getElementById('panelLeft'), 800);
+      if (!demoRunning) return;
+
+      document.getElementById('scanStatusText').textContent = 'Generating service agreement...';
+
+      /* Step 3: Shimmer the right panel */
+      await shimmer(document.getElementById('panelRight'), 1500);
+      if (!demoRunning) return;
+
+      scanStatus.classList.remove('visible');
+
+      /* Step 4a: Section 1 - Agreement Overview */
+      var s1 = document.getElementById('section1');
+      s1.classList.add('visible');
+      await wait(200);
+      if (!demoRunning) return;
+
+      await typeWriteValue(document.getElementById('agParties'), agreementDetails.parties, 15);
+      if (!demoRunning) return;
+      await typeWriteValue(document.getElementById('agNdis'), agreementDetails.ndis, 25);
+      if (!demoRunning) return;
+      await typeWriteValue(document.getElementById('agPeriod'), agreementDetails.period, 15);
+      if (!demoRunning) return;
+      await typeWriteValue(document.getElementById('agReview'), agreementDetails.review, 20);
+      if (!demoRunning) return;
+
+      await wait(300);
+
+      /* Step 4b: Section 2 - Services & Schedule */
+      var s2 = document.getElementById('section2');
+      s2.classList.add('visible');
+      await wait(200);
+      if (!demoRunning) return;
+
+      var tbody = document.getElementById('servicesTableBody');
+      for (var i = 0; i < servicesData.length; i++) {
+        if (!demoRunning) return;
+        var row = createServiceRow(servicesData[i]);
+        tbody.appendChild(row);
+        await wait(50);
+        row.classList.add('visible');
+        await wait(350);
+      }
+
+      if (!demoRunning) return;
+
+      /* Show totals with count-up */
+      var totalsRow = document.getElementById('totalsRow');
+      totalsRow.style.opacity = '1';
+      var weeklyEl = document.getElementById('weeklyTotal');
+      var annualEl = document.getElementById('annualTotal');
+      countUp(weeklyEl, 0, 930.39, 800, '$', '', 2);
+      await countUp(annualEl, 0, 15010, 800, '$', '', 0);
+      if (!demoRunning) return;
+
+      await wait(300);
+
+      /* Step 4c: Section 3 - Compliance */
+      var s3 = document.getElementById('section3');
+      s3.classList.add('visible');
+      await wait(200);
+      if (!demoRunning) return;
+
+      var complianceItems = document.querySelectorAll('#complianceList .compliance-item');
+      for (var j = 0; j < complianceItems.length; j++) {
+        if (!demoRunning) return;
+        complianceItems[j].classList.add('visible');
+        await wait(400);
+      }
+
+      await wait(300);
+
+      /* Step 4d: Section 4 - Cancellation Policy */
+      var s4 = document.getElementById('section4');
+      s4.classList.add('visible');
+      if (!demoRunning) return;
+
+      await wait(600);
+
+      /* Step 4e: Section 5 - Participant Rights */
+      var s5 = document.getElementById('section5');
+      s5.classList.add('visible');
+      await wait(200);
+      if (!demoRunning) return;
+
+      var rightsItems = document.querySelectorAll('#rightsList .rights-item');
+      for (var k = 0; k < rightsItems.length; k++) {
+        if (!demoRunning) return;
+        rightsItems[k].classList.add('visible');
+        await wait(250);
+      }
+
+      await wait(300);
+
+      /* Step 4f: Section 6 - Signatures */
+      var s6 = document.getElementById('section6');
+      s6.classList.add('visible');
+      if (!demoRunning) return;
+
+      await wait(400);
+
+      /* Step 5: Update bottom bar stats */
+      var genElapsed = ((performance.now() - genStartTime) / 1000).toFixed(1);
+      document.getElementById('sectionCount').textContent = '6';
+      document.getElementById('genTime').textContent = genElapsed + ' sec';
+      document.getElementById('timeSaved').textContent = '~2 hours';
+
+      /* Step 6: Toast */
+      toast('Service agreement generated — 6 sections, NDIS Price Guide compliant', 'success', 4000);
+
+      /* Scroll right panel to top */
+      document.getElementById('panelRight').scrollTop = 0;
+
+      demoRunning = false;
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      demoRunning = false;
+
+      /* Hide scan status */
+      document.getElementById('scanStatus').classList.remove('visible');
+
+      /* Hide all agreement sections */
+      for (var i = 1; i <= 6; i++) {
+        document.getElementById('section' + i).classList.remove('visible');
+      }
+
+      /* Clear agreement overview values */
+      document.getElementById('agParties').textContent = '';
+      document.getElementById('agNdis').textContent = '';
+      document.getElementById('agPeriod').textContent = '';
+      document.getElementById('agReview').textContent = '';
+
+      /* Clear services table */
+      document.getElementById('servicesTableBody').innerHTML = '';
+
+      /* Reset totals */
+      document.getElementById('totalsRow').style.opacity = '0';
+      document.getElementById('weeklyTotal').textContent = '$0';
+      document.getElementById('annualTotal').textContent = '$0';
+
+      /* Reset compliance items */
+      document.querySelectorAll('#complianceList .compliance-item').forEach(function(el) {
+        el.classList.remove('visible');
+      });
+
+      /* Reset rights items */
+      document.querySelectorAll('#rightsList .rights-item').forEach(function(el) {
+        el.classList.remove('visible');
+      });
+
+      /* Reset bottom bar */
+      document.getElementById('sectionCount').textContent = '0';
+      document.getElementById('genTime').textContent = '0 sec';
+      document.getElementById('timeSaved').textContent = '~0 hours';
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(function(t) { t.remove(); });
+
+      /* Remove shimmer */
+      document.querySelectorAll('.shimmer').forEach(function(el) { el.classList.remove('shimmer'); });
+
+      /* Scroll panels to top */
+      document.getElementById('panelLeft').scrollTop = 0;
+      document.getElementById('panelRight').scrollTop = 0;
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(function() {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>

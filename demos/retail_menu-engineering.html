@@ -369,8 +369,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -528,20 +530,20 @@
       { name: 'Chicken Parma',       orders: 140, margin: 18, price: 24, category: 'Mains',    color: '#F26541',  highlight: true },
       { name: 'Beef Burger',         orders: 95,  margin: 42, price: 22, category: 'Mains',    color: '#A77ACD' },
       { name: 'Fish & Chips',        orders: 88,  margin: 35, price: 26, category: 'Mains',    color: '#A77ACD' },
-      { name: 'Caesar Salad',        orders: 72,  margin: 68, price: 18, category: 'Mains',    color: '#5791C7' },
-      { name: 'Mushroom Risotto',    orders: 28,  margin: 72, price: 24, category: 'Mains',    color: '#349990' },
+      { name: 'Caesar Salad',        orders: 72,  margin: 68, price: 18, category: 'Mains',    color: '#8D8D92' },
+      { name: 'Mushroom Risotto',    orders: 28,  margin: 72, price: 24, category: 'Mains',    color: '#22C55E' },
       { name: 'Steak 300g',          orders: 65,  margin: 28, price: 42, category: 'Mains',    color: '#F26541' },
       { name: 'Lamb Cutlets',        orders: 35,  margin: 45, price: 38, category: 'Mains',    color: '#8D8D92' },
-      { name: 'Calamari',            orders: 55,  margin: 58, price: 16, category: 'Entrees',  color: '#5791C7' },
-      { name: 'Garlic Bread',        orders: 110, margin: 82, price: 8,  category: 'Entrees',  color: '#349990' },
-      { name: 'Bruschetta',          orders: 45,  margin: 75, price: 14, category: 'Entrees',  color: '#349990' },
+      { name: 'Calamari',            orders: 55,  margin: 58, price: 16, category: 'Entrees',  color: '#8D8D92' },
+      { name: 'Garlic Bread',        orders: 110, margin: 82, price: 8,  category: 'Entrees',  color: '#22C55E' },
+      { name: 'Bruschetta',          orders: 45,  margin: 75, price: 14, category: 'Entrees',  color: '#22C55E' },
       { name: 'Prawn Cocktail',      orders: 12,  margin: 22, price: 18, category: 'Entrees',  color: '#EF4444' },
-      { name: 'Soup of Day',         orders: 30,  margin: 78, price: 12, category: 'Entrees',  color: '#349990' },
-      { name: 'Sticky Date Pudding', orders: 48,  margin: 65, price: 14, category: 'Desserts', color: '#FFDA47' },
-      { name: 'Tiramisu',            orders: 38,  margin: 70, price: 16, category: 'Desserts', color: '#FFDA47' },
-      { name: 'Cheesecake',          orders: 42,  margin: 62, price: 15, category: 'Desserts', color: '#FFDA47' },
-      { name: 'Lemon Tart',          orders: 25,  margin: 68, price: 14, category: 'Desserts', color: '#FFDA47' },
-      { name: 'Panna Cotta',         orders: 18,  margin: 55, price: 15, category: 'Desserts', color: '#FFDA47' },
+      { name: 'Soup of Day',         orders: 30,  margin: 78, price: 12, category: 'Entrees',  color: '#22C55E' },
+      { name: 'Sticky Date Pudding', orders: 48,  margin: 65, price: 14, category: 'Desserts', color: '#F79A83' },
+      { name: 'Tiramisu',            orders: 38,  margin: 70, price: 16, category: 'Desserts', color: '#F79A83' },
+      { name: 'Cheesecake',          orders: 42,  margin: 62, price: 15, category: 'Desserts', color: '#F79A83' },
+      { name: 'Lemon Tart',          orders: 25,  margin: 68, price: 14, category: 'Desserts', color: '#F79A83' },
+      { name: 'Panna Cotta',         orders: 18,  margin: 55, price: 15, category: 'Desserts', color: '#F79A83' },
       { name: 'Espresso Martini',    orders: 85,  margin: 78, price: 19, category: 'Drinks',   color: '#A77ACD' },
       { name: 'House Wine',          orders: 120, margin: 72, price: 12, category: 'Drinks',   color: '#A77ACD' },
       { name: 'Craft Beer',          orders: 95,  margin: 65, price: 14, category: 'Drinks',   color: '#A77ACD' }
@@ -674,8 +676,8 @@
     /* ── Animation sequence ── */
     async function startDemo() {
       if (demoRunning) return;
-      demoRunning = true;
       resetAll();
+      demoRunning = true;
 
       // Create dots (hidden initially)
       createDots();

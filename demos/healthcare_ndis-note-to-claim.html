@@ -1,0 +1,1020 @@
+<!-- ABOUTME: NDIS Progress Note to Claim Generator mockup for NorthLink AI. -->
+<!-- ABOUTME: AI extracts NDIS line items from session notes and generates compliant claims linked to participant goals. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NDIS Progress Note to Claim — NorthLink AI Summit 2026</title>
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Demo layout */
+    .demo-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 64px - 49px - 44px - 52px);
+    }
+
+    .panel-left {
+      flex: 0 0 50%;
+      padding: 24px;
+      overflow-y: auto;
+      border-right: 1px solid var(--color-light-gray);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-right {
+      flex: 0 0 50%;
+      padding: 24px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    /* Patient info bar */
+    .patient-bar {
+      display: flex;
+      align-items: center;
+      padding: 8px 24px;
+      background: var(--color-oat);
+      font-size: 13px;
+      color: var(--color-slate-black);
+      border-bottom: 1px solid var(--color-light-gray);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .patient-bar .patient-label {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .patient-bar .sep {
+      color: var(--color-slate-gray);
+    }
+
+    /* Panel heading */
+    .panel-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 16px;
+    }
+
+    /* Session note styling */
+    .note-container {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .note-section {
+      margin-bottom: 14px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .note-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .note-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--color-slate-gray);
+      margin-bottom: 4px;
+    }
+
+    .note-value {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--color-slate-black);
+    }
+
+    .note-value ul {
+      margin: 4px 0 0 0;
+      padding-left: 20px;
+    }
+
+    .note-value ul li {
+      margin-bottom: 4px;
+    }
+
+    /* Highlighted evidence phrases in the session note */
+    .hl-phrase {
+      background: rgba(52, 153, 144, 0.12);
+      border-bottom: 2px solid var(--color-green);
+      padding: 0 2px;
+      border-radius: 2px;
+      cursor: help;
+      position: relative;
+    }
+
+    .hl-phrase .hl-tooltip {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-black);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 20;
+    }
+
+    .hl-phrase:hover .hl-tooltip {
+      opacity: 1;
+    }
+
+    /* Right panel cards */
+    .claim-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-light-gray);
+      padding: 20px;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .claim-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .claim-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .claim-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-black);
+    }
+
+    .claim-card-title.title-category { color: var(--color-blue); }
+    .claim-card-title.title-lineitem { color: var(--color-purple); }
+    .claim-card-title.title-goals { color: var(--color-green); }
+    .claim-card-title.title-compliance { color: var(--color-orange); }
+    .claim-card-title.title-claim { color: var(--color-black); }
+
+    .claim-card-body {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--color-slate-black);
+    }
+
+    /* Category / line item detail rows */
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 0;
+      font-size: 14px;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: var(--color-slate-gray);
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: var(--color-black);
+      text-align: right;
+    }
+
+    .detail-value.value-large {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-purple);
+    }
+
+    /* Confidence badge */
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .confidence-badge.visible {
+      opacity: 1;
+      transform: scale(1);
+      animation: badgePulse 0.6s ease;
+    }
+
+    @keyframes badgePulse {
+      0% { transform: scale(0.8); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .confidence-high {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* Goal linkage */
+    .goal-item {
+      background: rgba(52, 153, 144, 0.06);
+      border: 1px solid rgba(52, 153, 144, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .goal-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .goal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .goal-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--color-green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      opacity: 0;
+      transform: scale(0);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .goal-check.visible {
+      opacity: 1;
+      transform: scale(1);
+      animation: checkPop 0.4s ease;
+    }
+
+    @keyframes checkPop {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    .goal-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .goal-evidence {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+      font-style: italic;
+      padding-left: 28px;
+      border-left: 2px solid var(--color-green);
+      margin-left: 10px;
+    }
+
+    /* Compliance checks */
+    .compliance-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 14px;
+      color: var(--color-slate-black);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .compliance-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .compliance-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: var(--color-green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .compliance-result {
+      margin-top: 12px;
+      padding: 10px 16px;
+      background: #dcfce7;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      color: #166534;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .compliance-result.visible {
+      opacity: 1;
+    }
+
+    /* Claim form table */
+    .claim-form-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid var(--color-light-gray);
+    }
+
+    .claim-form-row:last-child {
+      border-bottom: none;
+    }
+
+    .claim-form-label {
+      font-weight: 500;
+      color: var(--color-slate-gray);
+    }
+
+    .claim-form-value {
+      font-weight: 600;
+      color: var(--color-black);
+    }
+
+    .claim-form-value.total {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-purple);
+    }
+
+    /* AI analysing label */
+    .ai-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-purple);
+      margin-bottom: 16px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .ai-label.visible {
+      opacity: 1;
+    }
+
+    .ai-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-purple);
+      animation: aiPulse 1s infinite;
+    }
+
+    @keyframes aiPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* Typewriter cursor */
+    .typing-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--color-purple);
+      margin-left: 2px;
+      animation: cursorBlink 0.6s infinite;
+      vertical-align: text-bottom;
+    }
+
+    @keyframes cursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--color-black);
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .bottom-bar .time-info {
+      font-size: 13px;
+      color: var(--color-slate-gray);
+    }
+
+    .bottom-bar .time-info .time-value {
+      color: var(--color-purple);
+      font-weight: 600;
+    }
+
+    .bottom-bar .bottom-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-main {
+        flex-direction: column;
+        height: auto;
+      }
+      .panel-left, .panel-right {
+        flex: none;
+        width: 100%;
+        border-right: none;
+      }
+      .panel-left {
+        min-height: 300px;
+      }
+      .panel-right {
+        border-top: 1px solid var(--color-light-gray);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-area">
+      <a href="https://realmindsai.com.au" class="logo-link">
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
+      </a>
+      <span class="event-tag">NorthLink AI Summit 2026</span>
+    </div>
+    <nav>
+      <a href="../index.html#grid">Industries</a>
+      <a href="https://realmindsai.com.au/about">About</a>
+      <a href="https://realmindsai.com.au/the-walkthrough" class="nav-cta">Book a Walkthrough</a>
+    </nav>
+  </header>
+
+  <!-- Demo top bar -->
+  <div class="demo-topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="../index.html">Home</a> &rarr; <a href="../industries/healthcare.html">Healthcare</a> &rarr; Progress Note to Claim
+      </div>
+      <div class="demo-title">NDIS Progress Note to Claim</div>
+    </div>
+    <div class="demo-actions">
+      <button class="btn btn-primary btn-sm" id="btnPlay" onclick="startDemo()">Play Demo</button>
+      <button class="btn btn-outline btn-sm" style="color: var(--color-slate-black); border-color: var(--color-slate-gray);" onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Patient info bar -->
+  <div class="patient-bar">
+    <span class="patient-label">Participant:</span> Emma Nguyen
+    <span class="sep">|</span>
+    <span class="patient-label">NDIS No:</span> 431 285 679
+    <span class="sep">|</span>
+    <span class="patient-label">Provider:</span> North Melbourne Allied Health
+    <span class="sep">|</span>
+    <span class="patient-label">Service Date:</span> 14 March 2026
+    <span class="sep">|</span>
+    <span class="patient-label">Support Worker:</span> Sarah Chen
+  </div>
+
+  <!-- Main content area -->
+  <div class="demo-main">
+
+    <!-- Left panel: Session Note -->
+    <div class="panel-left">
+      <div class="panel-heading">Session / Progress Note</div>
+      <div class="note-container" id="noteContainer"></div>
+    </div>
+
+    <!-- Right panel: AI-Generated Claim -->
+    <div class="panel-right">
+      <div class="panel-heading">AI-Generated Claim</div>
+
+      <!-- AI analysing label -->
+      <div class="ai-label" id="aiLabel">
+        <div class="ai-dot"></div>
+        <span>AI analysing session note...</span>
+      </div>
+
+      <!-- Support Category -->
+      <div class="claim-card" id="cardCategory">
+        <div class="claim-card-header">
+          <span class="claim-card-title title-category">Support Category</span>
+          <span class="confidence-badge confidence-high" id="confCategory">97%</span>
+        </div>
+        <div class="claim-card-body">
+          <div class="detail-row">
+            <span class="detail-label">Category:</span>
+            <span class="detail-value" id="categoryValue"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NDIS Line Item -->
+      <div class="claim-card" id="cardLineItem">
+        <div class="claim-card-header">
+          <span class="claim-card-title title-lineitem">NDIS Line Item</span>
+          <span class="confidence-badge confidence-high" id="confLineItem">94%</span>
+        </div>
+        <div class="claim-card-body">
+          <div class="detail-row">
+            <span class="detail-label">Item:</span>
+            <span class="detail-value" id="lineItemValue"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Rate:</span>
+            <span class="detail-value" id="rateValue"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Hours:</span>
+            <span class="detail-value" id="hoursValue"></span>
+          </div>
+          <div class="detail-row" style="margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--color-light-gray);">
+            <span class="detail-label" style="font-weight: 700; color: var(--color-black);">Total:</span>
+            <span class="detail-value value-large" id="totalValue"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Goal Linkage -->
+      <div class="claim-card" id="cardGoals">
+        <div class="claim-card-header">
+          <span class="claim-card-title title-goals">Goal Linkage</span>
+        </div>
+        <div class="claim-card-body" id="goalsBody">
+          <div class="goal-item" id="goal1">
+            <div class="goal-header">
+              <div class="goal-check" id="goalCheck1">&#10003;</div>
+              <span class="goal-name">Plan Goal 3.2: Increase community participation</span>
+            </div>
+            <div class="goal-evidence">"Attended the community art class... Emma selected her own materials and worked alongside peers with minimal support"</div>
+          </div>
+          <div class="goal-item" id="goal2">
+            <div class="goal-header">
+              <div class="goal-check" id="goalCheck2">&#10003;</div>
+              <span class="goal-name">Plan Goal 4.1: Develop independent travel skills</span>
+            </div>
+            <div class="goal-evidence">"Practiced using public transport... Emma independently tapped on with her Myki card"</div>
+          </div>
+          <div class="goal-item" id="goal3">
+            <div class="goal-header">
+              <div class="goal-check" id="goalCheck3">&#10003;</div>
+              <span class="goal-name">Plan Goal 2.3: Improve daily living skills</span>
+            </div>
+            <div class="goal-evidence">"Purchased lunch at a local cafe. Emma ordered independently and managed her own money with verbal prompts"</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compliance Check -->
+      <div class="claim-card" id="cardCompliance">
+        <div class="claim-card-header">
+          <span class="claim-card-title title-compliance">Compliance Check</span>
+        </div>
+        <div class="claim-card-body" id="complianceBody">
+          <div class="compliance-item" id="comp1"><div class="compliance-check">&#10003;</div><span>Session duration documented (3 hours)</span></div>
+          <div class="compliance-item" id="comp2"><div class="compliance-check">&#10003;</div><span>Location documented</span></div>
+          <div class="compliance-item" id="comp3"><div class="compliance-check">&#10003;</div><span>Activities linked to plan goals</span></div>
+          <div class="compliance-item" id="comp4"><div class="compliance-check">&#10003;</div><span>Participant response documented</span></div>
+          <div class="compliance-item" id="comp5"><div class="compliance-check">&#10003;</div><span>Worker:participant ratio compliant (1:1)</span></div>
+          <div class="compliance-item" id="comp6"><div class="compliance-check">&#10003;</div><span>Claiming within NDIS Price Guide rates</span></div>
+          <div class="compliance-result" id="compResult">Claim Ready &mdash; All compliance requirements met</div>
+        </div>
+      </div>
+
+      <!-- Generated Claim Form -->
+      <div class="claim-card" id="cardClaimForm">
+        <div class="claim-card-header">
+          <span class="claim-card-title title-claim">Generated Claim</span>
+        </div>
+        <div class="claim-card-body">
+          <div class="claim-form-row"><span class="claim-form-label">Provider</span><span class="claim-form-value">North Melbourne Allied Health</span></div>
+          <div class="claim-form-row"><span class="claim-form-label">Participant</span><span class="claim-form-value">Emma Nguyen (431 285 679)</span></div>
+          <div class="claim-form-row"><span class="claim-form-label">Service Date</span><span class="claim-form-value">14 March 2026</span></div>
+          <div class="claim-form-row"><span class="claim-form-label">Support Item</span><span class="claim-form-value">04_049_0104_6_1</span></div>
+          <div class="claim-form-row"><span class="claim-form-label">Quantity</span><span class="claim-form-value">3.0 hours</span></div>
+          <div class="claim-form-row"><span class="claim-form-label">Unit Price</span><span class="claim-form-value">$67.56</span></div>
+          <div class="claim-form-row"><span class="claim-form-label">Total</span><span class="claim-form-value total" id="claimTotal">$202.68</span></div>
+          <div class="claim-form-row"><span class="claim-form-label">Claim Reference</span><span class="claim-form-value">CLM-2026-0314-001</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <div class="time-info">
+      Session note: <span class="time-value" id="noteTime">3 min to write</span>
+      &nbsp;|&nbsp; Claim generation: <span class="time-value" id="claimGenTime">0 sec</span>
+      &nbsp;|&nbsp; Time saved: <span class="time-value" id="timeSaved">~0 min</span>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn btn-approve btn-sm" onclick="approveSubmit()">Approve &amp; Submit Claim</button>
+      <button class="btn btn-edit btn-sm" onclick="toast('Opening claim editor...', 'info')">Edit Claim</button>
+      <button class="btn btn-primary btn-sm" onclick="toast('Flagged for team lead review', 'info')">Flag for Review</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <h2>Ready to see what AI can do for your practice?</h2>
+      <p>Book a Walkthrough &mdash; $4,500 + GST</p>
+    </div>
+    <div class="footer-actions">
+      <a href="https://realmindsai.com.au/the-walkthrough" class="btn btn-primary">Book Discovery Call</a>
+      <a href="https://realmindsai.com.au" class="btn btn-outline">realmindsai.com.au</a>
+    </div>
+  </footer>
+
+  <script src="../assets/js/shared.js"></script>
+  <script>
+    /* ── Session note data ── */
+    const noteSections = [
+      {
+        label: 'Session Type',
+        text: 'Community Access Support',
+        highlight: false
+      },
+      {
+        label: 'Duration',
+        text: '3 hours (10:00 AM – 1:00 PM)',
+        highlight: false
+      },
+      {
+        label: 'Location',
+        text: 'Broadmeadows Community Centre',
+        highlight: false
+      },
+      {
+        label: 'Participant Presentation',
+        html: 'Emma arrived in good spirits and was eager to participate in today\'s session. She <span class="hl-phrase">independently greeted staff and other participants<span class="hl-tooltip">Evidence: Goal 3.2 — Community participation</span></span> upon arrival, which is an improvement from previous sessions where she required prompting.',
+        highlight: true
+      },
+      {
+        label: 'Activities Completed',
+        html: '<ul><li><span class="hl-phrase">Attended the community art class<span class="hl-tooltip">Evidence: Goal 3.2 — Community participation</span></span> (1.5 hours). Emma selected her own materials and worked alongside peers with minimal support. Required verbal prompts twice to stay on task.</li><li><span class="hl-phrase">Practiced using public transport<span class="hl-tooltip">Evidence: Goal 4.1 — Independent travel skills</span></span> (bus from Glenroy to Broadmeadows). Emma <span class="hl-phrase">independently tapped on with her Myki card<span class="hl-tooltip">Evidence: Goal 4.1 — Independent travel skills</span></span>. Required support with route planning and identifying the correct stop.</li><li><span class="hl-phrase">Purchased lunch at a local cafe<span class="hl-tooltip">Evidence: Goal 2.3 — Daily living skills</span></span>. Emma ordered independently and <span class="hl-phrase">managed her own money<span class="hl-tooltip">Evidence: Goal 2.3 — Daily living skills</span></span> with verbal prompts for counting change.</li></ul>',
+        highlight: true
+      },
+      {
+        label: 'Goals Addressed',
+        html: '<ul><li>Goal 1: Increase community participation (Plan Goal 3.2)</li><li>Goal 2: Develop independent travel skills (Plan Goal 4.1)</li><li>Goal 3: Improve daily living skills including money handling (Plan Goal 2.3)</li></ul>',
+        highlight: false
+      },
+      {
+        label: 'Participant Response',
+        html: 'Emma demonstrated <span class="hl-phrase">increased confidence in social interactions<span class="hl-tooltip">Evidence: Goal 3.2 — Community participation</span></span>. She initiated conversation with a peer during the art class without prompting. She expressed interest in attending the class weekly.',
+        highlight: true
+      },
+      {
+        label: 'Recommendations',
+        html: '<ul><li>Continue weekly community access sessions</li><li>Begin practicing the bus route independently with support worker following at a distance</li><li>Introduce EFTPOS card use as next step for money management</li></ul>',
+        highlight: false
+      }
+    ];
+
+    /* ── State ── */
+    let demoRunning = false;
+
+    /* ── Typewriter for HTML content (handles tags atomically) ── */
+    function typeWriterHTML(element, htmlContent, speed = 15) {
+      return new Promise(resolve => {
+        element.innerHTML = '';
+        let i = 0;
+        const cursor = document.createElement('span');
+        cursor.className = 'typing-cursor';
+
+        const interval = setInterval(() => {
+          if (i >= htmlContent.length) {
+            clearInterval(interval);
+            cursor.remove();
+            element.innerHTML = htmlContent;
+            resolve();
+            return;
+          }
+
+          /* If we hit an HTML tag, insert the entire tag at once */
+          if (htmlContent[i] === '<') {
+            const closingIndex = htmlContent.indexOf('>', i);
+            if (closingIndex !== -1) {
+              i = closingIndex + 1;
+              element.innerHTML = htmlContent.substring(0, i);
+              element.appendChild(cursor);
+              const panel = element.closest('.panel-left');
+              if (panel) panel.scrollTop = panel.scrollHeight;
+              return;
+            }
+          }
+
+          i++;
+          element.innerHTML = htmlContent.substring(0, i);
+          element.appendChild(cursor);
+          const panel = element.closest('.panel-left');
+          if (panel) panel.scrollTop = panel.scrollHeight;
+        }, speed);
+      });
+    }
+
+    /* ── Add a note section ── */
+    async function addNoteSection(section, speed) {
+      const container = document.getElementById('noteContainer');
+      const div = document.createElement('div');
+      div.className = 'note-section';
+
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'note-label';
+      labelDiv.textContent = section.label;
+      div.appendChild(labelDiv);
+
+      const valueDiv = document.createElement('div');
+      valueDiv.className = 'note-value';
+      div.appendChild(valueDiv);
+
+      container.appendChild(div);
+
+      /* Reveal the section container */
+      requestAnimationFrame(() => {
+        div.classList.add('visible');
+        container.scrollTop = container.scrollHeight;
+      });
+
+      await wait(100);
+
+      /* Type out the content */
+      if (section.html) {
+        await typeWriterHTML(valueDiv, section.html, speed);
+      } else {
+        await typeWriter(valueDiv, section.text, speed);
+      }
+
+      return div;
+    }
+
+    /* ── Show a claim card with slide-in ── */
+    async function showCard(cardId) {
+      const card = document.getElementById(cardId);
+      card.classList.add('visible');
+      const panel = card.closest('.panel-right');
+      if (panel) {
+        await wait(50);
+        panel.scrollTop = panel.scrollHeight;
+      }
+      await wait(200);
+    }
+
+    /* ── Main demo sequence ── */
+    async function startDemo() {
+      if (demoRunning) return;
+      resetAll();
+      demoRunning = true;
+
+      /* Step 1: Shimmer left panel, then reveal session note sections */
+      const leftPanel = document.querySelector('.panel-left');
+      await shimmer(leftPanel, 1000);
+      if (!demoRunning) return;
+
+      /* Type out header sections quickly */
+      await addNoteSection(noteSections[0], 10); // Session Type
+      if (!demoRunning) return;
+      await addNoteSection(noteSections[1], 10); // Duration
+      if (!demoRunning) return;
+      await addNoteSection(noteSections[2], 10); // Location
+      if (!demoRunning) return;
+
+      /* Type out Participant Presentation */
+      await addNoteSection(noteSections[3], 8);
+      if (!demoRunning) return;
+
+      /* Type out Activities Completed — this is long, start AI analysis partway through */
+      const activitiesPromise = addNoteSection(noteSections[4], 8);
+
+      /* After a short delay, start the right panel AI analysis */
+      await wait(1500);
+      if (!demoRunning) return;
+
+      /* Show AI analysing label */
+      const aiLabel = document.getElementById('aiLabel');
+      aiLabel.classList.add('visible');
+
+      /* Shimmer right panel */
+      const rightPanel = document.querySelector('.panel-right');
+      await shimmer(rightPanel, 1200);
+      if (!demoRunning) return;
+
+      /* Show Support Category card */
+      await showCard('cardCategory');
+      const categoryValue = document.getElementById('categoryValue');
+      await typeWriter(categoryValue, '04_049 — Assistance with Social, Economic and Community Participation', 8);
+      if (!demoRunning) return;
+      document.getElementById('confCategory').classList.add('visible');
+      await wait(300);
+
+      /* Show Line Item card */
+      await showCard('cardLineItem');
+      const lineItemValue = document.getElementById('lineItemValue');
+      await typeWriter(lineItemValue, '04_049_0104_6_1 — Community Participation Activities', 8);
+      if (!demoRunning) return;
+
+      const rateValue = document.getElementById('rateValue');
+      rateValue.textContent = '$67.56/hr (Weekday Standard — TTP Level 2)';
+
+      const hoursValue = document.getElementById('hoursValue');
+      hoursValue.textContent = '3.0';
+
+      /* Animate the total with countUp */
+      const totalValue = document.getElementById('totalValue');
+      await countUp(totalValue, 0, 202.68, 800, '$', '', 2);
+      if (!demoRunning) return;
+      document.getElementById('confLineItem').classList.add('visible');
+      await wait(300);
+
+      /* Wait for activities to finish typing if still going */
+      await activitiesPromise;
+      if (!demoRunning) return;
+
+      /* Continue typing remaining note sections in background */
+      const remainingNotesPromise = (async () => {
+        await addNoteSection(noteSections[5], 8); // Goals Addressed
+        if (!demoRunning) return;
+        await addNoteSection(noteSections[6], 8); // Participant Response
+        if (!demoRunning) return;
+        await addNoteSection(noteSections[7], 8); // Recommendations
+      })();
+
+      /* Show Goal Linkage card */
+      await showCard('cardGoals');
+      if (!demoRunning) return;
+
+      /* Reveal goals one by one with checkmark animations */
+      for (let i = 1; i <= 3; i++) {
+        if (!demoRunning) return;
+        const goalItem = document.getElementById('goal' + i);
+        goalItem.classList.add('visible');
+        await wait(200);
+        const goalCheck = document.getElementById('goalCheck' + i);
+        goalCheck.classList.add('visible');
+        const panel = goalItem.closest('.panel-right');
+        if (panel) panel.scrollTop = panel.scrollHeight;
+        await wait(400);
+      }
+
+      /* Show Compliance Check card */
+      await showCard('cardCompliance');
+      if (!demoRunning) return;
+
+      /* Reveal compliance items one by one */
+      for (let i = 1; i <= 6; i++) {
+        if (!demoRunning) return;
+        const comp = document.getElementById('comp' + i);
+        comp.classList.add('visible');
+        const panel = comp.closest('.panel-right');
+        if (panel) panel.scrollTop = panel.scrollHeight;
+        await wait(250);
+      }
+
+      /* Show compliance result */
+      if (!demoRunning) return;
+      const compResult = document.getElementById('compResult');
+      compResult.classList.add('visible');
+      await wait(400);
+
+      /* Show Generated Claim Form */
+      await showCard('cardClaimForm');
+      if (!demoRunning) return;
+
+      /* Scroll to bottom of right panel */
+      const rpanel = document.querySelector('.panel-right');
+      rpanel.scrollTop = rpanel.scrollHeight;
+
+      /* Hide AI analysing label */
+      aiLabel.classList.remove('visible');
+
+      /* Wait for remaining note sections */
+      await remainingNotesPromise;
+
+      /* Update bottom bar stats */
+      document.getElementById('claimGenTime').textContent = '4 sec';
+      document.getElementById('timeSaved').textContent = '~12 min';
+
+      /* Success toast */
+      toast('NDIS claim generated — ready for review', 'success');
+
+      demoRunning = false;
+    }
+
+    /* ── Approve & Submit ── */
+    function approveSubmit() {
+      toast('Claim CLM-2026-0314-001 submitted to NDIS portal', 'success');
+    }
+
+    /* ── Reset everything ── */
+    function resetAll() {
+      demoRunning = false;
+
+      /* Clear note container */
+      document.getElementById('noteContainer').innerHTML = '';
+
+      /* Hide AI label */
+      document.getElementById('aiLabel').classList.remove('visible');
+
+      /* Hide and reset all claim cards */
+      ['cardCategory', 'cardLineItem', 'cardGoals', 'cardCompliance', 'cardClaimForm'].forEach(id => {
+        document.getElementById(id).classList.remove('visible');
+      });
+
+      /* Reset category/line item text */
+      document.getElementById('categoryValue').textContent = '';
+      document.getElementById('lineItemValue').textContent = '';
+      document.getElementById('rateValue').textContent = '';
+      document.getElementById('hoursValue').textContent = '';
+      document.getElementById('totalValue').textContent = '';
+
+      /* Reset confidence badges */
+      ['confCategory', 'confLineItem'].forEach(id => {
+        document.getElementById(id).classList.remove('visible');
+      });
+
+      /* Reset goal items */
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('goal' + i).classList.remove('visible');
+        document.getElementById('goalCheck' + i).classList.remove('visible');
+      }
+
+      /* Reset compliance items */
+      for (let i = 1; i <= 6; i++) {
+        document.getElementById('comp' + i).classList.remove('visible');
+      }
+      document.getElementById('compResult').classList.remove('visible');
+
+      /* Reset bottom bar */
+      document.getElementById('claimGenTime').textContent = '0 sec';
+      document.getElementById('timeSaved').textContent = '~0 min';
+
+      /* Remove toasts */
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+
+      /* Scroll panels to top */
+      document.querySelector('.panel-left').scrollTop = 0;
+      document.querySelector('.panel-right').scrollTop = 0;
+    }
+
+    /* ── Auto-start after 2 seconds ── */
+    setTimeout(() => {
+      if (!demoRunning) startDemo();
+    }, 2000);
+  </script>
+</body>
+</html>

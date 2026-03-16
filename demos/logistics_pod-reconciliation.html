@@ -417,8 +417,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -757,7 +759,7 @@
         5: 'DELIVERY RECEIPT'
       };
 
-      const rotation = pod.id === 3 ? 'transform="rotate(90, 200, 200)"' : '';
+      const rotation = '';
       const coffeStain = pod.id === 2
         ? '<circle cx="330" cy="220" r="45" fill="rgba(139, 90, 43, 0.12)" /><circle cx="327" cy="217" r="38" fill="rgba(139, 90, 43, 0.08)" />'
         : '';
@@ -784,39 +786,6 @@
     /* ── Extraction box positions (percentages of pod viewer) ── */
     function getExtractionBoxes(pod) {
       const isDiscrepancy = pod.status === 'discrepancy';
-
-      /* POD 3 is rotated 90deg CW around (200,200) in a 400x300 viewBox.
-         Original (x,y) maps to (400-y, x). Text runs vertically downward.
-         All fields end up on the right side of the viewer. */
-      if (pod.id === 3) {
-        return [
-          {
-            cls: 'box-consignment',
-            label: 'Consignment #',
-            top: '2%', left: '83%', width: '7%', height: '40%'
-          },
-          {
-            cls: 'box-date',
-            label: 'Date',
-            top: '2%', left: '77%', width: '5%', height: '35%'
-          },
-          {
-            cls: 'box-receiver',
-            label: 'Receiver',
-            top: '2%', left: '70%', width: '6%', height: '45%'
-          },
-          {
-            cls: isDiscrepancy ? 'box-quantity' : 'box-quantity-ok',
-            label: isDiscrepancy ? 'Quantity (DISCREPANCY)' : 'Quantity',
-            top: '2%', left: '64%', width: '5%', height: '30%'
-          },
-          {
-            cls: 'box-signature',
-            label: 'Signature',
-            top: '2%', left: '52%', width: '11%', height: '50%'
-          }
-        ];
-      }
 
       return [
         {
@@ -870,13 +839,9 @@
         </div>`;
       });
 
-      /* Limit the pod viewer height for the rotated POD so extracted data stays visible */
-      const viewerStyle = pod.id === 3 ? 'position:relative; max-height:320px;' : 'position:relative;';
-      const svgStyle = pod.id === 3 ? 'style="max-height:300px; width:auto; margin:0 auto;"' : '';
-
       centerContent.innerHTML = `
-        <div class="pod-viewer" id="podViewer" style="${viewerStyle}">
-          ${getPodSvg(pod, svgStyle)}
+        <div class="pod-viewer" id="podViewer" style="position:relative;">
+          ${getPodSvg(pod)}
           ${boxesHtml}
         </div>
         <div class="extracted-data">

@@ -17,8 +17,10 @@
   <header class="site-header">
     <div class="logo-area">
       <a href="https://realmindsai.com.au" class="logo-link">
-        <img src="../assets/img/logo-white.svg" alt="Real Minds AI logo">
-        <span class="logo-text">Real Minds AI</span>
+        <div class="wordmark">
+          <span class="wordmark-name"><span class="wm-rm">real minds,</span> <span class="wm-ai">artificial intelligence</span></span>
+          <span class="wordmark-tagline">wisdom, amplified</span>
+        </div>
       </a>
       <span class="event-tag">NorthLink AI Summit 2026</span>
     </div>
@@ -59,7 +61,7 @@
 
       <div class="category-label">Documentation &amp; Compliance</div>
 
-      <a href="#detail-pod-reconciliation" class="overview-tile has-demo" onclick="highlightCard('detail-pod-reconciliation')">
+      <a href="../demos/logistics_pod-reconciliation.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128196;</div>
         <h4>POD Reconciliation</h4>
         <div class="tile-stat">4 hrs &rarr; 30 seconds</div>
@@ -73,7 +75,7 @@
         <div class="tile-desc">AI monitors driver hours, rest breaks, generates audit docs</div>
       </a>
 
-      <a href="#detail-invoice-reconciliation" class="overview-tile has-demo" onclick="highlightCard('detail-invoice-reconciliation')">
+      <a href="../demos/logistics_invoice-reconciliation.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128176;</div>
         <h4>Carrier Invoice Reconciliation</h4>
         <div class="tile-stat">3 hrs &rarr; 45 seconds</div>
@@ -82,7 +84,7 @@
 
       <div class="category-label">Fleet &amp; Routing</div>
 
-      <a href="#detail-route-optimisation" class="overview-tile has-demo" onclick="highlightCard('detail-route-optimisation')">
+      <a href="../demos/logistics_route-optimisation.html" class="overview-tile has-demo">
         <div class="tile-icon">&#128506;&#65039;</div>
         <h4>Route Optimisation</h4>
         <div class="tile-stat">1 hour &rarr; 2 seconds</div>
@@ -168,6 +170,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-pod-reconciliation">
+          <a href="../demos/logistics_pod-reconciliation.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128196; POD Reconciliation</h4>
           <div class="pain">"Drivers bring back crumpled PODs with illegible signatures. Someone has to match each one to an invoice. One wrong digit means a payment dispute."</div>
           <div class="solution">AI extracts consignment numbers, receivers, signatures, and GPS coords from messy POD photos, then matches them to invoices automatically. Flags mismatches and missing dockets before they become disputes.</div>
@@ -176,7 +179,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">30 seconds</span>
           </div>
-          <a href="../demos/logistics_pod-reconciliation.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card" id="detail-cor-documentation">
@@ -191,6 +193,7 @@
         </div>
 
         <div class="use-case-card demo-card-special" id="detail-invoice-reconciliation">
+          <a href="../demos/logistics_invoice-reconciliation.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128176; Carrier Invoice Reconciliation</h4>
           <div class="pain">"Every month, someone manually checks fuel surcharges, wait times, and zone rates across dozens of carrier invoices against the contract. Overcharges slip through."</div>
           <div class="solution">AI extracts line items from carrier invoices (even scanned), matches against contract rates, highlights overcharges, and drafts dispute emails ready to send.</div>
@@ -199,7 +202,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">45 seconds</span>
           </div>
-          <a href="../demos/logistics_invoice-reconciliation.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
       </div>
@@ -211,6 +213,7 @@
       <div class="use-case-cards">
 
         <div class="use-case-card demo-card-special" id="detail-route-optimisation">
+          <a href="../demos/logistics_route-optimisation.html" class="demo-link">Try Live Demo &rarr;</a>
           <h4>&#128506;&#65039; Route Optimisation</h4>
           <div class="pain">"48 deliveries across 4 routes. Driver 2 calls in at 6am. Someone spends an hour redistributing stops by hand. Time windows get missed."</div>
           <div class="solution">AI reoptimises routes across remaining drivers, considering delivery windows, vehicle capacity, and traffic. The whole day is replanned in seconds, not hours.</div>
@@ -219,7 +222,6 @@
             <span class="arrow">&rarr;</span>
             <span class="after">2 seconds</span>
           </div>
-          <a href="../demos/logistics_route-optimisation.html" class="demo-link">Try Live Demo &rarr;</a>
         </div>
 
         <div class="use-case-card" id="detail-fleet-lifecycle">
